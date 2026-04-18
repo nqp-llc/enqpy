@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: >-
+  If you use or reference this implementation in academic work, please cite
+  both the reference implementation and the underlying paper.
+title: >-
+  Enqpy(TM) Stream Cipher — C Reference Implementation (Ideal Configuration)
+authors:
+  - family-names: McGough
+    given-names: Paul
+    affiliation: NQP LLC
+    email: RPM@enqpy.com
+type: software
+version: "Rev 2.0"
+date-released: 2026-04-07
+license: LicenseRef-NQP-Evaluation
+repository-code: "https://github.com/<USERNAME>/enqpy"
+url: "https://enqpy.com"
+
+abstract: >-
+  Canonical C11 reference implementation of the Enqpy(TM) stream cipher
+  in the Ideal Enqpy(TM) Configuration (Key Role Separation: nonce-only
+  OffsetKey derivation), the configuration under which the Shannon Ideal
+  System property H(EK, QK | T^infty) = log2(4) = 2 bits is formally
+  proved. Includes 78 embedded self-test assertions covering PDAF Mode 0,
+  PDAF Mode 1, PDAF_SEC round-trip, and [+8] coset invariants. Released
+  under the NQP LLC Evaluation License for evaluation and benchmarking.
+
+keywords:
+  - stream cipher
+  - Shannon Ideal System
+  - information-theoretic security
+  - symmetric cryptography
+  - quantum resistance
+  - PDAF
+  - finite-key cryptography
+
+preferred-citation:
+  type: article
+  title: >-
+    Enqpy(TM) Stream Cipher: Constructive Proof of Shannon's Ideal System
+    for a Finite-Key Cipher
+  authors:
+    - family-names: McGough
+      given-names: Paul
+      affiliation: NQP LLC
+  year: 2026
+  notes: "IACR ePrint entry forthcoming. Rev 1.0."

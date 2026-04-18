@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dSYM/
+
+# Compiled output and test binaries
+enqpy_test
+enqpy_bench
+enqpy_all
+
+# Debug output
+*.dbg
+core
+core.*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Local development
+.env
+.env.local
+*.log

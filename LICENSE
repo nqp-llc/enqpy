@@ -1,0 +1,61 @@
+NQP LLC EVALUATION LICENSE
+===========================
+
+Copyright (c) 2026 NQP LLC. All rights reserved.
+
+Permission is granted to evaluate, test, and benchmark this implementation
+for the sole purpose of assessing Enqpy(TM) technology. No right to
+redistribute, sublicense, or deploy in production is granted without a
+separate written agreement with NQP LLC.
+
+Enqpy(TM) and EnqpyADS(TM) are trademarks of NQP LLC.
+
+For evaluation inquiries, technical discussions, or to request a
+production license, contact:
+
+    RPM@enqpy.com
+
+--------------------------------------------------------------------------
+SUMMARY OF PERMITTED USE
+--------------------------------------------------------------------------
+
+You MAY:
+  * Clone, build, and execute this reference implementation
+  * Run the self-test harness and benchmark harness
+  * Analyze the source code for evaluation and review purposes
+  * Compare implementation output against the paper and FCD test vectors
+  * Cite this implementation in academic work, with attribution
+
+You MAY NOT (without a separate written agreement from NQP LLC):
+  * Redistribute this implementation, whether modified or unmodified
+  * Sublicense or relicense this implementation under any other terms
+  * Deploy this implementation in production systems
+  * Incorporate this implementation into commercial products or services
+  * Remove, alter, or obscure this license text or the copyright notice
+
+This license governs only the reference implementation in this repository.
+Cryptographic hardware implementations, FPGA/VHDL reference, extended test
+vector suites, and production licensing are available separately through
+direct inquiry to NQP LLC.
+
+This is not an OSI-approved open-source license. GitHub and similar
+repository hosts may classify this as a "Custom" or "Proprietary" license.
+
+--------------------------------------------------------------------------
+NO WARRANTY
+--------------------------------------------------------------------------
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+NQP LLC BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THIS SOFTWARE OR THE USE OR OTHER DEALINGS IN THIS
+SOFTWARE.
+
+Evaluation of a cryptographic reference implementation does not replace
+independent cryptanalytic review, formal verification, or deployment-
+specific security engineering. Production deployment requires the
+additional operational mechanisms specified in Section 16 of the paper
+(integrity, nonce uniqueness infrastructure, secure key storage,
+constant-time CS permutation lookup, secure erase of key material).
