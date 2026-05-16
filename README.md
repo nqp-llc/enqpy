@@ -2,15 +2,49 @@
 
 > **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher formally proved
 > to satisfy Shannon's Ideal System criterion. This repository is the canonical
-> software reference implementation, released for evaluation alongside the
-> formal proof paper.
+> software reference implementation, released alongside the formal proof paper.
 
 **Paper (IACR ePrint):** *Enqpy™ Stream Cipher: Constructive Proof of Shannon's
-Ideal System for a Finite-Key Cipher* — link forthcoming on publication.
+Ideal System for a Finite-Key Cipher* — [link will be inserted on June 1, 2026
+publication; until then, paper is hosted directly on enqpy.com].
 
 **Project site:** [enqpy.com](https://enqpy.com)
 
-**Acquisition inquiries:** [RPM@enqpy.com](mailto:RPM@enqpy.com)
+**Inquiries:** [RPM@enqpy.com](mailto:RPM@enqpy.com) — see
+[enqpy.com/use.html](https://enqpy.com/use.html) for the four commercial paths.
+
+---
+
+## Stewardship and licensing
+
+The Enqpy™ reference implementation is stewarded by the **Enqpy™ Foundation
+Inc.** (a Delaware nonstock nonprofit corporation, formed April 2026), which
+owns the Enqpy™ and EnqpyADS™ trademarks. Commercial relationships are
+operated by **NQP LLC** (the inventor's Virginia commercial entity,
+incorporated March 19, 2026), under a perpetual non-exclusive trademark
+license from the Foundation. The Foundation makes the work durable; NQP makes
+it commercially serviceable.
+See [enqpy.com/foundation.html](https://enqpy.com/foundation.html).
+
+**Free use** for research, education, individual developers, small entities
+(under 25 employees and under $1M annual revenue), and public-interest
+projects is granted by the Public Patent Grant in the [`LICENSE`](./LICENSE)
+file — no fee, no signup, no NDA.
+
+**Four commercial paths** are available for use beyond Free-Tier criteria:
+
+- **NQP Standard Commercial License** — clean annual patent license for
+  above-threshold organizations ($5K–$75K range, scaled by organization size
+  and deployment scope)
+- **NQP commercial services** — architecture review, audit, training, custom
+  implementation, advisory
+- **Partner Program** — five categories (Enqpy-Certified Product, Enqpy Inside
+  Trademark, Custom Implementation, Premier Technical, Hardware Integration)
+- **Foundation conformance certification** — for third-party implementations
+  seeking the Enqpy™-Certified mark
+
+See [enqpy.com/use.html](https://enqpy.com/use.html) for the framework, or
+email RPM@enqpy.com with `[Commercial]` in the subject line.
 
 ---
 
@@ -31,10 +65,10 @@ This repository contains:
 ## What this is *not*
 
 - **Not open source** in the OSI sense. The implementation is released under
-  the **NQP LLC Evaluation License** (see [`LICENSE`](./LICENSE)): you may
-  clone, build, test, and benchmark for evaluation purposes. Redistribution,
-  sublicensing, or production deployment require a separate written agreement
-  with NQP LLC.
+  the **NQP LLC Public License for Enqpy™** (see [`LICENSE`](./LICENSE)),
+  which contains an Evaluation License covering source-code rights for all
+  users plus a Public Patent Grant covering free use of the cipher for the
+  Free-Tier audience above.
 - **Not production-ready** without the additional operational mechanisms
   described in §16 of the paper: integrity (a MAC over ciphertext and
   `eff_or`), nonce uniqueness infrastructure, secure key storage, constant-time
@@ -48,7 +82,7 @@ This repository contains:
 
 ```bash
 # Clone the repo
-git clone https://github.com/<USERNAME>/enqpy.git
+git clone https://github.com/nqp-llc/enqpy.git
 cd enqpy
 
 # Build with self-test + benchmark
@@ -178,26 +212,40 @@ Principal results:
   H(PT | CT, OR) ≥ 128 bits for HIGH profile; at least 2^128 consistent
   plaintexts for any ciphertext.
 
+A companion technical note, [*Adversarial Outcome Equivalence — proved under
+the DSMV*](https://enqpy.com/papers/enqpy-dsmv.pdf), proves that Enqpy™ and
+the One-Time Pad share the same operational secrecy outcome under a binary
+success metric, with a structural observation that Enqpy™ maintains two
+algebraically independent uncertainty axes (the OTP maintains only one).
+
 ---
 
-## Acquisition and licensing
+## Repository governance
 
-NQP LLC is actively engaged in commercialization discussions. For evaluation
-requests, technical discussions, or acquisition inquiries:
+This repository follows community-profile conventions for governance,
+contribution, and security disclosure:
 
-**[RPM@enqpy.com](mailto:RPM@enqpy.com)**
+- [`LICENSE`](./LICENSE) — NQP LLC Public License for Enqpy™
+  (Evaluation License + Public Patent Grant for Free-Tier Use)
+- [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — Code of Conduct and
+  Acceptable Use Policy
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — How to contribute (accepted
+  scope, DCO sign-off, review process)
+- [`SECURITY.md`](./SECURITY.md) — Vulnerability disclosure and
+  coordinated-disclosure policy
 
-The reference implementation under this repository is released solely for
-evaluation under the [NQP LLC Evaluation License](./LICENSE). Production
-licensing, FPGA/VHDL reference, extended test vector suites, and commercial
-support terms are available through direct inquiry.
+This is an inventor-stewarded reference implementation, not a community-
+developed project. Contributions to documentation, build, portability,
+and test infrastructure are welcome; modifications to the core
+cryptographic algorithm are not — the implementation must remain in exact
+correspondence with the formal proof.
 
 ---
 
 ## Citation
 
 A `CITATION.cff` file in the repository root enables GitHub's native citation
-export. Preferred citation format once the ePrint paper is published:
+export. Preferred citation format:
 
 ```bibtex
 @techreport{mcgough2026enqpy,
@@ -207,7 +255,7 @@ export. Preferred citation format once the ePrint paper is published:
   institution = {NQP LLC},
   year        = {2026},
   number      = {Rev 1.0},
-  note        = {IACR ePrint entry forthcoming}
+  note        = {IACR ePrint entry: link inserted June 1, 2026}
 }
 ```
 
@@ -220,11 +268,13 @@ export. Preferred citation format once the ePrint paper is published:
 | C reference implementation | ✅ Rev 2.0 (Ideal Configuration) |
 | Test vectors (78 assertions) | ✅ 78/78 PASS |
 | Benchmark harness | ✅ Included |
-| IACR ePrint paper | 🟡 Pre-publication |
+| IACR ePrint paper | ✅ June 1, 2026 (link inserted on publication) |
+| Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
 | VHDL reference | 🔒 Available via direct licensing |
 | NIST SP 800-22 full test suite | 🟡 Summary in FCD §14; full run available via direct inquiry |
 
 ---
 
 *Copyright © 2026 NQP LLC. All rights reserved.*
-*Enqpy™ and EnqpyADS™ are trademarks of NQP LLC.*
+*Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security, Settled.™ are trademarks
+of Enqpy™ Foundation Inc., licensed to NQP LLC.*

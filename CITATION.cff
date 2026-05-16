@@ -1,47 +1,61 @@
+# Citation File Format — enables GitHub's "Cite this repository" widget.
+# See https://citation-file-format.github.io/ for the spec.
+#
+# LAUNCH-DAY ACTION: Replace the placeholder in preferred-citation.url
+# and the IACR ePrint identifier in preferred-citation.notes once the
+# paper is live (paper number 2026/XXXXX will be assigned on submission).
+
 cff-version: 1.2.0
-message: >-
-  If you use or reference this implementation in academic work, please cite
-  both the reference implementation and the underlying paper.
-title: >-
-  Enqpy(TM) Stream Cipher — C Reference Implementation (Ideal Configuration)
+message: >
+  If you use Enqpy™ in your research or build on the reference
+  implementation, please cite the preferred citation below (the IACR
+  ePrint paper), not this software entry.
+type: software
+title: "Enqpy™ Stream Cipher — Reference Implementation"
+abstract: >
+  The canonical software reference implementation of the Enqpy™ stream
+  cipher — the first finite-key stream cipher formally proved to
+  satisfy Shannon's Ideal System criterion. Released alongside the
+  formal proof paper.
 authors:
   - family-names: McGough
     given-names: Paul
-    affiliation: NQP LLC
-    email: RPM@enqpy.com
-type: software
+    affiliation: "NQP LLC"
+    email: "RPM@enqpy.com"
 version: "Rev 2.0"
-date-released: 2026-04-07
-license: LicenseRef-NQP-Evaluation
-repository-code: "https://github.com/<USERNAME>/enqpy"
+date-released: "2026-06-01"
 url: "https://enqpy.com"
-
-abstract: >-
-  Canonical C11 reference implementation of the Enqpy(TM) stream cipher
-  in the Ideal Enqpy(TM) Configuration (Key Role Separation: nonce-only
-  OffsetKey derivation), the configuration under which the Shannon Ideal
-  System property H(EK, QK | T^infty) = log2(4) = 2 bits is formally
-  proved. Includes 78 embedded self-test assertions covering PDAF Mode 0,
-  PDAF Mode 1, PDAF_SEC round-trip, and [+8] coset invariants. Released
-  under the NQP LLC Evaluation License for evaluation and benchmarking.
-
+repository-code: "https://github.com/nqp-llc/enqpy"
+license-url: "https://github.com/nqp-llc/enqpy/blob/main/LICENSE"
 keywords:
+  - cryptography
   - stream cipher
   - Shannon Ideal System
   - information-theoretic security
-  - symmetric cryptography
-  - quantum resistance
-  - PDAF
-  - finite-key cryptography
-
+  - finite-key cipher
+  - post-quantum
+  - quantum-invariant
+  - absolute secrecy
+  - Enqpy
 preferred-citation:
-  type: article
+  type: report
   title: >-
-    Enqpy(TM) Stream Cipher: Constructive Proof of Shannon's Ideal System
+    Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System
     for a Finite-Key Cipher
   authors:
     - family-names: McGough
       given-names: Paul
-      affiliation: NQP LLC
+      affiliation: "NQP LLC"
+      email: "RPM@enqpy.com"
+  institution:
+    name: "NQP LLC"
+    address: "Commonwealth of Virginia, United States"
   year: 2026
-  notes: "IACR ePrint entry forthcoming. Rev 1.0."
+  month: 6
+  number: "Rev 1.0"
+  # LAUNCH-DAY: replace this URL with the actual IACR ePrint entry.
+  url: "https://eprint.iacr.org/"
+  notes: >
+    IACR Cryptology ePrint Archive. Paper number assigned on
+    publication. Companion technical note: Adversarial Outcome
+    Equivalence (https://enqpy.com/papers/enqpy-dsmv.pdf).
