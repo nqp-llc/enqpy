@@ -1,0 +1,65 @@
+name: 🐛 Bug report
+description: Report a defect in the Enqpy™ reference implementation, test harness, or build system.
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+
+        **Before filing:** if this is a security finding (vulnerability, side-channel concern, key-handling issue, or anything that could enable plaintext recovery), **please do NOT use this template** — instead, follow the coordinated disclosure path in [SECURITY.md](https://github.com/nqp-llc/enqpy/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the defect? What did you observe?
+      placeholder: |
+        The C reference implementation produces output X for input Y on platform Z, but I expected output W.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: How can someone else reproduce this?
+      placeholder: |
+        1. Clone the repo at commit [hash]
+        2. Build with `make` on [platform/compiler]
+        3. Run the test suite or specific test
+        4. Observe the failure
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Operating system, architecture, compiler version
+      placeholder: "e.g., Ubuntu 24.04, x86_64, gcc 13.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Repository commit / release
+      description: Which commit hash or release tag are you on?
+      placeholder: "e.g., commit abc123def or release v2.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test harness output
+      description: Output from `make test` or equivalent (paste the relevant section, especially failing assertions)
+      render: text
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that might help — related issues, suspected cause, prior attempts to debug.

@@ -1,0 +1,48 @@
+name: 💡 Feature suggestion / specification improvement
+description: Suggest an addition to the reference implementation, conformance specification, or repository tooling.
+title: "[Suggestion] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For suggestions on additions to the reference implementation, the Conformance Specification, the test harness, repository tooling, or other Foundation-stewarded materials.
+
+        **Note:** The cipher algorithm itself is the subject of a formal proof and is not being modified. Algorithmic changes are not in scope for this template — please use a "Question about the proof" instead if you believe an algorithmic change is needed.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Reference implementation (additional platform support, API additions)
+        - Test harness (additional test categories, fuzzing, property tests)
+        - Conformance Specification (additional clarity, additional requirements)
+        - Repository tooling (CI, build, packaging)
+        - Documentation infrastructure (rendering, organization, search)
+        - Developer experience (examples, tutorials, integration guides)
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: The suggestion
+      description: What are you suggesting and why?
+      placeholder: |
+        I'd like to suggest adding [feature/improvement] because [rationale]. This would help [use case] by [mechanism].
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider? Why is this one preferable?
+
+  - type: textarea
+    id: implementation-help
+    attributes:
+      label: Are you offering to implement this?
+      description: If yes, please describe your availability and approach. The Foundation welcomes implementation contributions through the Build / Implement lane (see Contribute page).

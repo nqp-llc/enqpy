@@ -1,0 +1,67 @@
+name: 📐 Question about the proof, paper, or FCD
+description: Ask a substantive question about the formal proof, the IACR ePrint paper, or the Formal Cryptographic Description.
+title: "[Proof Question] "
+labels: ["proof-question", "technical-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For substantive engagement with the formal proof, the IACR ePrint paper, the Formal Cryptographic Description (FCD), the equivocation analysis, or the DSMV framework.
+
+        **Resources before asking:**
+        - [IACR ePrint paper](https://enqpy.com/technical.html)
+        - [Plain-Language Claim Statement](https://enqpy.com/start.html)
+        - [AOE/DSMV technical note](https://enqpy.com/technical.html)
+        - [FAQ](https://enqpy.com/faq.html)
+
+        If your question is about deploying or using Enqpy commercially, please see [enqpy.com/use.html](https://enqpy.com/use.html) instead.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What is the specific question? Reference the section, theorem, or equation if possible.
+      placeholder: |
+        In Theorem 3, the equivocation bound H(PT|CT,OR) ≥ 128 bits is asserted. I'd like to understand how this is derived in the case where...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Primary source of your question
+      description: Which material is your question about?
+      options:
+        - The IACR ePrint paper (main body)
+        - The IACR ePrint paper (appendices)
+        - The Formal Cryptographic Description (FCD)
+        - The AOE / DSMV technical note
+        - The Bridge Note 1 (Toy to Proof)
+        - The Toy Run companion
+        - The C reference implementation (algorithmic clarification)
+        - General — multiple sources
+    validations:
+      required: true
+
+  - type: input
+    id: section
+    attributes:
+      label: Section / theorem / page reference
+      description: Specific section, theorem number, equation number, or page if applicable
+      placeholder: "e.g., Theorem 3 (paper §12), or FCD §4.2"
+
+  - type: textarea
+    id: background
+    attributes:
+      label: Your background (optional)
+      description: Useful for calibrating the response. Are you a cryptographer, formal-methods researcher, security analyst, student, or other?
+      placeholder: "e.g., Postdoc in information-theoretic security; or graduate student in cryptography; or security researcher at [organization]"
+
+  - type: checkboxes
+    id: public-engagement
+    attributes:
+      label: Public engagement
+      description: Open to having your question and the Foundation's response published as part of the public technical record?
+      options:
+        - label: Yes, my question and the response can be made public (with attribution).
+        - label: I'd prefer this stay private for now.

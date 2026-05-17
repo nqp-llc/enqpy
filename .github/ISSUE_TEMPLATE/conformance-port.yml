@@ -1,0 +1,93 @@
+name: 🔌 Conformance / community port
+description: Submit a community-language port (Rust, Go, Python, Java, etc.) for Reference-Compatible or Conformant Implementation review, or ask about the conformance process.
+title: "[Conformance] "
+labels: ["conformance", "port", "foundation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For community-language ports of Enqpy™ (Rust, Go, Python, Java, etc.) and conformance-related questions.
+
+        **Resources before submitting:**
+        - [Conformance Specification Rev 0.1](https://enqpy.com/foundation.html) (or `CONFORMANCE.md` in this repo)
+        - [Contribute page Lane 2](https://enqpy.com/contribute.html)
+        - [The published Test Vectors](https://github.com/nqp-llc/enqpy/tree/main/tests)
+
+        If you're announcing a Reference-Compatible self-attestation (you've run the Test Vectors and all 78 pass), you can publish your port without Foundation review — see Conformance Specification §3.1. Filing here lets the Foundation know your port exists.
+
+  - type: dropdown
+    id: submission-type
+    attributes:
+      label: Submission type
+      description: What are you submitting or asking about?
+      options:
+        - Announcement — Reference-Compatible port (self-attested)
+        - Submission for Conformant Implementation review
+        - Question about the conformance process
+        - Question about Test Vectors
+        - Pre-submission inquiry (not yet ready to submit, want guidance)
+    validations:
+      required: true
+
+  - type: input
+    id: language
+    attributes:
+      label: Implementation language
+      placeholder: "e.g., Rust 1.85+, Python 3.12+, Go 1.22+"
+    validations:
+      required: true
+
+  - type: input
+    id: repository
+    attributes:
+      label: Implementation URL
+      description: Public repository or stable URL for your implementation
+      placeholder: "e.g., https://github.com/your-org/enqpy-rs"
+
+  - type: textarea
+    id: test-results
+    attributes:
+      label: Test Vector results
+      description: How many of the 78 published Test Vectors does your implementation pass?
+      placeholder: |
+        78/78 passing on x86_64 Linux with rustc 1.85.0.
+        Test command: cargo test --release
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-note
+    attributes:
+      label: Implementation note (for Conformant Implementation review)
+      description: 1–3 paragraphs on architectural choices, runtime environment, divergences from the C Reference. Required for Conformant Implementation review; optional otherwise.
+      placeholder: |
+        Architectural choices:
+        - [memory model, integer types used, concurrency model]
+
+        Divergences from the C Reference:
+        - [any internal data-structure differences; algorithmic outputs match the C Reference]
+
+  - type: input
+    id: license
+    attributes:
+      label: License of your implementation
+      placeholder: "e.g., MIT, Apache-2.0, BSD-3-Clause, Mozilla Public License 2.0"
+
+  - type: input
+    id: contact
+    attributes:
+      label: Maintainer contact
+      description: Name and email or GitHub handle of the implementation maintainer
+      placeholder: "e.g., Jane Doe, jane@example.com or @janedoe"
+
+  - type: checkboxes
+    id: acknowledgments
+    attributes:
+      label: Acknowledgments
+      description: Please confirm
+      options:
+        - label: I have read the Conformance Specification Rev 0.1
+          required: true
+        - label: My implementation passes the published Test Vectors (or my submission is a pre-submission inquiry)
+          required: true
+        - label: I understand the Foundation may take 30–90 days for Conformant Implementation review at Rev 0.1

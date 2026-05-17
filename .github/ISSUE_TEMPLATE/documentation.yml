@@ -1,0 +1,58 @@
+name: 📝 Documentation / FCD / paper clarification
+description: Report a typo, ambiguity, or clarification needed in the paper, FCD, technical notes, or repository documentation.
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For typos, ambiguities, factual corrections, or clarification needs in any of the public technical documents.
+
+        **For substantive technical questions** about the proof itself, please use the "Question about the proof, paper, or FCD" template instead.
+
+  - type: dropdown
+    id: document
+    attributes:
+      label: Which document?
+      options:
+        - IACR ePrint paper (main body or appendices)
+        - Formal Cryptographic Description (FCD)
+        - AOE / DSMV technical note
+        - Bridge Note 1 (Toy to Proof)
+        - Toy Run companion
+        - Conformance Specification
+        - README.md
+        - CONTRIBUTING.md
+        - SECURITY.md
+        - CODE_OF_CONDUCT.md
+        - Website page (specify in description)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Specific location
+      description: Section, page, paragraph, or line number where the issue appears.
+      placeholder: "e.g., Paper §12, Theorem 3 statement; or FCD §4.2 paragraph 3"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: The issue
+      description: What's wrong, ambiguous, or unclear?
+      placeholder: |
+        The current text says "..." which suggests [interpretation A], but the proof in §15 seems to require [interpretation B]. Could the wording be clarified?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix (optional)
+      description: If you have a specific suggested rewording, paste it here.
+      placeholder: |
+        Proposed replacement: "..."

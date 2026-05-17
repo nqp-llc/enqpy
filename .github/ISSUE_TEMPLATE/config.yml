@@ -1,0 +1,21 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security disclosure
+    url: https://github.com/nqp-llc/enqpy/blob/main/SECURITY.md
+    about: For security findings — vulnerabilities, side-channel concerns, key-handling issues, or anything that could enable plaintext recovery — please follow the coordinated disclosure path in SECURITY.md, NOT the public issue tracker.
+
+  - name: 📰 Press inquiry
+    url: mailto:RPM@enqpy.com?subject=%5BPress%5D%20
+    about: Journalists, podcast hosts, producers — please email RPM@enqpy.com with [Press] in the subject. See enqpy.com/press.html for the press kit.
+
+  - name: 🤝 Commercial license inquiry
+    url: https://enqpy.com/use.html
+    about: For commercial deployment, partnership, or licensing — see enqpy.com/use.html for the four commercial paths and routing.
+
+  - name: 🏛️ Foundation governance / board interest
+    url: https://enqpy.com/contribute.html
+    about: For Foundation-side contribution (governance, conformance, stewardship, board service) — see the Contribute page, Lane 5.
+
+  - name: 💬 General question
+    url: https://enqpy.com/faq.html
+    about: Most general questions are answered in the FAQ. If yours isn't, email RPM@enqpy.com.
