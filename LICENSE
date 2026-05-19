@@ -136,10 +136,45 @@ This grant does not extend to:
   - Use that exceeds Free-Tier User criteria (a user that no
     longer meets the Free-Tier criteria must obtain a Standard
     Commercial License or other appropriate license from NQP LLC
-    to continue use);
+    to continue use, subject to the Transition for Growth
+    provision below);
   - Sublicensing of any patent rights to any third party;
   - Use of the Enqpy™ trademarks beyond the citation rights
     described in Section D.
+
+Transition for Growth
+
+Notwithstanding the Termination provision below for loss of
+Free-Tier status, if a user who previously qualified as a
+Free-Tier User under criterion (iv) ceases to qualify solely by
+reason of organic growth — specifically, by crossing the
+Full-Time-Equivalent Employees threshold or the Annual Gross
+Revenue threshold defined in criterion (iv) — such user may
+continue Free-Tier Use of the Enqpy™ implementation in products,
+services, and deployments already in the field as of the date of
+crossing, for a transition period of twelve (12) months from the
+date of crossing, while negotiating in good faith with NQP LLC
+for an appropriate commercial license.
+
+This transition does not extend to:
+
+  - New products, services, or deployments initiated after the
+    date of crossing, which require a separate license from NQP
+    LLC before initiation;
+
+  - Users whose loss of Free-Tier status arises from causes other
+    than crossing the criterion (iv) thresholds (for example, a
+    natural person who incorporates and ceases to qualify under
+    criterion (i), or an organization that loses non-profit
+    status); or
+
+  - Continued failure to engage NQP LLC in good faith to
+    negotiate a commercial license during the transition period.
+
+After expiration of the twelve-month transition period, the
+patent grant under this Section B terminates with respect to
+such user. NQP LLC may, in its sole discretion, extend the
+transition period by written notice to the user.
 
 Termination
 
@@ -149,7 +184,8 @@ notice in either of the following circumstances:
   (a) Loss of Free-Tier User status. If the user no longer meets
       the Free-Tier User criteria, the user must obtain a separate
       license from NQP LLC to continue use, and the patent grant
-      under this section ceases to apply.
+      under this section ceases to apply, subject to the
+      Transition for Growth provision above where applicable.
 
   (b) Defensive termination. If the user, or any entity that is an
       Affiliated Entity of the user, initiates patent litigation
@@ -198,7 +234,9 @@ D. TRADEMARK NOTICE
 Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security, Settled.™
 are trademarks of Enqpy™ Foundation Inc., a Delaware nonstock
 nonprofit corporation, licensed to NQP LLC under the
-Foundation–NQP Trademark License Agreement.
+Foundation–NQP IP License Agreement (a combined trademark,
+patent, and copyright license between Enqpy™ Foundation Inc.
+and NQP LLC).
 
 Use of the trademarks in derivative work or implementation is
 governed by the Foundation Trademark Use Guidelines. In particular:
