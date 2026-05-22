@@ -1,9 +1,9 @@
 # Citation File Format — enables GitHub's "Cite this repository" widget.
 # See https://citation-file-format.github.io/ for the spec.
 #
-# LAUNCH-DAY ACTION: Replace the placeholder in preferred-citation.url
-# and the IACR ePrint identifier in preferred-citation.notes once the
-# paper is live (paper number 2026/XXXXX will be assigned on submission).
+# The canonical citation and the current IACR ePrint link are maintained in
+# one place — the website technical page. The fields below point there, so the
+# ePrint link only ever needs updating on enqpy.com/technical.html.
 
 cff-version: 1.2.0
 message: >
@@ -53,9 +53,8 @@ preferred-citation:
   year: 2026
   month: 6
   number: "Rev 1.0"
-  # LAUNCH-DAY: replace this URL with the actual IACR ePrint entry.
-  url: "https://eprint.iacr.org/"
+  url: "https://enqpy.com/technical.html"
   notes: >
-    IACR Cryptology ePrint Archive. Paper number assigned on
-    publication. Companion technical note: Adversarial Outcome
-    Equivalence (https://enqpy.com/papers/enqpy-dsmv.pdf).
+    Canonical citation and current IACR ePrint link:
+    https://enqpy.com/technical.html. Companion technical note: Adversarial
+    Outcome Equivalence (https://enqpy.com/papers/enqpy-dsmv.pdf).

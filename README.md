@@ -5,13 +5,66 @@
 > software reference implementation, released alongside the formal proof paper.
 
 **Paper (IACR ePrint):** *Enqpy™ Stream Cipher: Constructive Proof of Shannon's
-Ideal System for a Finite-Key Cipher* — [link will be inserted on June 1, 2026
-publication; until then, paper is hosted directly on enqpy.com].
+Ideal System for a Finite-Key Cipher.* The canonical citation and the current
+paper link are maintained on the website — see
+[enqpy.com/technical.html](https://enqpy.com/technical.html).
 
 **Project site:** [enqpy.com](https://enqpy.com)
 
 **Inquiries:** [RPM@enqpy.com](mailto:RPM@enqpy.com) — see
 [enqpy.com/use.html](https://enqpy.com/use.html) for the four commercial paths.
+
+---
+
+## Quick verify
+
+Clone, build, and confirm the implementation in a few minutes — no signup,
+no permission.
+
+```bash
+# Clone the repo
+git clone https://github.com/nqp-llc/enqpy.git
+cd enqpy
+
+# Build with self-test + benchmark
+./build.sh
+
+# Run
+./build/enqpy_test
+```
+
+Expected output begins with:
+
+```
+Enqpy(tm) Stream Cipher -- Reference Implementation Rev 2.0
+Ideal Enqpy(tm) Configuration (nonce-only OffsetKey derivation)
+Copyright (c) 2026 NQP LLC
+Platform: n=64, tile_len=144, W_bytes=6144
+
+Self-test: 78 PASS  0 FAIL
+Self-test PASSED.
+```
+
+followed by the benchmark tables. Total wall-clock time is well under a
+second on any modern machine.
+
+If you see `78 PASS  0 FAIL`, the implementation matches the test vectors in
+the Formal Cryptographic Description (FCD §13) and the paper (§15) byte-exact
+— including the round-trip assertions (TV3 RT) that encrypt and decrypt end
+to end.
+
+**Benchmark figures are portable C, no hardware acceleration**, on a
+conventional desktop CPU — a like-for-like portable-C comparison. See
+[enqpy.com/speed_bench.html](https://enqpy.com/speed_bench.html) for full
+methodology, including how hardware-accelerated AES compares.
+
+### What a clean run shows — and what it doesn't
+
+A clean run shows the **artifact** is real, builds with no dependencies, and
+reproduces the published test vectors (including end-to-end encrypt/decrypt
+round-trips). It does **not**, by itself, establish the **proof** — that lives
+in the paper and is for cryptographic review. Two different trust acts: run the
+code here; check the math there.
 
 ---
 
@@ -75,40 +128,6 @@ This repository contains:
   implementation of the CS permutation lookup, and secure erase of key
   material after use. See the implementation comments in `src/enqpy_reference.c`
   for specifics.
-
----
-
-## Quick verify (5-minute check)
-
-```bash
-# Clone the repo
-git clone https://github.com/nqp-llc/enqpy.git
-cd enqpy
-
-# Build with self-test + benchmark
-./build.sh
-
-# Run
-./build/enqpy_test
-```
-
-Expected output begins with:
-
-```
-Enqpy(tm) Stream Cipher -- Reference Implementation Rev 2.0
-Ideal Enqpy(tm) Configuration (nonce-only OffsetKey derivation)
-Copyright (c) 2026 NQP LLC
-Platform: n=64, tile_len=144, W_bytes=6144
-
-Self-test: 78 PASS  0 FAIL
-Self-test PASSED.
-```
-
-followed by benchmark tables. Total wall-clock time is well under a second on
-any modern machine.
-
-If you see `78 PASS  0 FAIL`, the implementation matches the test vectors in
-the Formal Cryptographic Description (FCD §13) and the paper (§15) byte-exact.
 
 ---
 
@@ -195,7 +214,8 @@ The included `build.sh` does the combined build and places the binary in
 
 ## Paper
 
-See [`paper/README.md`](./paper/README.md) for the full citation and links.
+See [enqpy.com/technical.html](https://enqpy.com/technical.html) for the
+canonical citation and the current paper link.
 The paper establishes, unconditionally and with no computational hardness
 assumption, that Enqpy™ is the first finite-key cipher formally proved to
 satisfy Shannon's Ideal System definition.
@@ -244,8 +264,10 @@ correspondence with the formal proof.
 
 ## Citation
 
-A `CITATION.cff` file in the repository root enables GitHub's native citation
-export. Preferred citation format:
+The canonical citation and the current IACR ePrint link are maintained in one
+place — [enqpy.com/technical.html](https://enqpy.com/technical.html). A
+`CITATION.cff` file in the repository root also enables GitHub's native
+citation export. BibTeX form:
 
 ```bibtex
 @techreport{mcgough2026enqpy,
@@ -255,7 +277,7 @@ export. Preferred citation format:
   institution = {NQP LLC},
   year        = {2026},
   number      = {Rev 1.0},
-  note        = {IACR ePrint entry: link inserted June 1, 2026}
+  note        = {IACR ePrint entry and canonical citation: https://enqpy.com/technical.html}
 }
 ```
 
@@ -268,7 +290,7 @@ export. Preferred citation format:
 | C reference implementation | ✅ Rev 2.0 (Ideal Configuration) |
 | Test vectors (78 assertions) | ✅ 78/78 PASS |
 | Benchmark harness | ✅ Included |
-| IACR ePrint paper | ✅ June 1, 2026 (link inserted on publication) |
+| IACR ePrint paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
 | Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
 | VHDL reference | 🔒 Available via direct licensing |
 | NIST SP 800-22 full test suite | 🟡 Summary in FCD §14; full run available via direct inquiry |
