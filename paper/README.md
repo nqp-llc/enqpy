@@ -49,7 +49,7 @@ followed by the benchmark tables. Total wall-clock time is well under a
 second on any modern machine.
 
 If you see `78 PASS  0 FAIL`, the implementation matches the test vectors in
-the Formal Cryptographic Description (FCD §13) and the paper (§15) byte-exact
+the [Formal Cryptographic Description](./FCD.md) (FCD §13) and the paper (§15) byte-exact
 — including the round-trip assertions (TV3 RT) that encrypt and decrypt end
 to end.
 
@@ -109,6 +109,11 @@ This repository contains:
   Enqpy™ Configuration (Key Role Separation: nonce-only OffsetKey derivation).
   Single file, no external dependencies, portable from 8-bit microcontrollers
   to 64-bit servers.
+- **[`FCD.md`](./FCD.md)** — the Formal Cryptographic Description: the
+  prose-and-mathematics specification of the cipher (OWC, PDAF, PDAF_SEC, the
+  five phases, key management, security analysis, and the §13 test vectors the
+  self-tests check against). The authoritative statement of *what* the cipher
+  does; the C reference shows *how* one implementation does it.
 - **78 embedded self-test assertions** covering PDAF Mode 0, PDAF Mode 1,
   PDAF_SEC round-trip, and the `[+8]` coset invariants that drive the Shannon
   Ideal System result.
@@ -212,6 +217,30 @@ The included `build.sh` does the combined build and places the binary in
 
 ---
 
+## Ports & bindings
+
+Enqpy™ is meant to be used, in any language or runtime. Ports and bindings are
+welcome — you don't need permission to write one.
+
+- **Canonical test vectors:** [`tests/vectors/enqpy-vectors.json`](./tests/vectors/enqpy-vectors.json),
+  documented in [`TEST_VECTORS.md`](./TEST_VECTORS.md) — the bar your port must
+  reproduce exactly (UPPERCASE hex). Start with the zero-plaintext vector, where
+  the ciphertext equals the keystream and isolates W generation from the XOR step.
+- **How to port, verify, and get listed:** [`PORTING.md`](./PORTING.md)
+- **Existing ports:** [`PORTS.md`](./PORTS.md)
+
+A port that reproduces the vectors is **Reference-Compatible** by
+self-attestation — give it its own name and describe it as *"Reference-Compatible
+with the Enqpy™ reference implementation"* (the mark can't sit in a project name
+like "Enqpy-Rust" or "PyEnqpy"). Use of the cipher in a port follows the same
+tiers as the reference: free for the Free-Tier audience above, commercial license
+beyond it ([`LICENSE`](./LICENSE)). Putting the **Enqpy™** mark in a product name,
+and **Enqpy™-Certified** or **Enqpy™-Compatible** claims, require Foundation
+conformance certification — see [`CONFORMANCE.md`](./CONFORMANCE.md) for the three
+levels.
+
+---
+
 ## Paper
 
 See [enqpy.com/technical.html](https://enqpy.com/technical.html) for the
@@ -254,11 +283,24 @@ contribution, and security disclosure:
 - [`SECURITY.md`](./SECURITY.md) — Vulnerability disclosure and
   coordinated-disclosure policy
 
+Conformance and porting:
+
+- [`CONFORMANCE.md`](./CONFORMANCE.md) — conformance levels (Reference-Compatible,
+  Conformant Implementation, Enqpy™-Certified), canonical sources, and the
+  submission process, stewarded by the Enqpy™ Foundation
+- [`PORTING.md`](./PORTING.md) — how to port Enqpy™ to another language, verify
+  against the vectors, and self-attest Reference-Compatible
+- [`PORTS.md`](./PORTS.md) — registry of community ports and bindings
+- [`TEST_VECTORS.md`](./TEST_VECTORS.md) — the canonical test-vector format and
+  the verification procedure
+
 This is an inventor-stewarded reference implementation, not a community-
 developed project. Contributions to documentation, build, portability,
 and test infrastructure are welcome; modifications to the core
 cryptographic algorithm are not — the implementation must remain in exact
-correspondence with the formal proof.
+correspondence with the formal proof. Independent ports and bindings in other
+languages are welcome and tracked in [`PORTS.md`](./PORTS.md) — see
+[`PORTING.md`](./PORTING.md) to add one.
 
 ---
 
@@ -288,10 +330,14 @@ citation export. BibTeX form:
 | Artifact | Status |
 |---|---|
 | C reference implementation | ✅ Rev 2.0 (Ideal Configuration) |
+| Formal Cryptographic Description | ✅ `FCD.md` |
 | Test vectors (78 assertions) | ✅ 78/78 PASS |
 | Benchmark harness | ✅ Included |
 | IACR ePrint paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
 | Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
+| Conformance specification | ✅ `CONFORMANCE.md` — Rev 0.1 framework (Rev 1.0 Months 4–6) |
+| Porting guide & vector format | ✅ `PORTING.md`, `TEST_VECTORS.md` |
+| Community ports registry | ✅ `PORTS.md` — open for submissions |
 | VHDL reference | 🔒 Available via direct licensing |
 | NIST SP 800-22 full test suite | 🟡 Summary in FCD §14; full run available via direct inquiry |
 
