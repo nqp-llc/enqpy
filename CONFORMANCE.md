@@ -101,8 +101,9 @@ companion** to the C Reference — it tells an implementer *what* the
 cipher does, while the C Reference shows *how* one specific
 implementation does it.
 
-The FCD is published at `github.com/nqp-llc/enqpy` and is incorporated
-by reference into this Conformance Specification.
+The FCD is published as [`FCD.md`](FCD.md) at the root of
+`github.com/nqp-llc/enqpy` and is incorporated by reference into this
+Conformance Specification.
 
 ## 1.4 Test vectors
 
