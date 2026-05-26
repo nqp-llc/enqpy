@@ -186,7 +186,11 @@ int OWC(const uint8_t *key_nibs, int nLen, int nSkip, uint8_t *out_nibs)
 {
     if (!key_nibs || !out_nibs || nLen < 2) return -1;
     int out_len = 0;
-    for (int i = 0; i < nLen - 1; i++) {
+    /* Non-overlapping pairs (FCD Rev 1.0 §6): the position pointer advances
+     * by (1 + nSkip) per output nibble, combining positions i and i+nSkip.
+     * If i+nSkip falls beyond the end of the array, fall back to the adjacent
+     * nibble at i+1. Output length is approximately half the input.        */
+    for (int i = 0; i < nLen - 1; i += (1 + nSkip)) {
         int j = i + nSkip;
         if (j >= nLen) j = i + 1;
         out_nibs[out_len++] = MOD16[key_nibs[i] & 0xF][key_nibs[j] & 0xF];
