@@ -1,0 +1,67 @@
+name: build
+
+# Builds the Enqpy(TM) C reference on clean machines and asserts that the
+# published self-test reports 78 PASS / 0 FAIL. This is the verify-don't-believe
+# claim made checkable: GitHub builds the artifact from a fresh checkout, on
+# hardware no one controls, on every push — and the badge goes red if it ever
+# fails to compile OR the pass count drifts from 78.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  selftest:
+    name: build + 78/78 self-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Show compiler version
+        run: cc --version || true
+
+      - name: Build, run self-test + benchmark, and assert 78/78
+        run: |
+          chmod +x build.sh
+          # Run exactly the documented command; capture all output.
+          if ! ./build.sh > selftest_output.txt 2>&1; then
+            echo "::group::build/self-test output"
+            cat selftest_output.txt
+            echo "::endgroup::"
+            echo "::error::build.sh exited non-zero (compile or self-test failure)"
+            exit 1
+          fi
+          echo "::group::build/self-test output"
+          cat selftest_output.txt
+          echo "::endgroup::"
+          # Belt-and-suspenders: require the exact pass line and the PASSED banner.
+          if ! grep -Eq 'Self-test: 78 PASS +0 FAIL' selftest_output.txt; then
+            echo "::error::did not find 'Self-test: 78 PASS  0 FAIL' — pass count drifted or tests changed"
+            exit 1
+          fi
+          if ! grep -q 'Self-test PASSED.' selftest_output.txt; then
+            echo "::error::did not find 'Self-test PASSED.' banner"
+            exit 1
+          fi
+          echo "PASS: 78/78 self-tests passed on ${{ matrix.os }}"
+
+      - name: Upload self-test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selftest-log-${{ matrix.os }}
+          path: selftest_output.txt
+          if-no-files-found: ignore
