@@ -188,3 +188,5 @@ design.
 *NQP LLC · Enqpy™ Foundation Inc. · Effective June 1, 2026*
 
 *Thank you for considering a contribution.*
+
+<!-- Repo sync for the June 1, 2026 launch. Covenant-aligned; no content change. -->
