@@ -1,5 +1,7 @@
 # Enqpy™ Stream Cipher — Reference Implementation
 
+[![build](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml/badge.svg)](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml)
+
 > **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher formally proved
 > to satisfy Shannon's Ideal System criterion. This repository is the canonical
 > software reference implementation, released alongside the formal proof paper.
