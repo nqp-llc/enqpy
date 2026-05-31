@@ -5,10 +5,20 @@
  *
  * LICENSE
  * -------
- * Permission is granted to evaluate, test, and benchmark this implementation
- * for the sole purpose of assessing Enqpy(tm) technology.  No right to
- * redistribute, sublicense, or deploy in production is granted without a
- * separate written agreement with NQP LLC.
+ * This reference source is provided under the Evaluation License (Section A of
+ * the NQP LLC Public License for Enqpy(tm), Rev 2.0).  You may clone, build,
+ * run the self-test and benchmark harnesses, analyze the source, and compare
+ * its output against the published test vectors and the paper.  You may not
+ * redistribute or relicense NQP's reference source, or remove this notice.
+ *
+ * The CIPHER itself is patent-safe for everyone under the Open-Infrastructure
+ * Patent Non-Assertion Covenant (COVENANT; https://enqpy.com/covenant): anyone
+ * may write an independent implementation and deploy it at any scale, including
+ * commercially, with no fee and no separate agreement required for that use.
+ * Optional commercial offerings (Foundation certification and marks, NQP high-
+ * performance implementations, support/indemnity, and an optional signed patent
+ * license) are available at https://enqpy.com/use.html but are not a condition
+ * of using the cipher.  See LICENSE and COVENANT for the authoritative terms.
  *
  * WHAT THIS FILE IS
  * -----------------
