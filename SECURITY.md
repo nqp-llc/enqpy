@@ -56,7 +56,7 @@ Reports concerning:
   in general. These are welcome as issues or discussions in the
   repository, not as security reports.
 - **General questions** about the proof's validity that do not
-  identify a specific finding. The IACR ePrint paper is the
+  identify a specific finding. The formal proof paper is the
   technical record; engagement with it via standard academic
   channels is welcomed and not bottlenecked through this disclosure
   path.

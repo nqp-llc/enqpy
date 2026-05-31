@@ -1,11 +1,3 @@
-<!--
-BEFORE PUBLISHING — replace bracketed placeholders:
-  [EPRINT_URL]      IACR ePrint paper (companion proof [12])
-  [CONF_SPEC_URL]   Conformance Specification
-  [TUG_URL]         Trademark Use Guidelines
-Repo, license, and commercial links are already filled in from the LICENSE and FCD.
--->
-
 # Enqpy™ Canonical Test Vectors
 
 These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. They are exported from the reference self-test harness (`-DENQPY_SELFTEST`, **78/78 passing**) so that anyone can implement Enqpy™ in any language and prove their implementation is correct without trusting us, and without us trusting them.

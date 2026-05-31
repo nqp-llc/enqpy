@@ -1,15 +1,15 @@
 # Citation File Format — enables GitHub's "Cite this repository" widget.
 # See https://citation-file-format.github.io/ for the spec.
 #
-# The canonical citation and the current IACR ePrint link are maintained in
+# The canonical citation and the current paper link are maintained in
 # one place — the website technical page. The fields below point there, so the
-# ePrint link only ever needs updating on enqpy.com/technical.html.
+# link only ever needs updating on enqpy.com/technical.html.
 
 cff-version: 1.2.0
 message: >
   If you use Enqpy™ in your research or build on the reference
-  implementation, please cite the preferred citation below (the IACR
-  ePrint paper), not this software entry.
+  implementation, please cite the preferred citation below (the formal
+  proof paper), not this software entry.
 type: software
 title: "Enqpy™ Stream Cipher — Reference Implementation"
 abstract: >
@@ -55,6 +55,6 @@ preferred-citation:
   number: "Rev 1.0"
   url: "https://enqpy.com/technical.html"
   notes: >
-    Canonical citation and current IACR ePrint link:
+    Canonical citation and current paper link:
     https://enqpy.com/technical.html. Companion technical note: Adversarial
     Outcome Equivalence (https://enqpy.com/papers/enqpy-dsmv.pdf).

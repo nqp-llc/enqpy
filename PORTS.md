@@ -1,9 +1,3 @@
-<!--
-BEFORE PUBLISHING — replace bracketed placeholders:
-  [VERSION]      reference / vector version, e.g. 1.0
-Add a row each time a port passes the canonical vectors.
--->
-
 # Enqpy™ Ports & Bindings
 
 Community ports and bindings, each under **its own project name**, described as *"Reference-Compatible with the Enqpy™ reference implementation."* A listing here means the port reproduces the **canonical test vectors** at the stated profile(s) and self-attests to the **Reference-Compatible** level — a technical acknowledgment, not a trademark grant.
@@ -14,7 +8,7 @@ The higher levels are separate: **Conformant Implementation** is Foundation-revi
 
 | Project name | Language / Runtime | Author / Maintainer | Repository | Profiles | Vectors version | Level | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Enqpy C reference | C | NQP LLC | github.com/nqp-llc/enqpy | LOW / MED / HIGH | [VERSION] | reference | ✅ |
+| Enqpy C reference | C | NQP LLC | github.com/nqp-llc/enqpy | LOW / MED / HIGH | 1.0 | reference | ✅ |
 | — | — | — | — | — | — | — | — |
 
 *No community ports yet — yours could be the first. See [`PORTING.md`](PORTING.md).*

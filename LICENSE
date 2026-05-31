@@ -2,25 +2,34 @@ NQP LLC PUBLIC LICENSE FOR ENQPY™
 ==================================
 
 NQP LLC Public License for the Enqpy™ Reference Implementation
-Rev 1.0
+Rev 2.0 (Open-Infrastructure Covenant alignment)
 
 Effective: June 1, 2026
 
 Copyright © 2026 NQP LLC. All rights reserved.
 
-This document governs use of the Enqpy™ reference implementation in
-this repository. It contains two distinct grants of rights, applicable
-to different categories of user:
+This document governs use of the Enqpy™ reference implementation in this
+repository. It works together with the Open-Infrastructure Patent
+Non-Assertion Covenant (the "Covenant"), published at
+https://enqpy.com/covenant and in this repository, under which NQP LLC
+irrevocably commits not to assert the NQP Patents against conforming
+implementations of the public Enqpy™ cipher.
 
-  (A) An Evaluation License covering the source code, applicable to
-      all users; and
+This License contains:
 
-  (B) A Public Patent Grant covering the NQP Patents, applicable to
-      Free-Tier Users (as defined below).
+  (A) An Evaluation License covering the source code in this repository,
+      applicable to all users; and
 
-Use of the cipher outside the scope of these two grants requires a
-separate written agreement with NQP LLC. See https://enqpy.com/use.html
-for the four commercial paths.
+  (B) A summary of how the Patent Non-Assertion Covenant applies to the
+      NQP Patents. The Covenant itself is the controlling patent
+      instrument.
+
+Commercial relationships — Foundation conformance certification and the
+Enqpy™ marks, high-performance proprietary implementations, support,
+integration, advisory, and indemnity — are described in Section C and at
+https://enqpy.com/use.html. None of those relationships is required in
+order to use, implement, or deploy the Enqpy™ cipher itself; the Covenant
+makes the cipher patent-safe for all conforming use.
 
 ----------------------------------------------------------------
 A. EVALUATION LICENSE (applies to all users)
@@ -41,19 +50,23 @@ to:
 
 Permission is not granted under this section to:
 
-  - Redistribute the implementation, whether modified or unmodified,
-    other than as permitted by Section B below for Free-Tier Users
-  - Sublicense or relicense the implementation under any other terms
+  - Redistribute NQP's reference source code in this repository,
+    whether modified or unmodified, except under a separate written
+    agreement with NQP LLC
+  - Sublicense or relicense NQP's reference source code under any
+    other terms
   - Remove, alter, or obscure this license text or the copyright
     notice
 
-This Evaluation License does not by itself grant any rights under
-the NQP Patents. Patent rights for cipher use are addressed in
-Section B below for Free-Tier Users; all other patent rights require
-a separate written agreement with NQP LLC.
+This Section A governs copyright in NQP's specific reference source
+code only. It does not restrict, and is independent of, the right to
+make, use, sell, or distribute an independent conforming implementation
+of the Enqpy™ cipher: that right is addressed by the Covenant
+summarized in Section B. Writing one's own implementation of the cipher
+does not require a copyright license under this Section A.
 
 ----------------------------------------------------------------
-B. PUBLIC PATENT GRANT FOR FREE-TIER USE
+B. PATENT NON-ASSERTION COVENANT
 ----------------------------------------------------------------
 
 Definitions
@@ -63,166 +76,86 @@ Definitions
 international patent application PCT/US26/22552; and any patents
 issuing from any of the foregoing, including continuations,
 continuations-in-part, divisions, reissues, and foreign counterparts,
-to the extent owned or controlled by NQP LLC and necessarily
-infringed by the use of the Enqpy™ cipher as implemented in this
-repository.
+to the extent owned or controlled by NQP LLC.
 
-"Affiliated Entity" means, with respect to any entity, any other
-entity that controls, is controlled by, or is under common control
-with such entity, where "control" means (a) ownership of fifty
-percent (50%) or more of the voting equity interests in such entity;
-(b) the power to elect a majority of the board of directors or
-equivalent governing body; or (c) the power to direct or cause the
-direction of the management and policies of such entity through any
-other means. For natural persons, an Affiliated Entity includes any
-entity in which such person, directly or indirectly, holds a
-controlling interest as defined above.
+"Conforming Implementation" means an implementation of the Enqpy™
+cipher that conforms to the public specification (the Formal
+Cryptographic Description and the published test vectors) — that is,
+one that reproduces the specified outputs. Conformance for this purpose
+is technical (the implementation behaves as specified); it does not
+require Foundation certification.
 
-"Full-Time-Equivalent Employees" means the count of full-time-
-equivalent employees, calculated as the average over the trailing
-twelve (12) months, including all directly employed individuals
-(W-2 in the United States or local-jurisdiction equivalent) and
-aggregated across all Affiliated Entities. Independent contractors,
-consultants, and volunteers are excluded for purposes of this count.
+The Covenant
 
-"Annual Gross Revenue" means total revenue from all sources
-worldwide, measured over the trailing twelve (12) months ending on
-the date of first use of the implementation in the relevant matter,
-aggregated across all Affiliated Entities, and converted from any
-non-USD currency at the prevailing exchange rate on the measurement
-date. For purposes of this calculation, "gross revenue" means total
-revenue before any deductions, returns, refunds, or intercompany
-eliminations.
+NQP LLC has granted the Open-Infrastructure Patent Non-Assertion
+Covenant, under which NQP LLC irrevocably covenants not to assert the
+NQP Patents against any person for making, having made, using, offering
+to sell, selling, importing, or distributing a Conforming
+Implementation, by anyone and for any purpose, including open-source
+implementations, inclusion in libraries and distributions,
+standards-track adoption, research and education, public-interest
+deployment, and commercial deployment.
 
-"Free-Tier User" means a user that, at the time of use, meets any
-of the following criteria:
+The Covenant is irrevocable for the covered field of use, runs with the
+NQP Patents, and binds NQP's successors and assignees, so that the
+patent safety of the open ecosystem survives any transfer of NQP or the
+portfolio. The full Covenant, published at https://enqpy.com/covenant
+and in this repository, is the controlling patent instrument; this
+Section B is a summary and does not limit it.
 
-  (i)   the user is a natural person using the implementation for
-        personal, educational, or non-commercial purposes;
+Defensive suspension
 
-  (ii)  the user is an accredited educational institution, or its
-        faculty, staff, or students, using the implementation in
-        educational or research activities;
+Consistent with the Covenant, the non-assertion commitment is suspended
+as to any person (and that person's Affiliates) who initiates or
+voluntarily joins patent litigation (including a cross-claim or
+counterclaim) alleging that (a) the Enqpy™ cipher or a Conforming
+Implementation infringes any patent, or (b) NQP LLC, Enqpy™ Foundation
+Inc., the inventor, or any of their respective directors, officers,
+employees, agents, or successors infringes any patent through an act
+substantially related to the Enqpy™ cipher, a Conforming
+Implementation, or the activities of the Foundation. Suspension,
+restoration, and the carve-out for purely defensive assertion operate
+as set out in §4 of the Covenant, which controls. "Affiliate" has the
+meaning given in §1.6 of the Covenant.
 
-  (iii) the user is a non-profit organization, public-interest
-        project, or research institution using the implementation
-        in furtherance of its mission;
+What the Covenant does not grant
 
-  (iv)  the user is a commercial entity that, at the time of use,
-        has fewer than twenty-five (25) Full-Time-Equivalent
-        Employees and less than One Million U.S. Dollars
-        ($1,000,000 USD) in Annual Gross Revenue.
-
-"Free-Tier Use" means use of the Enqpy™ cipher by a Free-Tier User
-in research, education, individual development, academic publication,
-public-interest projects, internal evaluation, and deployment in the
-Free-Tier User's own systems, products, or services.
-
-Grant
-
-Subject to the terms of this section, NQP LLC hereby grants to each
-Free-Tier User a worldwide, royalty-free, non-exclusive,
-non-sublicensable, non-transferable license under the NQP Patents
-to make, have made, use, offer to sell, sell, import, and otherwise
-transfer the Enqpy™ reference implementation solely in connection
-with Free-Tier Use. The license persists for so long as the user
-maintains Free-Tier User status and complies with the terms of
-this document.
-
-This grant does not extend to:
-
-  - Distribution of the implementation outside the scope of
-    Free-Tier Use;
-  - Use that exceeds Free-Tier User criteria (a user that no
-    longer meets the Free-Tier criteria must obtain a Standard
-    Commercial License or other appropriate license from NQP LLC
-    to continue use, subject to the Transition for Growth
-    provision below);
-  - Sublicensing of any patent rights to any third party;
-  - Use of the Enqpy™ trademarks beyond the citation rights
-    described in Section D.
-
-Transition for Growth
-
-Notwithstanding the Termination provision below for loss of
-Free-Tier status, if a user who previously qualified as a
-Free-Tier User under criterion (iv) ceases to qualify solely by
-reason of organic growth — specifically, by crossing the
-Full-Time-Equivalent Employees threshold or the Annual Gross
-Revenue threshold defined in criterion (iv) — such user may
-continue Free-Tier Use of the Enqpy™ implementation in products,
-services, and deployments already in the field as of the date of
-crossing, for a transition period of twelve (12) months from the
-date of crossing, while negotiating in good faith with NQP LLC
-for an appropriate commercial license.
-
-This transition does not extend to:
-
-  - New products, services, or deployments initiated after the
-    date of crossing, which require a separate license from NQP
-    LLC before initiation;
-
-  - Users whose loss of Free-Tier status arises from causes other
-    than crossing the criterion (iv) thresholds (for example, a
-    natural person who incorporates and ceases to qualify under
-    criterion (i), or an organization that loses non-profit
-    status); or
-
-  - Continued failure to engage NQP LLC in good faith to
-    negotiate a commercial license during the transition period.
-
-After expiration of the twelve-month transition period, the
-patent grant under this Section B terminates with respect to
-such user. NQP LLC may, in its sole discretion, extend the
-transition period by written notice to the user.
-
-Termination
-
-This Public Patent Grant terminates automatically and without
-notice in either of the following circumstances:
-
-  (a) Loss of Free-Tier User status. If the user no longer meets
-      the Free-Tier User criteria, the user must obtain a separate
-      license from NQP LLC to continue use, and the patent grant
-      under this section ceases to apply, subject to the
-      Transition for Growth provision above where applicable.
-
-  (b) Defensive termination. If the user, or any entity that is an
-      Affiliated Entity of the user, initiates patent litigation
-      (including a cross-claim or counter-claim) against NQP LLC,
-      Enqpy™ Foundation Inc., the inventor, any other licensee of
-      the NQP Patents, or any contributor to the implementation,
-      alleging that the implementation or any related work
-      infringes a patent owned or controlled by the user or
-      its Affiliated Entity.
-
-Upon termination, the user must cease all use of the implementation
-that was authorized under this grant and either remove the
-implementation from their systems or obtain a separate license
-from NQP LLC.
+The Covenant conveys no rights in the Enqpy™ marks (see Section D), no
+copyright license to NQP's reference source beyond Section A, and no
+right to claim Foundation certification or "Enqpy™-Certified" /
+"Enqpy™-Compatible" status (see Sections C and D).
 
 ----------------------------------------------------------------
-C. COMMERCIAL USE BEYOND FREE-TIER
+C. COMMERCIAL RELATIONSHIPS (THE EARNED EDGE)
 ----------------------------------------------------------------
 
-Use of the Enqpy™ implementation by users who do not meet the
-Free-Tier User criteria, or for uses outside the scope of the
-Free-Tier Grant above, requires a separate written agreement with
-NQP LLC. Four commercial paths are available:
-
-  - NQP Standard Commercial License — clean annual patent license
-    for organizations above the Free-Tier thresholds, scaled by
-    organization size and deployment scope.
-
-  - NQP commercial services — architecture review, audit,
-    training, custom implementation, advisory engagements.
-
-  - Partner Program — five categories: Enqpy-Certified Product,
-    Enqpy Inside Trademark, Custom Implementation, Premier
-    Technical, and Hardware Integration.
+The Enqpy™ cipher is patent-safe to use, implement, and deploy under
+the Covenant, with no fee and no license required for that use. The
+following commercial relationships remain available from NQP LLC and
+the Enqpy™ Foundation for organizations that want them — they fund the
+work and provide assurance, but none is a condition of using the
+cipher:
 
   - Enqpy™ Foundation conformance certification — for third-party
-    implementations seeking the Enqpy™-Certified mark.
+    implementations seeking the Enqpy™-Certified mark and listing in
+    the public registry.
+
+  - NQP high-performance proprietary implementations — the optimized
+    VHDL/FPGA pipeline and related non-public implementation materials,
+    licensed separately as NQP trade-secret/copyright works (not the
+    public reference, and not reached by the Covenant).
+
+  - NQP commercial services — architecture review, audit, training,
+    custom implementation, integration, advisory, support, SLAs, and
+    indemnity.
+
+  - Partner Program — Enqpy-Certified Product, Enqpy Inside Trademark,
+    Custom Implementation, Premier Technical, and Hardware Integration.
+
+  - Optional signed patent license and indemnity — for organizations
+    that prefer an executed, individually negotiated agreement and
+    indemnification, notwithstanding the Covenant's protection of their
+    use.
 
 See https://enqpy.com/use.html or email RPM@enqpy.com with
 [Commercial] in the subject line.
@@ -233,17 +166,19 @@ D. TRADEMARK NOTICE
 
 Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security, Settled.™
 are trademarks of Enqpy™ Foundation Inc., a Delaware nonstock
-nonprofit corporation, licensed to NQP LLC under the
-Foundation–NQP IP License Agreement (a combined trademark,
-patent, and copyright license between Enqpy™ Foundation Inc.
-and NQP LLC).
+nonprofit corporation, licensed to NQP LLC under the Foundation–NQP
+IP License Agreement.
 
-Use of the trademarks in derivative work or implementation is
-governed by the Foundation Trademark Use Guidelines. In particular:
+The Covenant frees the patent; it does not free the marks. Trademark
+use in derivative work or implementation is governed by the Foundation
+Trademark Use Guidelines. In particular:
 
-  - A fork or derivative work may state that it is "based on the
-    Enqpy™ reference implementation" with appropriate attribution
-    and a link to this repository.
+  - A conforming implementation may state that it is "Reference-
+    Compatible with the Enqpy™ reference implementation," or "based on
+    the Enqpy™ reference implementation," with appropriate attribution
+    and a link to this repository, and should carry its own project
+    name (not a name that places the Enqpy™ mark in the project's
+    name).
 
   - A fork or derivative work may not be presented as the Enqpy™
     implementation, as Enqpy™-Certified, or as Enqpy™-Compatible
@@ -280,17 +215,22 @@ permutation lookup, secure erase of key material).
 F. ADDITIONAL TERMS
 ----------------------------------------------------------------
 
-This is not an OSI-approved open-source license. GitHub and similar
-repository hosts may classify this as a "Custom" or "Source-Available"
-license despite the Free-Tier Public Patent Grant in Section B.
+NQP's reference source code in this repository is provided under the
+Evaluation License in Section A and is not an OSI-approved open-source
+license; GitHub and similar hosts may classify it as "Custom" or
+"Source-Available." This classification concerns NQP's source code
+under copyright. It is independent of the Covenant, which makes the
+Enqpy™ cipher itself patent-safe for all conforming implementations,
+including open-source ones.
 
 This document represents the complete public-facing license terms
-for the Enqpy™ reference implementation in this repository. It does
-not limit or modify any separate written agreement between NQP LLC
-and any specific licensee. Where this document conflicts with a
-separately executed commercial agreement between NQP LLC and a
-specific licensee, the separately executed agreement governs for
-that licensee.
+for the Enqpy™ reference implementation in this repository, and is
+read together with the Covenant. It does not limit or modify any
+separate written agreement between NQP LLC and any specific licensee.
+Where this document conflicts with a separately executed commercial
+agreement between NQP LLC and a specific licensee, the separately
+executed agreement governs for that licensee. Nothing in any such
+separate agreement reduces the Covenant's protection of third parties.
 
 Governing law: the Commonwealth of Virginia, United States.
 
@@ -308,6 +248,6 @@ State of Delaware, United States
 Founder Chair: Paul McGough
 
 ================================================================
-NQP LLC PUBLIC LICENSE FOR ENQPY™ — Rev 1.0
+NQP LLC PUBLIC LICENSE FOR ENQPY™ — Rev 2.0 (Covenant alignment)
 Effective: June 1, 2026
 ================================================================

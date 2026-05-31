@@ -4,7 +4,7 @@
 > to satisfy Shannon's Ideal System criterion. This repository is the canonical
 > software reference implementation, released alongside the formal proof paper.
 
-**Paper (IACR ePrint):** *Enqpy™ Stream Cipher: Constructive Proof of Shannon's
+**Paper:** *Enqpy™ Stream Cipher: Constructive Proof of Shannon's
 Ideal System for a Finite-Key Cipher.* The canonical citation and the current
 paper link are maintained on the website — see
 [enqpy.com/technical.html](https://enqpy.com/technical.html).
@@ -74,27 +74,37 @@ The Enqpy™ reference implementation is stewarded by the **Enqpy™ Foundation
 Inc.** (a Delaware nonstock nonprofit corporation, formed April 2026), which
 owns the Enqpy™ and EnqpyADS™ trademarks. Commercial relationships are
 operated by **NQP LLC** (the inventor's Virginia commercial entity,
-incorporated March 19, 2026), under a perpetual non-exclusive trademark
-license from the Foundation. The Foundation makes the work durable; NQP makes
-it commercially serviceable.
+incorporated March 19, 2026), under a perpetual, non-exclusive license from
+the Foundation (the Foundation–NQP IP License Agreement). The Foundation makes
+the work durable; NQP makes it commercially serviceable.
 See [enqpy.com/foundation.html](https://enqpy.com/foundation.html).
 
-**Free use** for research, education, individual developers, small entities
-(under 25 employees and under $1M annual revenue), and public-interest
-projects is granted by the Public Patent Grant in the [`LICENSE`](./LICENSE)
-file — no fee, no signup, no NDA.
+**Patent-safe for everyone.** Under the **Open-Infrastructure Patent
+Non-Assertion Covenant** ([enqpy.com/covenant](https://enqpy.com/covenant),
+and in this repository), NQP LLC irrevocably commits not to assert the NQP
+Patents against any conforming implementation of the Enqpy™ cipher — by
+anyone, for any purpose, at any scale, including commercial deployment. No
+fee, no signup, no NDA, and no license is required to use, implement, or
+deploy the cipher itself. Source-code rights in NQP's reference
+implementation are covered separately by the Evaluation License in the
+[`LICENSE`](./LICENSE) file.
 
-**Four commercial paths** are available for use beyond Free-Tier criteria:
+**Commercial relationships (optional — the earned edge).** None of these is a
+condition of using the cipher; they fund the work and provide assurance for
+organizations that want them:
 
-- **NQP Standard Commercial License** — clean annual patent license for
-  above-threshold organizations ($5K–$75K range, scaled by organization size
-  and deployment scope)
+- **Foundation conformance certification** — for third-party implementations
+  seeking the Enqpy™-Certified mark and registry listing
+- **NQP high-performance proprietary implementations** — the optimized
+  VHDL/FPGA pipeline and related materials, licensed separately as NQP
+  trade-secret/copyright works (not the public reference, not reached by the
+  Covenant)
 - **NQP commercial services** — architecture review, audit, training, custom
-  implementation, advisory
+  implementation, integration, advisory, support, SLAs, indemnity
 - **Partner Program** — five categories (Enqpy-Certified Product, Enqpy Inside
   Trademark, Custom Implementation, Premier Technical, Hardware Integration)
-- **Foundation conformance certification** — for third-party implementations
-  seeking the Enqpy™-Certified mark
+- **Optional signed patent license and indemnity** — for organizations that
+  prefer executed paper notwithstanding the Covenant's protection of their use
 
 See [enqpy.com/use.html](https://enqpy.com/use.html) for the framework, or
 email RPM@enqpy.com with `[Commercial]` in the subject line.
@@ -125,8 +135,9 @@ This repository contains:
 - **Not open source** in the OSI sense. The implementation is released under
   the **NQP LLC Public License for Enqpy™** (see [`LICENSE`](./LICENSE)),
   which contains an Evaluation License covering source-code rights for all
-  users plus a Public Patent Grant covering free use of the cipher for the
-  Free-Tier audience above.
+  users. Patent rights in the cipher are addressed separately, and more
+  broadly, by the [Patent Non-Assertion Covenant](https://enqpy.com/covenant),
+  under which the cipher is patent-safe for all conforming use.
 - **Not production-ready** without the additional operational mechanisms
   described in §16 of the paper: integrity (a MAC over ciphertext and
   `eff_or`), nonce uniqueness infrastructure, secure key storage, constant-time
@@ -232,9 +243,11 @@ welcome — you don't need permission to write one.
 A port that reproduces the vectors is **Reference-Compatible** by
 self-attestation — give it its own name and describe it as *"Reference-Compatible
 with the Enqpy™ reference implementation"* (the mark can't sit in a project name
-like "Enqpy-Rust" or "PyEnqpy"). Use of the cipher in a port follows the same
-tiers as the reference: free for the Free-Tier audience above, commercial license
-beyond it ([`LICENSE`](./LICENSE)). Putting the **Enqpy™** mark in a product name,
+like "Enqpy-Rust" or "PyEnqpy"). Use of the cipher in a port is patent-safe
+under the [Covenant](https://enqpy.com/covenant) on the same terms as the
+reference — no fee or license required for any conforming use (source-code
+rights in NQP's reference are separate; see [`LICENSE`](./LICENSE)). Putting
+the **Enqpy™** mark in a product name,
 and **Enqpy™-Certified** or **Enqpy™-Compatible** claims, require Foundation
 conformance certification — see [`CONFORMANCE.md`](./CONFORMANCE.md) for the three
 levels.
@@ -275,7 +288,10 @@ This repository follows community-profile conventions for governance,
 contribution, and security disclosure:
 
 - [`LICENSE`](./LICENSE) — NQP LLC Public License for Enqpy™
-  (Evaluation License + Public Patent Grant for Free-Tier Use)
+  (Evaluation License + Patent Non-Assertion Covenant summary)
+- **Patent Non-Assertion Covenant** —
+  [enqpy.com/covenant](https://enqpy.com/covenant) (and in this repository);
+  the controlling instrument making the cipher patent-safe for all conforming use
 - [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — Code of Conduct and
   Acceptable Use Policy
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — How to contribute (accepted
@@ -306,7 +322,7 @@ languages are welcome and tracked in [`PORTS.md`](./PORTS.md) — see
 
 ## Citation
 
-The canonical citation and the current IACR ePrint link are maintained in one
+The canonical citation and the current paper link are maintained in one
 place — [enqpy.com/technical.html](https://enqpy.com/technical.html). A
 `CITATION.cff` file in the repository root also enables GitHub's native
 citation export. BibTeX form:
@@ -319,7 +335,7 @@ citation export. BibTeX form:
   institution = {NQP LLC},
   year        = {2026},
   number      = {Rev 1.0},
-  note        = {IACR ePrint entry and canonical citation: https://enqpy.com/technical.html}
+  note        = {Canonical citation and paper link: https://enqpy.com/technical.html}
 }
 ```
 
@@ -333,7 +349,7 @@ citation export. BibTeX form:
 | Formal Cryptographic Description | ✅ `FCD.md` |
 | Test vectors (78 assertions) | ✅ 78/78 PASS |
 | Benchmark harness | ✅ Included |
-| IACR ePrint paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
+| Formal proof paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
 | Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
 | Conformance specification | ✅ `CONFORMANCE.md` — Rev 0.1 framework (Rev 1.0 Months 4–6) |
 | Porting guide & vector format | ✅ `PORTING.md`, `TEST_VECTORS.md` |

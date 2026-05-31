@@ -16,7 +16,7 @@ NQP LLC
 
 Manassas, Virginia • RPM@enqpy.com
 
-Copyright © 2026 Paul McGough / NQP LLC. Released for evaluation, citation, and academic use under the NQP LLC Public License for Enqpy™ (see the LICENSE file in the Enqpy reference repository for full terms). This document is the public Formal Cryptographic Description (FCD) of the Enqpy™ cipher; commercial implementation optimization techniques are documented separately in the Enqpy™ Implementation Companion (NQP LLC; available to commercial licensees, Partner Program participants, and Foundation Conformance Program reviewers under applicable separate agreement). Enqpy™ is a trademark of the Enqpy™ Foundation Inc., licensed for commercial use by NQP LLC under the Foundation–NQP IP License Agreement.
+Copyright © 2026 Paul McGough / NQP LLC. Released for evaluation, citation, and academic use; the Enqpy™ patents are bound open under an irrevocable public covenant that leaves the cipher free to use, port, and deploy at any scale, including commercially (see the LICENSE file in the Enqpy reference repository for full terms). This document is the public Formal Cryptographic Description (FCD) of the Enqpy™ cipher; commercial implementation optimization techniques are documented separately in the Enqpy™ Implementation Companion (NQP LLC; available to commercial licensees, Partner Program participants, and Foundation Conformance Program reviewers under applicable separate agreement). Enqpy™ is a trademark of the Enqpy™ Foundation Inc., licensed for commercial use by NQP LLC under the Foundation–NQP IP License Agreement.
 
 # Document Overview
 
@@ -766,7 +766,7 @@ The only values transmitted beyond the ciphertext are the OpenID (public identif
 
 ## 12.1 Overview
 
-*The Enqpy™ C reference implementation is available at github.com/nqp-llc/enqpy. The C reference is derived from the VHDL hardware reference and incorporates substantial implementation optimization. The optimization basis and the specific optimization techniques applied are documented separately in the **Enqpy™ Implementation Companion** (NQP LLC; available to commercial licensees under the Standard Commercial License, to Partner Program participants, and to Foundation Conformance Program reviewers under a non-disclosure agreement).*
+*The Enqpy™ C reference implementation is available at github.com/nqp-llc/enqpy. The C reference is derived from the VHDL hardware reference and incorporates substantial implementation optimization. The optimization basis and the specific optimization techniques applied are documented separately in the **Enqpy™ Implementation Companion** (NQP LLC; available to commercial licensees under a separate NQP commercial agreement, to Partner Program participants, and to Foundation Conformance Program reviewers under a non-disclosure agreement).*
 
 The optimized C implementation is verified correct against the naive (spec-literal) implementation by byte-exact output comparison across 128 MB of test data, and benchmarked to confirm throughput improvement under -O3 -march=native compilation.
 

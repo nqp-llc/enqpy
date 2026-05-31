@@ -10,8 +10,8 @@ Effective: June 1, 2026
 
 The Enqpy™ GitHub repository hosts the reference implementation of the
 Enqpy™ stream cipher, supporting documentation, test vectors, and related
-materials. The reference implementation accompanies the IACR ePrint paper
-that establishes the cipher's formal Shannon Ideal System property. The
+materials. The reference implementation accompanies the formal proof paper
+that establishes the cipher's Shannon Ideal System property. The
 implementation is the canonical, authoritative realization of the proved
 algorithm.
 
@@ -68,7 +68,7 @@ We expect everyone to:
 
 The Enqpy™ reference implementation is not community-developed. This is
 a deliberate, structural choice: the implementation must correspond
-exactly to the algorithm as proved in the IACR ePrint paper. Changes to
+exactly to the algorithm as proved in the formal proof paper. Changes to
 the core algorithm by anyone other than the inventor and the
 Enqpy™ Foundation maintainers would break that correspondence.
 
@@ -110,8 +110,8 @@ standard coordinated-disclosure norms:
   mutually agreed).
 - **Public claims without prior contact** will not be substantively
   engaged in the issues or discussions on this repository. We will
-  close such threads with a pointer to `SECURITY.md` and to the IACR
-  ePrint paper for the technical record.
+  close such threads with a pointer to `SECURITY.md` and to the formal
+  proof paper for the technical record.
 - **Theoretical objections, framing questions, and
   clarifying-the-claim discussions** are appropriate as issues and
   discussions and are welcomed. The line is the difference between
@@ -120,9 +120,11 @@ standard coordinated-disclosure norms:
 
 ## Trademark use
 
-The Enqpy™, EnqpyADS™, and Enqpy™-Certified marks are trademarks of
-Enqpy™ Foundation Inc. Their use in derivative work is governed by the
-Foundation Trademark Use Guidelines.
+The Enqpy™ and EnqpyADS™ marks are trademarks of Enqpy™ Foundation Inc.,
+and Enqpy™-Certified is a certification mark of the Foundation.
+"Enqpy™-Compatible" is a conformance designation granted only through the
+Foundation conformance program. Their use in derivative work is governed by
+the Foundation Trademark Use Guidelines.
 
 For repository-related purposes specifically:
 

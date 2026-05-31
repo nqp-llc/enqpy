@@ -1,11 +1,3 @@
-<!--
-BEFORE PUBLISHING — replace bracketed placeholders:
-  [EPRINT_URL]      IACR ePrint paper (proof [12])
-  [CONF_SPEC_URL]   Conformance Specification
-  [TUG_URL]         Trademark Use Guidelines
-Repo, license, commercial, and contact links are filled in from the LICENSE.
--->
-
 # Porting Enqpy™ — ports & bindings welcome
 
 Enqpy™ (pronounced *"En-Q-P"*) is meant to be used. If you want it in your language, runtime, or stack, please port it — you don't need to ask anyone to start writing one.
@@ -14,17 +6,17 @@ Two things to read before you ship a port: how the rights work (the cipher is pa
 
 ## How the rights work
 
-Use of the reference implementation is governed by the **NQP LLC Public License** (see [`LICENSE`](LICENSE)). In short:
+Two instruments govern use, and they do different jobs. The **Open-Infrastructure Patent Non-Assertion Covenant** (at https://enqpy.com/covenant and in this repo) covers the **patent**; the **NQP LLC Public License** (see [`LICENSE`](LICENSE)) covers **copyright in NQP's reference source**. In short:
 
-- **Evaluation — everyone.** Anyone may clone, build, run the self-test and benchmark harnesses, analyze the source, compare output against the vectors and paper, and cite the work with attribution. You may **not** redistribute the reference implementation (except as a Free-Tier User, below), relicense it, or remove the license/notice.
-- **Free-Tier use — free, including in your own products.** A **Free-Tier User** — an individual using it personally/educationally/non-commercially; an accredited educational institution; a non-profit, public-interest, or research project; or a commercial entity with **fewer than 25 full-time-equivalent employees and under $1M annual gross revenue** — gets a royalty-free patent grant to make, use, and deploy the cipher in their own systems, products, and services. This is the "just use it" path for the long tail.
-- **Above Free-Tier — commercial license.** Organizations past those thresholds need a separate agreement with NQP LLC. Four paths (Standard Commercial License, services, Partner Program, Foundation certification) are at **https://enqpy.com/use.html**. There's a 12-month transition window for Free-Tier users who outgrow the thresholds by organic growth.
+- **The cipher is patent-safe for everyone.** Under the Covenant, NQP LLC irrevocably commits not to assert the NQP Patents against any conforming implementation of the cipher — by anyone, for any purpose, at any scale, including commercial deployment. No fee, no signup, and no license is required to write a port, deploy it, or ship it in a product. There are no size thresholds and nothing to "outgrow."
+- **Source-code rights — everyone.** Under the Evaluation License, anyone may clone, build, run the self-test and benchmark harnesses, analyze the source, compare output against the vectors and paper, and cite the work with attribution. You may **not** redistribute NQP's reference source, relicense it, or remove the license/notice. Your port is your own code — writing an independent implementation needs no copyright license here; that right comes from the Covenant.
+- **Optional commercial relationships — the earned edge.** Foundation certification + marks, NQP's high-performance proprietary implementations, services/support/indemnity, the Partner Program, and an optional signed patent license are available at **https://enqpy.com/use.html** for organizations that want them — but none is a condition of using the cipher.
 
-A port is your own code, but it implements a patented cipher, so the same tiered terms apply to the cipher inside your port: Free-Tier users are covered by the free grant; everyone else needs a commercial license. The [`LICENSE`](LICENSE) and https://enqpy.com/use.html are the authoritative terms — this page is a plain-English pointer, not the grant itself.
+A port is your own code implementing a patent-safe cipher: write it, deploy it, ship it under the Covenant, with no license required for that use. The [Covenant](https://enqpy.com/covenant) and the [`LICENSE`](LICENSE) are the authoritative terms — this page is a plain-English pointer, not the grant itself.
 
 ## How naming works
 
-The Enqpy™ marks are governed by the [Trademark Use Guidelines]([TUG_URL]) and the [`CONFORMANCE.md`](CONFORMANCE.md) levels. The Foundation recognizes **three ordered conformance levels**:
+The Enqpy™ marks are governed by the [Trademark Use Guidelines](https://enqpy.com/foundation.html) and the [`CONFORMANCE.md`](CONFORMANCE.md) levels. The Foundation recognizes **three ordered conformance levels**:
 
 - **Reference-Compatible** (self-attested) — your port passes the published vectors; no Foundation review. You may state **"Reference-Compatible with the Enqpy™ reference implementation."** This is the level a community port reaches the moment its vectors pass.
 - **Conformant Implementation** (Foundation-reviewed) — an independent reviewer walks your implementation against the FCD; you're listed in the Foundation's public registry. Submit per `CONFORMANCE.md` §3.2.
@@ -35,7 +27,7 @@ Two naming rules that trip people up:
 - **Name your port your own name.** You may **not** call it "Enqpy-Rust," "Enqpy.go," "PyEnqpy," or anything that puts the mark in the project's name (TUG §5.1). Pick your own name, then describe it as "Reference-Compatible with the Enqpy™ reference implementation."
 - **Don't claim a level you don't hold.** "Conformant" and "Certified" require the corresponding Foundation review; until then you are Reference-Compatible by self-attestation, and the Enqpy™ mark stays out of your branding and marketing.
 
-So: write the port freely; deploy under the tier that applies to you (see "How the rights work"); name it your own name and describe it as Reference-Compatible with Enqpy™.
+So: write the port freely; deploy it under the Covenant (patent-safe, no license required for that use); name it your own name and describe it as Reference-Compatible with Enqpy™.
 
 ## What you need
 
@@ -44,9 +36,9 @@ Everything to build and verify a port lives in this repo:
 - **Canonical test vectors** — `tests/vectors/enqpy-vectors.json`, documented in [`TEST_VECTORS.md`](TEST_VECTORS.md). The authoritative inputs and expected outputs (UPPERCASE hex). Your port matches the reference if and only if it reproduces these exactly.
 - **Reference implementation** — the C reference (`-DENQPY_SELFTEST` runs 78/78). Ground truth when in doubt.
 - **Formal Cryptographic Description (FCD)** — the full specification of OWC, PDAF, PDAF_SEC, the five phases, profiles, and key management.
-- **The proof / paper** — [IACR ePrint]([EPRINT_URL]) (companion [12]). Why it works; not required to port.
+- **The proof / paper** — [the formal proof paper](https://enqpy.com/technical.html) (companion [12]). Why it works; not required to port.
 - **Conformance Specification** — [`CONFORMANCE.md`](CONFORMANCE.md). The three conformance levels, canonical sources, and the submission process.
-- **Trademark Use Guidelines** — [link]([TUG_URL]). The naming rules above.
+- **Trademark Use Guidelines** — [link](https://enqpy.com/foundation.html). The naming rules above.
 
 ## How to verify your port
 

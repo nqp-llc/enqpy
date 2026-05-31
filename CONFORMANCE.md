@@ -66,9 +66,11 @@ software implementation. The C Reference is:
   microcontrollers to 64-bit servers.
 - **Test-anchored.** Ships with 78 self-test assertions against
   published test vectors.
-- **NQP-licensed.** Available under the NQP LLC Public License for
-  Enqpy™ (Section A: Evaluation License, Section B: Public Patent Grant
-  for Free-Tier Use).
+- **NQP-licensed.** Source-code rights are available under the NQP LLC
+  Public License for Enqpy™ (Section A: Evaluation License). Patent rights
+  in the cipher are addressed by the Open-Infrastructure Patent
+  Non-Assertion Covenant (https://enqpy.com/covenant), under which the
+  cipher is patent-safe for all conforming use.
 
 The C Reference is the source against which **algorithmic correctness**
 is measured. Any conformant implementation must, given the same inputs,
@@ -120,7 +122,7 @@ Test Vectors are published at `github.com/nqp-llc/enqpy` under
 `tests/vectors/` (or equivalent path) and are versioned alongside the
 C Reference releases.
 
-## 1.5 IACR ePrint paper
+## 1.5 The formal proof paper
 
 **The Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal
 System for a Finite-Key Cipher** (the "**Paper**") is the formal
@@ -396,7 +398,8 @@ Operational questions, submission inquiries, and review requests:
 ---
 
 *Rev 0.1 · Enqpy™ Foundation Inc. · Effective June 1, 2026 ·
-Companion to the IACR ePrint paper, the C Reference, the VHDL
+Companion to the formal proof paper, the C Reference, the VHDL
 Reference, and the Formal Cryptographic Description ·
 Trademark "Enqpy™" is owned by the Enqpy™ Foundation Inc. ·
-Patent rights licensed under the NQP LLC Public License for Enqpy™*
+Patent rights are covered by the Open-Infrastructure Patent Non-Assertion
+Covenant (https://enqpy.com/covenant)*
