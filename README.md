@@ -131,6 +131,10 @@ This repository contains:
   Ideal System result.
 - **Built-in benchmark harness** reproducing the performance numbers reported
   in the paper.
+- **`src/aead_bench.c`** — a separate cross-cipher AEAD benchmark
+  (Enqpy™ + Poly1305 vs ChaCha20-Poly1305, AES-256-CTR, AES-256-GCM),
+  KAT-verified before timing; the apples-to-apples comparison behind the
+  Performance page.
 
 ## What this is *not*
 
@@ -227,6 +231,28 @@ cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK src/enqpy_reference.c -o enqp
 
 The included `build.sh` does the combined build and places the binary in
 `./build/enqpy_test`.
+
+### Cross-cipher benchmark (apples-to-apples AEAD)
+
+`src/aead_bench.c` is a separate harness that compares **Enqpy™ + Poly1305**
+against **ChaCha20-Poly1305**, **AES-256-CTR**, and **AES-256-GCM** on
+identical terms — every cipher authenticated, and every implementation
+verified against its known-answer test vectors before any timing. It is the
+apples-to-apples comparison behind
+[enqpy.com/speed_bench.html](https://enqpy.com/speed_bench.html). The other
+ciphers are implemented inline (no external libraries); only the `PDAF_SEC`
+primitive is linked from the reference, so build the two files together. Do
+**not** pass `-DENQPY_SELFTEST` / `-DENQPY_BENCHMARK` here — those enable the
+reference's own `main` and would collide with the harness's.
+
+```bash
+cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L \
+    src/aead_bench.c src/enqpy_reference.c -o aead_bench
+./aead_bench
+```
+
+Software ranking is CPU-dependent — run it on your own hardware. (`-march=native`
+is optional; it lets the compiler use your CPU's full instruction set.)
 
 ---
 
