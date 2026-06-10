@@ -66,8 +66,8 @@ software implementation. The C Reference is:
   microcontrollers to 64-bit servers.
 - **Test-anchored.** Ships with 78 self-test assertions against
   published test vectors.
-- **NQP-licensed.** Source-code rights are available under the NQP LLC
-  Public License for Enqpy™ (Section A: Evaluation License). Patent rights
+- **Apache-2.0 licensed.** Source-code rights are granted under the
+  Apache License 2.0 (see the LICENSE and NOTICE files). Patent rights
   in the cipher are addressed by the Open-Infrastructure Patent
   Non-Assertion Covenant (https://enqpy.com/covenant), under which the
   cipher is patent-safe for all conforming use.

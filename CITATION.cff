@@ -24,6 +24,7 @@ authors:
     email: "RPM@enqpy.com"
 version: "Rev 2.0"
 date-released: "2026-06-01"
+license: Apache-2.0
 url: "https://enqpy.com"
 repository-code: "https://github.com/nqp-llc/enqpy"
 license-url: "https://github.com/nqp-llc/enqpy/blob/main/LICENSE"

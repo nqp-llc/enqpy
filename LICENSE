@@ -1,253 +1,201 @@
-NQP LLC PUBLIC LICENSE FOR ENQPY™
-==================================
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
 
-NQP LLC Public License for the Enqpy™ Reference Implementation
-Rev 2.0 (Open-Infrastructure Covenant alignment)
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-Effective: June 1, 2026
+   1. Definitions.
 
-Copyright © 2026 NQP LLC. All rights reserved.
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
 
-This document governs use of the Enqpy™ reference implementation in this
-repository. It works together with the Open-Infrastructure Patent
-Non-Assertion Covenant (the "Covenant"), published at
-https://enqpy.com/covenant and in this repository, under which NQP LLC
-irrevocably commits not to assert the NQP Patents against conforming
-implementations of the public Enqpy™ cipher.
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
 
-This License contains:
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
 
-  (A) An Evaluation License covering the source code in this repository,
-      applicable to all users; and
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
 
-  (B) A summary of how the Patent Non-Assertion Covenant applies to the
-      NQP Patents. The Covenant itself is the controlling patent
-      instrument.
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
 
-Commercial relationships — Foundation conformance certification and the
-Enqpy™ marks, high-performance proprietary implementations, support,
-integration, advisory, and indemnity — are described in Section C and at
-https://enqpy.com/use.html. None of those relationships is required in
-order to use, implement, or deploy the Enqpy™ cipher itself; the Covenant
-makes the cipher patent-safe for all conforming use.
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
 
-----------------------------------------------------------------
-A. EVALUATION LICENSE (applies to all users)
-----------------------------------------------------------------
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
 
-Permission is hereby granted to any person obtaining a copy of the
-Enqpy™ reference implementation in this repository, free of charge,
-to:
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
 
-  - Clone the repository, build, and execute the implementation
-  - Run the embedded self-test and benchmark harnesses
-  - Analyze the source code for evaluation, review, and academic
-    purposes
-  - Compare implementation output against the paper and FCD test
-    vectors
-  - Cite the implementation in academic and professional work with
-    appropriate attribution
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
 
-Permission is not granted under this section to:
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
 
-  - Redistribute NQP's reference source code in this repository,
-    whether modified or unmodified, except under a separate written
-    agreement with NQP LLC
-  - Sublicense or relicense NQP's reference source code under any
-    other terms
-  - Remove, alter, or obscure this license text or the copyright
-    notice
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
 
-This Section A governs copyright in NQP's specific reference source
-code only. It does not restrict, and is independent of, the right to
-make, use, sell, or distribute an independent conforming implementation
-of the Enqpy™ cipher: that right is addressed by the Covenant
-summarized in Section B. Writing one's own implementation of the cipher
-does not require a copyright license under this Section A.
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
 
-----------------------------------------------------------------
-B. PATENT NON-ASSERTION COVENANT
-----------------------------------------------------------------
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
 
-Definitions
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
 
-"NQP Patents" means U.S. provisional patent applications 64/030,651;
-64/030,659; 64/030,684; 64/030,693; 64/030,698; 64/030,706;
-international patent application PCT/US26/22552; and any patents
-issuing from any of the foregoing, including continuations,
-continuations-in-part, divisions, reissues, and foreign counterparts,
-to the extent owned or controlled by NQP LLC.
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
 
-"Conforming Implementation" means an implementation of the Enqpy™
-cipher that conforms to the public specification (the Formal
-Cryptographic Description and the published test vectors) — that is,
-one that reproduces the specified outputs. Conformance for this purpose
-is technical (the implementation behaves as specified); it does not
-require Foundation certification.
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
 
-The Covenant
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
 
-NQP LLC has granted the Open-Infrastructure Patent Non-Assertion
-Covenant, under which NQP LLC irrevocably covenants not to assert the
-NQP Patents against any person for making, having made, using, offering
-to sell, selling, importing, or distributing a Conforming
-Implementation, by anyone and for any purpose, including open-source
-implementations, inclusion in libraries and distributions,
-standards-track adoption, research and education, public-interest
-deployment, and commercial deployment.
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
 
-The Covenant is irrevocable for the covered field of use, runs with the
-NQP Patents, and binds NQP's successors and assignees, so that the
-patent safety of the open ecosystem survives any transfer of NQP or the
-portfolio. The full Covenant, published at https://enqpy.com/covenant
-and in this repository, is the controlling patent instrument; this
-Section B is a summary and does not limit it.
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
 
-Defensive suspension
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
 
-Consistent with the Covenant, the non-assertion commitment is suspended
-as to any person (and that person's Affiliates) who initiates or
-voluntarily joins patent litigation (including a cross-claim or
-counterclaim) alleging that (a) the Enqpy™ cipher or a Conforming
-Implementation infringes any patent, or (b) NQP LLC, Enqpy™ Foundation
-Inc., the inventor, or any of their respective directors, officers,
-employees, agents, or successors infringes any patent through an act
-substantially related to the Enqpy™ cipher, a Conforming
-Implementation, or the activities of the Foundation. Suspension,
-restoration, and the carve-out for purely defensive assertion operate
-as set out in §4 of the Covenant, which controls. "Affiliate" has the
-meaning given in §1.6 of the Covenant.
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
 
-What the Covenant does not grant
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
 
-The Covenant conveys no rights in the Enqpy™ marks (see Section D), no
-copyright license to NQP's reference source beyond Section A, and no
-right to claim Foundation certification or "Enqpy™-Certified" /
-"Enqpy™-Compatible" status (see Sections C and D).
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
 
-----------------------------------------------------------------
-C. COMMERCIAL RELATIONSHIPS (THE EARNED EDGE)
-----------------------------------------------------------------
+   END OF TERMS AND CONDITIONS
 
-The Enqpy™ cipher is patent-safe to use, implement, and deploy under
-the Covenant, with no fee and no license required for that use. The
-following commercial relationships remain available from NQP LLC and
-the Enqpy™ Foundation for organizations that want them — they fund the
-work and provide assurance, but none is a condition of using the
-cipher:
+   APPENDIX: How to apply the Apache License to your work.
 
-  - Enqpy™ Foundation conformance certification — for third-party
-    implementations seeking the Enqpy™-Certified mark and listing in
-    the public registry.
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
 
-  - NQP high-performance proprietary implementations — the optimized
-    VHDL/FPGA pipeline and related non-public implementation materials,
-    licensed separately as NQP trade-secret/copyright works (not the
-    public reference, and not reached by the Covenant).
+   Copyright [yyyy] [name of copyright owner]
 
-  - NQP commercial services — architecture review, audit, training,
-    custom implementation, integration, advisory, support, SLAs, and
-    indemnity.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-  - Partner Program — Enqpy-Certified Product, Enqpy Inside Trademark,
-    Custom Implementation, Premier Technical, and Hardware Integration.
+       http://www.apache.org/licenses/LICENSE-2.0
 
-  - Optional signed patent license and indemnity — for organizations
-    that prefer an executed, individually negotiated agreement and
-    indemnification, notwithstanding the Covenant's protection of their
-    use.
-
-See https://enqpy.com/use.html or email RPM@enqpy.com with
-[Commercial] in the subject line.
-
-----------------------------------------------------------------
-D. TRADEMARK NOTICE
-----------------------------------------------------------------
-
-Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security, Settled.™
-are trademarks of Enqpy™ Foundation Inc., a Delaware nonstock
-nonprofit corporation, licensed to NQP LLC under the Foundation–NQP
-IP License Agreement.
-
-The Covenant frees the patent; it does not free the marks. Trademark
-use in derivative work or implementation is governed by the Foundation
-Trademark Use Guidelines. In particular:
-
-  - A conforming implementation may state that it is "Reference-
-    Compatible with the Enqpy™ reference implementation," or "based on
-    the Enqpy™ reference implementation," with appropriate attribution
-    and a link to this repository, and should carry its own project
-    name (not a name that places the Enqpy™ mark in the project's
-    name).
-
-  - A fork or derivative work may not be presented as the Enqpy™
-    implementation, as Enqpy™-Certified, or as Enqpy™-Compatible
-    without separate Foundation conformance certification and
-    trademark licensing.
-
-  - Citation use of the marks for academic, journalistic, or
-    educational purposes is permitted under standard nominative
-    fair-use principles, provided attribution is clear and
-    endorsement is not suggested.
-
-----------------------------------------------------------------
-E. NO WARRANTY
-----------------------------------------------------------------
-
-THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
-NONINFRINGEMENT. IN NO EVENT SHALL NQP LLC, ENQPY™ FOUNDATION
-INC., OR THE INVENTOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
-ARISING FROM, OUT OF, OR IN CONNECTION WITH THIS SOFTWARE OR THE
-USE OR OTHER DEALINGS IN THIS SOFTWARE.
-
-Evaluation or use of a cryptographic reference implementation
-does not replace independent cryptanalytic review, formal
-verification, or deployment-specific security engineering.
-Production deployment requires the additional operational
-mechanisms specified in Section 16 of the paper (integrity, nonce
-uniqueness infrastructure, secure key storage, constant-time CS
-permutation lookup, secure erase of key material).
-
-----------------------------------------------------------------
-F. ADDITIONAL TERMS
-----------------------------------------------------------------
-
-NQP's reference source code in this repository is provided under the
-Evaluation License in Section A and is not an OSI-approved open-source
-license; GitHub and similar hosts may classify it as "Custom" or
-"Source-Available." This classification concerns NQP's source code
-under copyright. It is independent of the Covenant, which makes the
-Enqpy™ cipher itself patent-safe for all conforming implementations,
-including open-source ones.
-
-This document represents the complete public-facing license terms
-for the Enqpy™ reference implementation in this repository, and is
-read together with the Covenant. It does not limit or modify any
-separate written agreement between NQP LLC and any specific licensee.
-Where this document conflicts with a separately executed commercial
-agreement between NQP LLC and a specific licensee, the separately
-executed agreement governs for that licensee. Nothing in any such
-separate agreement reduces the Covenant's protection of third parties.
-
-Governing law: the Commonwealth of Virginia, United States.
-
-Contact:
-  RPM@enqpy.com
-  https://enqpy.com/use.html
-  https://enqpy.com/contact.html
-
-NQP LLC
-Commonwealth of Virginia, United States
-Founder & Managing Member: Paul McGough
-
-Enqpy™ Foundation Inc.
-State of Delaware, United States
-Founder Chair: Paul McGough
-
-================================================================
-NQP LLC PUBLIC LICENSE FOR ENQPY™ — Rev 2.0 (Covenant alignment)
-Effective: June 1, 2026
-================================================================
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.

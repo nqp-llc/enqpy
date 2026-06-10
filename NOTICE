@@ -1,0 +1,46 @@
+Enqpy(TM) Reference Implementation
+Copyright 2026 NQP LLC (Paul McGough)
+
+This product includes software developed by NQP LLC (https://enqpy.com).
+
+The code in this repository — the C reference implementation, the
+self-test and benchmark harnesses, and the published test vectors — is
+licensed under the Apache License, Version 2.0 (the "License"); you may
+not use these files except in compliance with the License. See the
+LICENSE file for the full text, or
+http://www.apache.org/licenses/LICENSE-2.0.
+
+Documentation and specifications in this repository (including FCD.md
+and the guides) are licensed under Creative Commons Attribution 4.0
+International (CC-BY-4.0).
+
+PATENT NON-ASSERTION COVENANT
+The Enqpy(TM) cipher is additionally covered by the Open-Infrastructure
+Patent Non-Assertion Covenant, an irrevocable public promise published
+by NQP LLC (https://enqpy.com/covenant and COVENANT.md in this
+repository). The Covenant is a separate, broader, and unconditional
+commitment that applies to any conforming implementation of the cipher,
+independent of this code and its license. The Apache License's Section 3
+patent grant is a narrower, code-scoped license that rides along with
+this specific code. The two instruments are complementary: nothing in
+the Apache License limits, narrows, or terminates the Covenant, and the
+Covenant is the controlling patent promise. For copyright in this
+repository, the Apache License, Version 2.0 is the governing public
+license within the meaning of the Covenant's references to the
+repository's public license.
+
+TRADEMARKS
+Enqpy(TM), EnqpyADS(TM), and Enqpy(TM)-Certified are trademarks of
+Enqpy(TM) Foundation Inc., licensed to NQP LLC. Neither the Apache
+License (see its Section 6) nor the Covenant grants any trademark
+rights. Trademark use is governed by the Foundation Trademark Use
+Guidelines; see CONFORMANCE.md for Reference-Compatible,
+Enqpy(TM)-Compatible, and Enqpy(TM)-Certified designations.
+
+DEPLOYMENT NOTE
+Evaluation or use of a cryptographic reference implementation does not
+replace independent cryptanalytic review, formal verification, or
+deployment-specific security engineering. Production deployment requires
+the additional operational mechanisms specified in Section 16 of the
+paper (integrity, nonce uniqueness infrastructure, secure key storage,
+constant-time CS permutation lookup, secure erase of key material).
