@@ -1,4 +1,8 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 NQP LLC (Paul McGough) */
 /* Apples-to-apples authenticated-encryption benchmark, portable scalar C.
+ * Part of the Enqpy(TM) reference repository; licensed under the Apache
+ * License, Version 2.0 -- see the LICENSE and NOTICE files.
  * Matches the Rev 1.0 report methodology: 59,189-byte message, 10 warmup
  * round-robin passes, 20 timed round-robin iterations, best-of-20 + average,
  * clock_gettime around the cipher call only. Every primitive is verified

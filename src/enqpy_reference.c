@@ -1,7 +1,9 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 NQP LLC (Paul McGough) */
 #define _POSIX_C_SOURCE 200809L
 /* =============================================================================
  * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 2.0
- * Copyright (c) 2026 NQP LLC.  All rights reserved.
+ * Copyright (c) 2026 NQP LLC (Paul McGough).
  *
  * IMPLEMENTATION NOTE (2026-06, KAT-identical optimization)
  * ---------------------------------------------------------
@@ -17,20 +19,27 @@
  *
  * LICENSE
  * -------
- * This reference source is provided under the Evaluation License (Section A of
- * the NQP LLC Public License for Enqpy(tm), Rev 2.0).  You may clone, build,
- * run the self-test and benchmark harnesses, analyze the source, and compare
- * its output against the published test vectors and the paper.  You may not
- * redistribute or relicense NQP's reference source, or remove this notice.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0 or in the
+ * LICENSE file in this repository.  Unless required by applicable law or
+ * agreed to in writing, software distributed under the License is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied.  See the License for the specific language governing
+ * permissions and limitations under the License.  See also the NOTICE file.
  *
  * The CIPHER itself is patent-safe for everyone under the Open-Infrastructure
  * Patent Non-Assertion Covenant (COVENANT; https://enqpy.com/covenant): anyone
  * may write an independent implementation and deploy it at any scale, including
  * commercially, with no fee and no separate agreement required for that use.
- * Optional commercial offerings (Foundation certification and marks, NQP high-
- * performance implementations, support/indemnity, and an optional signed patent
- * license) are available at https://enqpy.com/use.html but are not a condition
- * of using the cipher.  See LICENSE and COVENANT for the authoritative terms.
+ * The Covenant is the broader, controlling patent promise; the Apache License's
+ * Section 3 patent grant is a narrower, code-scoped license that rides along
+ * with this code, and nothing in the Apache License limits or terminates the
+ * Covenant.  Optional commercial offerings (Foundation certification and marks,
+ * NQP high-performance implementations, support/indemnity, and an optional
+ * signed patent license) are available at https://enqpy.com/use.html but are
+ * not a condition of using the cipher.  See LICENSE, NOTICE, and COVENANT for
+ * the authoritative terms.
  *
  * WHAT THIS FILE IS
  * -----------------
@@ -838,7 +847,7 @@ int main(void)
 {
     printf("Enqpy(tm) Stream Cipher -- Reference Implementation Rev 2.0\n");
     printf("Ideal Enqpy(tm) Configuration (nonce-only OffsetKey derivation)\n");
-    printf("Copyright (c) 2026 NQP LLC\n");
+    printf("Copyright (c) 2026 NQP LLC -- Apache License 2.0\n");
     printf("Platform: n=%d, tile_len=%d, W_bytes=%d\n\n",
            ENQPY_MAX_N, ENQPY_TILE_LEN, ENQPY_W_BYTES);
 
