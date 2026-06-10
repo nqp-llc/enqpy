@@ -87,9 +87,14 @@ and in this repository), NQP LLC irrevocably commits not to assert the NQP
 Patents against any conforming implementation of the Enqpy™ cipher — by
 anyone, for any purpose, at any scale, including commercial deployment. No
 fee, no signup, no NDA, and no license is required to use, implement, or
-deploy the cipher itself. Source-code rights in NQP's reference
-implementation are covered separately by the Evaluation License in the
-[`LICENSE`](./LICENSE) file.
+deploy the cipher itself.
+
+**Open source.** NQP's reference implementation, test harness, and test
+vectors are licensed under the **Apache License 2.0** (see
+[`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE)); documentation and
+specifications are CC-BY-4.0. Apache-2.0 Section 3 adds an express,
+code-scoped patent grant; the Covenant remains the broader, controlling
+patent promise and is not limited or terminated by the code license.
 
 **Commercial relationships (optional — the earned edge).** None of these is a
 condition of using the cipher; they fund the work and provide assurance for
@@ -138,12 +143,6 @@ This repository contains:
 
 ## What this is *not*
 
-- **Not open source** in the OSI sense. The implementation is released under
-  the **NQP LLC Public License for Enqpy™** (see [`LICENSE`](./LICENSE)),
-  which contains an Evaluation License covering source-code rights for all
-  users. Patent rights in the cipher are addressed separately, and more
-  broadly, by the [Patent Non-Assertion Covenant](https://enqpy.com/covenant),
-  under which the cipher is patent-safe for all conforming use.
 - **Not production-ready** without the additional operational mechanisms
   described in §16 of the paper: integrity (a MAC over ciphertext and
   `eff_or`), nonce uniqueness infrastructure, secure key storage, constant-time
@@ -273,8 +272,8 @@ self-attestation — give it its own name and describe it as *"Reference-Compati
 with the Enqpy™ reference implementation"* (the mark can't sit in a project name
 like "Enqpy-Rust" or "PyEnqpy"). Use of the cipher in a port is patent-safe
 under the [Covenant](https://enqpy.com/covenant) on the same terms as the
-reference — no fee or license required for any conforming use (source-code
-rights in NQP's reference are separate; see [`LICENSE`](./LICENSE)). Putting
+reference — no fee or license required for any conforming use (NQP's
+reference source is itself open under Apache-2.0; see [`LICENSE`](./LICENSE)). Putting
 the **Enqpy™** mark in a product name,
 and **Enqpy™-Certified** or **Enqpy™-Compatible** claims, require Foundation
 conformance certification — see [`CONFORMANCE.md`](./CONFORMANCE.md) for the three
@@ -315,8 +314,10 @@ algebraically independent uncertainty axes (the OTP maintains only one).
 This repository follows community-profile conventions for governance,
 contribution, and security disclosure:
 
-- [`LICENSE`](./LICENSE) — NQP LLC Public License for Enqpy™
-  (Evaluation License + Patent Non-Assertion Covenant summary)
+- [`LICENSE`](./LICENSE) — Apache License 2.0 (code, test harness, and
+  test vectors; documentation is CC-BY-4.0)
+- [`NOTICE`](./NOTICE) — copyright, the Covenant coordination notice, and
+  the trademark notice
 - **Patent Non-Assertion Covenant** —
   [enqpy.com/covenant](https://enqpy.com/covenant) (and in this repository);
   the controlling instrument making the cipher patent-safe for all conforming use
@@ -387,6 +388,7 @@ citation export. BibTeX form:
 
 ---
 
-*Copyright © 2026 NQP LLC. All rights reserved.*
+*Copyright © 2026 NQP LLC. Code licensed under the Apache License 2.0;
+documentation under CC-BY-4.0. See [`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE).*
 *Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security, Settled.™ are trademarks
 of Enqpy™ Foundation Inc., licensed to NQP LLC.*
