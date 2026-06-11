@@ -3,21 +3,21 @@
 /* Apples-to-apples authenticated-encryption benchmark, portable scalar C.
  * Part of the Enqpy(TM) reference repository; licensed under the Apache
  * License, Version 2.0 -- see the LICENSE and NOTICE files.
- * Matches the Rev 1.0 report methodology: 59,189-byte message, 10 warmup
+ * Matches the Rev 2.0 report methodology: 59,189-byte message, 10 warmup
  * round-robin passes, 20 timed round-robin iterations, best-of-20 + average,
  * clock_gettime around the cipher call only. Every primitive is verified
  * against its official test vector BEFORE timing; if any KAT fails we abort.
  *
  * Ciphers (all include their authentication, as deployed):
- *   - Enqpy(TM) HIGH (n=64) + Poly1305   (one keystream expansion supplies the
+ *   - Enqpy(TM) HIGH (n=64), Base Cipher + Poly1305   (one keystream expansion supplies the
  *                                          one-time MAC key AND the ciphertext)
  *   - ChaCha20-Poly1305                  (RFC 8439)
  *   - AES-256-GCM                        (portable T-table AES + bitwise GHASH)
  *   - AES-256-CTR                        (no auth -- noted)
  *
- * Build:
- *   cc -O3 -march=native -std=c11 -c enqpy_reference.c -o enqpy_ref.o
- *   cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L aead_bench.c enqpy_ref.o -o aead_bench
+ * Build (links the Base Cipher reference, enqpy_reference_base_c1.c):
+ *   cc -O3 -march=native -std=c11 -c enqpy_reference_base_c1.c -o enqpy_base.o
+ *   cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L aead_bench.c enqpy_base.o -o aead_bench
  */
 #include <stdint.h>
 #include <stdio.h>
