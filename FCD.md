@@ -1,14 +1,10 @@
-**Enqpy™ Stream Cipher**
-
-Formal Cryptographic Description
+# Enqpy™ Stream Cipher — Formal Cryptographic Description
 
 Complete Specification of the OWC, PDAF, and PDAF_SEC Primitives
 
 Including Security Profiles, Key Management, and NIST SP 800-22 Validation
 
-**Revision 1.1 — 2026**
-
-*Revision 1.1 (June 2026) updates licensing (Apache-2.0 code / CC-BY-4.0 documentation), companion proof-paper references (Rev 1.1), and plaintext-axis statements to the proof’s corrected Theorem 3 posture: support floor and Case-1 uniformity proved; full-map min-entropy stated as an open problem (proof §12.7).*
+**Revision 2.0 — 2026**
 
 NQP LLC • www.enqpy.com • Public
 
@@ -18,46 +14,35 @@ NQP LLC
 
 Manassas, Virginia • RPM@enqpy.com
 
-Copyright © 2026 Paul McGough / NQP LLC. Released under the Creative Commons Attribution 4.0 International License (CC-BY-4.0); the companion reference code and test vectors are open source under the Apache License 2.0 (see the LICENSE and NOTICE files in the Enqpy reference repository), and the Enqpy™ patents are bound open under an irrevocable public covenant that leaves the cipher free to use, port, and deploy at any scale, including commercially. This document is the public Formal Cryptographic Description (FCD) of the Enqpy™ cipher; commercial implementation optimization techniques are documented separately in the Enqpy™ Implementation Companion (NQP LLC; available to commercial licensees, Partner Program participants, and Foundation Conformance Program reviewers under applicable separate agreement). Enqpy™ is a trademark of the Enqpy™ Foundation Inc., licensed for commercial use by NQP LLC under the Foundation–NQP IP License Agreement.
+Copyright © 2026 Paul McGough / NQP LLC. Released under the Creative Commons Attribution 4.0 International License (CC-BY-4.0); the companion reference code and test vectors are open source under the Apache License 2.0 (see the LICENSE and NOTICE files in the Enqpy reference repository), and the Enqpy™ patents are bound open under an irrevocable public covenant that leaves the cipher free to use, port, and deploy at any scale, including commercially. This document is the public Formal Cryptographic Description (FCD) of the Enqpy™ cipher; commercial implementation optimization techniques are documented separately in the Enqpy™ Implementation Companion (NQP LLC; available to commercial licensees, Partner Program participants, and Foundation Conformance Program reviewers under applicable separate agreement). Enqpy™ is a trademark of the Enqpy™ Foundation Inc., licensed for commercial use by NQP LLC under the Foundation–NQP IP License Agreement. Revision 2.0 (June 2026) reframes the specification around the Enqpy Base Cipher (Ideal Configuration restricted to Case-1 W generation, HIGH n=64, 2,048-byte window, synchronized key update) as the canonical proof profile, on which Shannon’s finite-key Ideal System is proved closed on both the key axis (2-bit exact equivocation) and the message axis (closed min-entropy: H = H∞ ≥ 128 bits, uniform posterior over the full consistent set). The three-case Selection map (Cases 1/2/3, CS-ordered, 6,144-byte window) is reclassified as the optional Extended Mixing Profile: its support floor is proved and its full-map min-entropy characterization is the single remaining open research addendum. Revision 2.0 also documents the Base Cipher known-plaintext scope (§8.5), requires NIL Method 2 for Base credential rotation, and pins n-nibble VKC/OKC with a 2,048-byte update boundary.
 
 # Document Overview
 
-This document is the complete formal specification of the Enqpy™ stream cipher as developed by NQP LLC. It defines the Ideal Enqpy™ Configuration — the single proved-secure implementation — along with the OWC (One-Way Computation) and PDAF (Pseudo-random Data Augmentation Function) cryptographic primitives, the PDAF_SEC encrypt/decrypt function, key management architecture, security analysis, and NIST SP 800-22 statistical randomness validation results. EnqpyADS™ Built-To-Application variant configurations — including HMIX-based and other arrangements suited to specific deployment requirements — are described in the EnqpyADS™ specification.
+This document is the complete formal specification of the Enqpy™ stream cipher as developed by NQP LLC. It defines the Enqpy™ Base Cipher — the canonical proof-complete profile (the Ideal Configuration restricted to Case-1 W generation, HIGH n=64, 2,048-byte window, synchronized key update) — along with the optional Extended Mixing Profile (Cases 1/2/3, 6,144-byte window), the OWC (One-Way Computation) and PDAF (Pseudo-random Data Augmentation Function) cryptographic primitives, the PDAF_SEC encrypt/decrypt function, key management architecture, security analysis, and NIST SP 800-22 statistical randomness validation results. EnqpyADS™ Built-To-Application variant configurations — including HMIX-based and other arrangements suited to specific deployment requirements — are described in the EnqpyADS™ specification.
 
 Enqpy™ claims security via mathematical underdetermination rather than computational hardness, satisfying Shannon’s Ideal System definition with a finite key.
 
 ## Formal Proof Status — First Provably Secure Shannon Ideal System
 
-As of 2026, Enqpy™ is the first finite-key cipher construction to carry a formal information-theoretic proof of the Shannon Ideal System property — a specific information-theoretic property distinct from computational security. The One-Time Pad achieves Perfect Secrecy (a strictly stronger property) but requires a key equal in length to the message, making it impractical for general use. Enqpy™ achieves the Ideal System property — non-vanishing key equivocation under unlimited ciphertext accumulation — with a fixed, reusable finite key, in the Ideal Enqpy Configuration defined in companion document \[12\].
+As of 2026, Enqpy™ is the first finite-key cipher construction to carry a formal information-theoretic proof of the Shannon Ideal System property — a specific information-theoretic property distinct from computational security. The One-Time Pad achieves Perfect Secrecy (a strictly stronger property) but requires a key equal in length to the message, making it impractical for general use. Enqpy™ achieves the Ideal System property — non-vanishing key equivocation under unlimited ciphertext accumulation — with a fixed, reusable finite key, in the Ideal Enqpy Configuration defined in companion document [12].
 
-This claim is formally established in companion document \[12\]:
+This claim is formally established in companion document [12]:
 
-- \[12\] Enqpy™ Stream Cipher — Formal Information-Theoretic Proof (Rev 1.1, 2026). Establishes Lemma 1 (MOD16 fiber size), Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate), Theorem 2 (Shannon Ideal System — proved for Ideal Enqpy Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exactly; exact conditional independence T\_{\>t} ⊥ (EK, QK) \| T\_{≤t}), Theorem 3 (plaintext support floor: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile, with posterior uniformity on the Case 1 achievable subset; the full-map min-entropy bound is stated as an explicit open problem, §12.7), Corollary 2 (quantum invariance). §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula, equivocation tightness over ℤ₁₆, cycle case completeness, and exact solution count with cycles. The \[+8\] global shift invariant (Remark 6.1) extends to a full ciphertext-equivalent coset under the key role separation of the Ideal Configuration (see \[12\] §6.1). Also defines the Ideal Enqpy Configuration and formally characterizes the standard deployment profiles (LOW/MED/HIGH) and their security trade-offs.
+- [12] Enqpy™ Stream Cipher — Formal Information-Theoretic Proof (Rev 2.0, 2026). Establishes Lemma 1 (MOD16 fiber size), Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate), Theorem 2 (Shannon Ideal System — proved for Ideal Enqpy Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exactly; exact conditional independence T\_{\>t} ⊥ (EK, QK) \| T\_{≤t}), Theorem 3 (Base Cipher Plaintext Equivocation — closed: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile, with uniform posterior over the full consistent set, giving H = H∞ ≥ 128 bits), Lemma B3 (multi-window composition; finite-key ceiling), Lemma B4 (NIL-update coset propagation; Method 2 required for Base rotation), Corollary 2 (quantum invariance). The optional Extended Mixing Profile’s full-map min-entropy is the single open research addendum (§12.7). §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula, equivocation tightness over ℤ₁₆, cycle case completeness, and exact solution count with cycles. The [+8] global shift invariant (Remark 6.1) extends to a full ciphertext-equivalent coset under the key role separation of the Ideal Configuration (see [12] §6.1). Also defines the Base Cipher and Extended Mixing Profile and characterizes the standard deployment profiles (LOW/MED/HIGH) and their security trade-offs.
 
 All proofs are unconditional: no computational hardness assumption is invoked. The bounds hold against any adversary, including quantum adversaries.
 
 This document presents those claims, their formal basis, operational constraints, and the complete public implementation specification, including the C reference implementation, API, test vectors, and public performance record. Commercial optimization basis and implementation-engineering techniques are documented separately in the Enqpy™ Implementation Companion.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>Ideal Enqpy™ Configuration</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p>The Ideal Enqpy™ Configuration is the specific key derivation arrangement under which the construction is formally proved to satisfy Shannon’s Ideal System definition — H(EK, QK | T^∞) = log₂(4) = 2 bits exactly, unconditional and quantum-invariant. It is defined by the Key Role Separation Principle: each master key appears as the ValueKey parameter in exactly one PDAF Mode 1 call per session; neither master key appears as an OffsetKey parameter or HMIX input.</p>
-<p>OffsetKey parameters (VKP, OKP) are derived from the public nonce OR_t only. Operational requirements are specified in §8.9. Deployments requiring the formal Shannon Ideal System guarantee SHOULD use this configuration. EnqpyADS™ HMIX-based variant configurations may use the same LOW/MEDIUM/HIGH key-size profiles for deployment sizing, but they are variants and do not carry the formal global Shannon Ideal System guarantee unless separately proved.</p></td>
-</tr>
-</tbody>
-</table>
+> **Ideal Enqpy™ Configuration**
+>
+> The Ideal Enqpy™ Configuration is the specific key derivation arrangement under which the construction is formally proved to satisfy Shannon’s Ideal System definition — H(EK, QK | T^∞) = log₂(4) = 2 bits exactly, unconditional and quantum-invariant. It is defined by the Key Role Separation Principle: each master key appears as the ValueKey parameter in exactly one PDAF Mode 1 call per session; neither master key appears as an OffsetKey parameter or HMIX input.
+>
+> OffsetKey parameters (VKP, OKP) are derived from the public nonce OR_t only. In Rev 2.0 the proof-complete Ideal Configuration is the Base Cipher profile: Key Role Separation plus Case-1 W generation, HIGH (n=64), a 2,048-byte maximum window, and synchronized key update. The optional Extended Mixing Profile (Cases 1/2/3, Case Selector, 6,144-byte window) is specified separately. Operational requirements are specified in §8.9. Deployments requiring the formal Shannon Ideal System guarantee SHOULD use this configuration. EnqpyADS™ HMIX-based variant configurations may use the same LOW/MEDIUM/HIGH key-size profiles for deployment sizing, but they are variants and do not carry the formal global Shannon Ideal System guarantee unless separately proved.
 
-| **NOTE TO EDITORS**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| This document describes a proprietary cryptographic system whose terminology, notation, and security claims are defined precisely within the text. Editors are asked to preserve all technical language exactly as written — including defined terms, symbolic notation, and capitalization conventions (e.g., OWC, PDAF, PDAF_SEC, OR, VK, OK, CS) — as these carry specific formal meaning and any alteration may introduce technical inaccuracy. Security claim language in particular should not be softened, qualified, or paraphrased without author consultation. Questions regarding technical content should be directed to the author rather than resolved editorially. |
+> **NOTE TO EDITORS**
+>
+> This document describes a proprietary cryptographic system whose terminology, notation, and security claims are defined precisely within the text. Editors are asked to preserve all technical language exactly as written — including defined terms, symbolic notation, and capitalization conventions (e.g., OWC, PDAF, PDAF_SEC, OR, VK, OK, CS) — as these carry specific formal meaning and any alteration may introduce technical inaccuracy. Security claim language in particular should not be softened, qualified, or paraphrased without author consultation. Questions regarding technical content should be directed to the author rather than resolved editorially.
 
 # 1. Introduction
 
@@ -65,7 +50,7 @@ This document presents those claims, their formal basis, operational constraints
 
 Enqpy™ (pronounced “En-Q-P” or “N-Q-P”) is a symmetric-key stream cipher developed by NQP LLC. Unlike all commercially deployed stream and block ciphers, which derive their security from assumed computational hardness — the difficulty of factoring large integers or solving discrete logarithm problems — Enqpy™ claims security via mathematical underdetermination: the ciphertext is genuinely consistent with multiple plaintexts under any key search, and no additional computation can resolve the ambiguity because the required information is structurally absent.
 
-Enqpy™ has been formally proved to satisfy Claude Shannon’s Ideal System definition from his 1949 paper “Communication Theory of Secrecy Systems” — the finite-key variant in which the equivocation H(EK, QK \| Cᵐ, Mᵐ) does not approach zero as the amount of intercepted material m→∞. See \[12\].
+Enqpy™ has been formally proved to satisfy Claude Shannon’s Ideal System definition from his 1949 paper “Communication Theory of Secrecy Systems” — the finite-key variant in which the equivocation H(EK, QK \| Cᵐ, Mᵐ) does not approach zero as the amount of intercepted material m→∞. See [12].
 
 This document specifies the Ideal Enqpy™ Configuration as the primary and formally proved-secure implementation. It covers: the OWC (One-Way Computation) primitive; the PDAF (Pseudo-random Data Augmentation Function) in two modes; the PDAF_SEC encrypt/decrypt function in its Ideal Configuration; key size requirements; key derivation, session key generation, and in-cipher key update; Nil-Communication Key Update; security analysis; NIST SP 800-22 randomness test results; and C and VHDL reference implementations with test vectors. EnqpyADS™ variant configurations for other deployment requirements are documented separately.
 
@@ -75,34 +60,34 @@ Shannon proved that a cryptosystem achieves Perfect Secrecy if and only if: (1) 
 
 Shannon also described a weaker but still strong notion: an Ideal System, defined as a cipher in which “no matter how much material is intercepted, the enemy still does not obtain a unique solution to the cipher but is left with many alternatives, all of reasonable probability.” This is formally expressed as the equivocation H(EK, QK \| Cᵐ, Mᵐ) not approaching zero as m→∞.
 
-Enqpy™ has been proved to realize this Ideal System property for arbitrary binary data using a finite key, by means of the underdetermined PDAF key expansion function applied at every step of key derivation, selection, and update. The underdetermination arises from the many-to-one property of MOD16 modular arithmetic: for any output nibble r, exactly 16 input pairs (a, b) satisfy (a + b) mod 16 = r. This structural property is independent of computational hardness and is preserved regardless of adversary computing power, including quantum computers. The formal proof appears in companion document \[12\].
+Enqpy™ has been proved to realize this Ideal System property for arbitrary binary data using a finite key, by means of the underdetermined PDAF key expansion function applied at every step of key derivation, selection, and update. The underdetermination arises from the many-to-one property of MOD16 modular arithmetic: for any output nibble r, exactly 16 input pairs (a, b) satisfy (a + b) mod 16 = r. This structural property is independent of computational hardness and is preserved regardless of adversary computing power, including quantum computers. The formal proof appears in companion document [12].
 
-The Ideal System claim applies specifically to the cipher’s key equivocation. Applications requiring plaintext confidentiality AND ciphertext integrity must apply the MAC and integrity guidance provided in Section 8.6.
+The key-axis Ideal System claim concerns non-vanishing key equivocation. For the Base Cipher, the companion proof additionally establishes a closed message-axis min-entropy theorem over the full consistent plaintext set (H(PT\|CT,OR) = H∞(PT\|CT,OR) ≥ 128 bits at HIGH), under the stated plaintext-conditioning hypothesis. Applications requiring plaintext confidentiality AND ciphertext integrity must apply the MAC and integrity guidance provided in Section 8.6.
 
 # 2. Notation and Conventions
 
-| **Symbol**  | **Definition**                                                                                                                                                                                 |
-|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| EK          | Encryption Key — master secret, shared out-of-band. MUST be independently generated from QK. EK ≠ QK required. Minimum length per security profile (Section 3).                                |
-| QK          | Query Key — companion master secret, shared out-of-band. MUST be independently generated from EK.                                                                                              |
-| OR          | Open Return — per-message public random nonce. MUST be generated by a CSPRNG, used exactly once per (EK, QK) credential pair, and never reused. Transmitted in clear alongside the ciphertext. |
-| OR_CTR      | Open Return Counter — a 64-bit monotonically increasing integer bound to each (EK, QK) credential pair. Incremented before each OR generation.                                                 |
-| OR_EXP      | OR Counter Expansion — a PDAF-based expansion of OR_CTR to n nibbles, used in Phase 1 mixing.                                                                                                  |
-| eff_or      | Effective Open Return — OR value used in all key derivation steps, computed by mixing the raw OR with OR_EXP per Phase 1. Transmitted in place of raw OR.                                      |
-| VKP         | ValueKey Pointer = PDAF₁(eff_or, eff_or)\[:n\] — per-session pointer key (Ideal Configuration; nonce-derived, public).                                                                         |
-| OKP         | OffsetKey Pointer = (VKP + DS_SEP) mod 16 — per-session offset key (Ideal Configuration; domain-separated from VKP, public).                                                                   |
-| VKC         | ValueKey Cipher = PDAF(EK, VKP, Mode=1) — per-session working value key.                                                                                                                       |
-| OKC         | OffsetKey Cipher = PDAF(QK, OKP, Mode=1) — per-session working offset key.                                                                                                                     |
-| CS          | Case Selector — per-session, key-derived 3-nibble value that determines the Selection case ordering. Derived from VKC and OKC using PDAF Mode 1.                                               |
-| W           | Per-unit message key (cipher keystream unit), output of the CS-ordered Selection phase.                                                                                                        |
-| n           | Key length in 4-bit hex nibbles. Minimum: 32 nibbles (128 bits, LOW profile); standard: 64 nibbles (256 bits, HIGH profile).                                                                   |
-| n²          | Full PDAF output length (n × n cross-product nibbles).                                                                                                                                         |
-| ⊕           | Bitwise XOR.                                                                                                                                                                                   |
-| HMIX(a,b,d) | Nibble-wise MOD16 combination: HMIX\[i\] = MOD16_TABLE\[a\[i\]\]\[MOD16_TABLE\[b\[i\]\]\[d\]\].                                                                                                |
-| DS_SEP      | Ideal Configuration domain separator constant for OKP derivation. Required value: 0xF. OKP\[i\] = (VKP\[i\] + DS_SEP) mod 16.                                                                  |
-| DS_VK       | Domain separator 0x5 used in EnqpyADS™ HMIX-based variant configurations. Not used in the Ideal Configuration.                                                                                 |
-| DS_OK       | Domain separator 0xA for HMIX-based OKP derivation in EnqpyADS™ variant configurations. Not used in the Ideal Configuration (which uses DS_SEP = 0xF).                                         |
-| MOD16_TABLE | 16×16 lookup table: MOD16_TABLE\[a\]\[b\] = (a + b) & 0xF.                                                                                                                                     |
+| **Symbol**  | **Definition**                                                                                                                                                                                                                             |
+|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| EK          | Encryption Key — master secret, shared out-of-band. MUST be independently generated from QK. EK ≠ QK required. Minimum length per security profile (Section 3).                                                                            |
+| QK          | Query Key — companion master secret, shared out-of-band. MUST be independently generated from EK.                                                                                                                                          |
+| OR          | Open Return — per-message public random nonce. MUST be generated by a CSPRNG, used exactly once per (EK, QK) credential pair, and never reused. Transmitted in clear alongside the ciphertext.                                             |
+| OR_CTR      | Open Return Counter — a 64-bit monotonically increasing integer bound to each (EK, QK) credential pair. Incremented before each OR generation.                                                                                             |
+| OR_EXP      | OR Counter Expansion — a PDAF-based expansion of OR_CTR to n nibbles, used in Phase 1 mixing.                                                                                                                                              |
+| eff_or      | Effective Open Return — OR value used in all key derivation steps, computed by mixing the raw OR with OR_EXP per Phase 1. Transmitted in place of raw OR.                                                                                  |
+| VKP         | ValueKey Pointer = PDAF₁(eff_or, eff_or)[:n] — per-session pointer key (Ideal Configuration; nonce-derived, public).                                                                                                                     |
+| OKP         | OffsetKey Pointer = (VKP + DS_SEP) mod 16 — per-session offset key (Ideal Configuration; domain-separated from VKP, public).                                                                                                               |
+| VKC         | ValueKey Cipher = PDAF(EK, VKP, Mode=1) — per-session working value key.                                                                                                                                                                   |
+| OKC         | OffsetKey Cipher = PDAF(QK, OKP, Mode=1) — per-session working offset key.                                                                                                                                                                 |
+| CS          | Case Selector — per-session, key-derived 3-nibble value that determines the Selection case ordering. Derived from VKC and OKC using PDAF Mode 1. Used only in the optional Extended Mixing Profile; omitted entirely from the Base Cipher. |
+| W           | Per-unit message key (cipher keystream unit). In the Base Cipher, the output of Case-1 W generation. In the optional Extended Mixing Profile, the output of the CS-ordered three-case Selection phase.                                     |
+| n           | Key length in 4-bit hex nibbles. Minimum: 32 nibbles (128 bits, LOW profile); standard: 64 nibbles (256 bits, HIGH profile).                                                                                                               |
+| n²          | Full PDAF output length (n × n cross-product nibbles).                                                                                                                                                                                     |
+| ⊕           | Bitwise XOR.                                                                                                                                                                                                                               |
+| HMIX(a,b,d) | Nibble-wise MOD16 combination: HMIX[i] = MOD16_TABLE[a[i]][MOD16_TABLE[b[i]][d]].                                                                                                                                            |
+| DS_SEP      | Ideal Configuration domain separator constant for OKP derivation. Required value: 0xF. OKP[i] = (VKP[i] + DS_SEP) mod 16.                                                                                                              |
+| DS_VK       | Domain separator 0x5 used in EnqpyADS™ HMIX-based variant configurations. Not used in the Ideal Configuration.                                                                                                                             |
+| DS_OK       | Domain separator 0xA for HMIX-based OKP derivation in EnqpyADS™ variant configurations. Not used in the Ideal Configuration (which uses DS_SEP = 0xF).                                                                                     |
+| MOD16_TABLE | 16×16 lookup table: MOD16_TABLE[a][b] = (a + b) & 0xF.                                                                                                                                                                                 |
 
 Hexadecimal strings are uppercase. Key lengths are byte-aligned (even number of hex digits). The fundamental unit in all PDAF/OWC operations is the 4-bit nibble (hexadecimal digit, value 0–15), stored as a uint8_t.
 
@@ -110,7 +95,7 @@ Hexadecimal strings are uppercase. Key lengths are byte-aligned (even number of 
 
 ## 3.1 Overview
 
-Enqpy™ is built on the Ideal Configuration defined in §8.9, which is the single formally proved-secure implementation. The Ideal Configuration supports flexible key sizes meeting the minimum requirements below. For deployments with specific security/performance/implementation constraints — including defense-in-depth key mixing, FPGA optimization, IoT resource constraints, or other EnqpyADS™ Built-To-Application requirements — variant configurations are available through the EnqpyADS™ specification. Variant configurations below the key size minimums below are prohibited.
+Enqpy™ is built on the Base Cipher (Ideal Configuration, Case-1 W generation) defined in §8.9, which is the canonical proof-complete profile: HIGH n=64, nonce-only pointer derivation, n-nibble VKC/OKC, a 2,048-byte maximum plaintext window, and mandatory synchronized key update. The optional Extended Mixing Profile (Cases 1/2/3, 6,144-byte window) adds known-plaintext equation-system separation and a larger pre-update window; its support floor is proved and its full-map min-entropy is an open research addendum. The Base Cipher supports flexible key sizes meeting the minimum requirements below (HIGH n=64 is the canonical proof profile; LOW/MED are implementation profiles with parameterized bounds). For deployments with specific security/performance/implementation constraints — including defense-in-depth key mixing, FPGA optimization, IoT resource constraints, or other EnqpyADS™ Built-To-Application requirements — variant configurations are available through the EnqpyADS™ specification. Variant configurations below the key size minimums below are prohibited.
 
 ## 3.2 Security Profile Definitions
 
@@ -126,29 +111,13 @@ The HIGH profile (256-bit / 64-nibble keys) is the default recommendation for al
 
 The following configurations are prohibited under all security profiles: key length n \< 32 nibbles (128 bits); EK = QK (identical master keys); EK or QK with zero entropy (all-zero, all-same-value, or repeating-pattern keys); OR reuse with the same (EK, QK) credential pair under any circumstances; OR generated by a non-CSPRNG source; and key size reductions below the active security profile minimum during operation.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>EK ≠ QK — ALGEBRAIC RATIONALE AND ENFORCEMENT</strong></p>
-<p>Algebraic analysis: in the Ideal Configuration, VKP is derived from eff_or and OKP is derived as (VKP + DS_SEP) mod 16, so the two pointer paths remain distinct even when EK = QK. The prohibition on EK = QK is therefore not because the cipher fails to operate; it is because identical master keys collapse the intended two-key architectural separation. With EK = QK, recovery of either master key via UP-direction attack yields both master keys simultaneously, eliminating the two-key architectural separation. With EK ≠ QK, a breach of one master key does not expose the other. The prohibition preserves the independence of the two-key system. Enforcement: PDAF_SEC implementations SHOULD return −1 with an appropriate error code if EK and QK are byte-identical. Callers MUST verify EK ≠ QK at credential generation time and before each Nil-Communication Key Update. The cipher-layer check is a defense-in-depth measure; application-layer enforcement at credential generation time is the primary control.</p></td>
-</tr>
-</tbody>
-</table>
+> **EK ≠ QK — ALGEBRAIC RATIONALE AND ENFORCEMENT**
+>
+> Algebraic analysis: in the Ideal Configuration, VKP is derived from eff_or and OKP is derived as (VKP + DS_SEP) mod 16, so the two pointer paths remain distinct even when EK = QK. The prohibition on EK = QK is therefore not because the cipher fails to operate; it is because identical master keys collapse the intended two-key architectural separation. With EK = QK, recovery of either master key via UP-direction attack yields both master keys simultaneously, eliminating the two-key architectural separation. With EK ≠ QK, a breach of one master key does not expose the other. The prohibition preserves the independence of the two-key system. Enforcement: PDAF_SEC implementations SHOULD return −1 with an appropriate error code if EK and QK are byte-identical. Callers MUST verify EK ≠ QK at credential generation time and before each Nil-Communication Key Update. The cipher-layer check is a defense-in-depth measure; application-layer enforcement at credential generation time is the primary control.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>SINGLE-BARRIER ARCHITECTURE — REQUIRED DISCLOSURE</strong></p>
-<p>The PDAF Mode 1 gate is the sole cryptographic barrier protecting EK and QK. HMIX is a structural domain separation mechanism, not a cryptographic barrier — it is algebraically invertible given either input and the domain separator constant. Any reduction in the Mode 1 preimage count below its proved minimum directly reduces the master key security margin by the same factor. The architecture is a single-barrier design; this is correct by intent. The HIGH profile preimage lower bound is ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) per compatible OffsetKey, unconditional and holding against any adversary including quantum adversaries (proved in [12], Theorem 1 and Corollary 2). Deployers must understand that PDAF Mode 1 non-invertibility is the exclusive cryptographic foundation of master key protection. No secondary barrier exists and none is required given the formal proof bounds. Independent peer review of the preimage lower-bound proof ([12], Theorem 1) is the highest-priority assurance action for evaluators of this architecture; see Section 8.8 for proof status.</p></td>
-</tr>
-</tbody>
-</table>
+> **SINGLE-BARRIER ARCHITECTURE — REQUIRED DISCLOSURE**
+>
+> The PDAF Mode 1 gate is the sole cryptographic barrier protecting EK and QK. HMIX is a structural domain separation mechanism, not a cryptographic barrier — it is algebraically invertible given either input and the domain separator constant. Any reduction in the Mode 1 preimage count below its proved minimum directly reduces the master key security margin by the same factor. The architecture is a single-barrier design; this is correct by intent. The HIGH profile preimage lower bound is ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) per compatible OffsetKey, unconditional and holding against any adversary including quantum adversaries (proved in [12], Theorem 1 and Corollary 2). Deployers must understand that PDAF Mode 1 non-invertibility is the exclusive cryptographic foundation of master key protection. No secondary barrier exists and none is required given the formal proof bounds. Independent peer review of the preimage lower-bound proof ([12], Theorem 1) is the highest-priority assurance action for evaluators of this architecture; see Section 8.8 for proof status.
 
 ## 3.4 Key Entropy Requirements
 
@@ -156,17 +125,9 @@ All master keys (EK, QK) MUST be generated by a Cryptographically Secure Pseudo-
 
 The OR_CTR MUST increment monotonically before each use and MUST persist across power cycles for each (EK, QK) credential pair. For HIGH profile deployments, hardware-secured monotonic counter storage is required to prevent counter state loss from power interruption.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>KEY ENTROPY ADVISORY</strong></p>
-<p>The n/2-nibble minimum entropy floor is the absolute minimum for conformance. Keys generated at this minimum provide quantum search resistance of 2^(H_min/2), where H_min is the actual min-entropy in bits. For HIGH profile keys at the minimum entropy floor (128-bit min-entropy), quantum search cost is 2⁶⁴ — equivalent to the LOW profile quantum margin, not the HIGH profile margin. To realize the full quantum security margins stated in §3.5, EK and QK MUST have min-entropy equal to the full key length (n nibbles = 4n bits). Keys generated directly from a CSPRNG meeting §3.4 requirements with a sufficient entropy source will satisfy the full entropy requirement. Keys derived via a KDF from lower-entropy input material should be evaluated against this advisory before HIGH profile deployment. Note on OR_EXP entropy ceiling: OR_EXP provides deterministic diffusion of OR_CTR across n key positions — not entropy expansion. The entropy of OR_EXP is bounded by the 64-bit OR_CTR regardless of n. The statistical uniqueness of eff_or is provided by the CSPRNG OR component. HIGH profile deployments MUST implement CSPRNG health monitoring (e.g., SP 800-90B continuous health tests) so that degradation of the CSPRNG cannot silently reduce the statistical uniqueness guarantee of eff_or.</p></td>
-</tr>
-</tbody>
-</table>
+> **KEY ENTROPY ADVISORY**
+>
+> The n/2-nibble minimum entropy floor is the absolute minimum for conformance. Keys generated at this minimum provide quantum search resistance of 2^(H_min/2), where H_min is the actual min-entropy in bits. For HIGH profile keys at the minimum entropy floor (128-bit min-entropy), quantum search cost is 2⁶⁴ — equivalent to the LOW profile quantum margin, not the HIGH profile margin. To realize the full quantum security margins stated in §3.5, EK and QK MUST have min-entropy equal to the full key length (n nibbles = 4n bits). Keys generated directly from a CSPRNG meeting §3.4 requirements with a sufficient entropy source will satisfy the full entropy requirement. Keys derived via a KDF from lower-entropy input material should be evaluated against this advisory before HIGH profile deployment. Note on OR_EXP entropy ceiling: OR_EXP provides deterministic diffusion of OR_CTR across n key positions — not entropy expansion. The entropy of OR_EXP is bounded by the 64-bit OR_CTR regardless of n. The statistical uniqueness of eff_or is provided by the CSPRNG OR component. HIGH profile deployments MUST implement CSPRNG health monitoring (e.g., SP 800-90B continuous health tests) so that degradation of the CSPRNG cannot silently reduce the statistical uniqueness guarantee of eff_or.
 
 ## 3.5 Quantum Security Advisory
 
@@ -178,7 +139,7 @@ The OR_CTR MUST increment monotonically before each use and MUST persist across 
 
 Note: Quantum search cost figures in the table above assume full-entropy keys (min-entropy = key length). Keys at the n/2 minimum entropy floor provide half the stated quantum search cost in exponent — for example, HIGH profile at n/2-nibble entropy provides 2⁶⁴ quantum search cost, not 2¹²⁸. See §3.4 Key Entropy Advisory.
 
-Enqpy™’s underdetermination property is structurally independent of computational hardness and is not weakened by quantum computing. No quantum algorithm — including Grover’s search or Shor’s factoring algorithm — resolves the structural key ambiguity created by MOD16’s many-to-one mapping. This is formally proved in \[12\], Corollary 2.
+Enqpy™’s underdetermination property is structurally independent of computational hardness and is not weakened by quantum computing. No quantum algorithm — including Grover’s search or Shor’s factoring algorithm — resolves the structural key ambiguity created by MOD16’s many-to-one mapping. This is formally proved in [12], Corollary 2.
 
 # 4. Cipher Overview
 
@@ -186,13 +147,13 @@ Enqpy™’s underdetermination property is structurally independent of computat
 
 Enqpy™ is a symmetric stream cipher. Two communicating parties share credentials pre-established out-of-band: OpenID (public), EK and QK (both secret), and an initial OR_CTR value of zero. For each message event the cipher executes five phases:
 
-| **Phase** | **Name**                 | **Description**                                                                                                                                                                                         |
-|-----------|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1         | Initial Message Setup    | Sender increments OR_CTR, generates a fresh CSPRNG OR, expands OR_CTR to n nibbles via PDAF (OR_EXP), and mixes OR with OR_EXP to produce eff_or. eff_or is public and transmitted with the ciphertext. |
-| 2         | Key Generation           | Derive per-session VKC and OKC from eff_or, EK, and QK via nonce-derived pointer keys (VKP, OKP) and PDAF Mode 1. Derive the per-session Case Selector (CS) via PDAF Mode 1.                            |
-| 3         | Selection (W generation) | Generate the per-unit cipher key W via a CS-ordered, three-case PDAF-based traversal of VKC and OKC.                                                                                                    |
-| 4         | Cipher                   | Encrypt: W_byte ⊕ PT_byte = CT_byte. Decrypt: W_byte ⊕ CT_byte = PT_byte.                                                                                                                               |
-| 5         | Key Update               | Derive VKNext and OKNext from current VKC/OKC via PDAF Mode 1 with cross-combined inputs. Executed when more plaintext or ciphertext remains after a full W cycle.                                      |
+| **Phase** | **Name**                 | **Description**                                                                                                                                                                                                                                                 |
+|-----------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1         | Initial Message Setup    | Sender increments OR_CTR, generates a fresh CSPRNG OR, expands OR_CTR to n nibbles via PDAF (OR_EXP), and mixes OR with OR_EXP to produce eff_or. eff_or is public and transmitted with the ciphertext.                                                         |
+| 2         | Key Generation           | Derive per-session VKC and OKC (n-nibble) from eff_or, EK, and QK via nonce-derived pointer keys (VKP, OKP) and PDAF Mode 1. Extended Mixing Profile only: also derive the per-session Case Selector (CS) via PDAF Mode 1 (Phase 2B). The Base Cipher omits CS. |
+| 3         | Selection (W generation) | Base Cipher: generate the per-unit cipher key W via Case-1 PDAF-based traversal of VKC and OKC (n² nibbles, 2,048 bytes at HIGH). Extended Mixing Profile: CS-ordered three-case traversal (3n² nibbles, 6,144 bytes).                                          |
+| 4         | Cipher                   | Encrypt: W_byte ⊕ PT_byte = CT_byte. Decrypt: W_byte ⊕ CT_byte = PT_byte.                                                                                                                                                                                       |
+| 5         | Key Update               | Derive VKNext and OKNext from current VKC/OKC via PDAF Mode 1 with cross-combined inputs. Executed when more plaintext or ciphertext remains after a full W cycle.                                                                                              |
 
 ## 4.2 Operational Flow Summary
 
@@ -200,35 +161,39 @@ Enqpy™ is a symmetric stream cipher. Two communicating parties share credentia
 
 1\. Increment OR_CTR (persist). Generate random OR. Compute:
 
-> OR_CTR_nibs ← 16-nibble representation of OR_CTR
->
-> OR_EXP\[0..n-1\] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)\[0..n-1\]
->
-> eff_or\[i\] = MOD16\[or_nibs\[i\]\]\[OR_EXP\[i\]\]
+```
+OR_CTR_nibs ← 16-nibble representation of OR_CTR
+OR_EXP[0..n-1] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)[0..n-1]
+eff_or[i] = MOD16[or_nibs[i]][OR_EXP[i]]
+```
 
-2\. VKP\[0..n-1\] = PDAF(eff_or, eff_or, Mode=1)\[0..n-1\] (nonce self-expansion)
+2\. VKP[0..n-1] = PDAF(eff_or, eff_or, Mode=1)[0..n-1] (nonce self-expansion)
 
-3\. OKP\[i\] = MOD16\[VKP\[i\]\]\[DS_SEP\] where DS_SEP = 0xF
+3\. OKP[i] = MOD16[VKP[i]][DS_SEP] where DS_SEP = 0xF
 
 4\. VKC = PDAF(EK, VKP, Mode=1); OKC = PDAF(QK, OKP, Mode=1)
 
-5\. CS = PDAF(VKC\[0..n-1\], OKC\[0..n-1\], Mode=1)\[0..2\]
+5\. (Base Cipher: no Case Selector. The two steps below apply to the Extended Mixing Profile only.)
 
-> case_order = CS_PERMUTATION_TABLE\[CS mod 6\]
+```
+[Extended only] CS = PDAF(VKC,OKC,Mode=1)[0..2]; case_order = CS_PERMUTATION_TABLE[CS mod 6]
+```
 
-6\. Selection: CS-ordered three-case traversal → W nibble stream
+6\. Selection (Base Cipher): Case-1 W generation — W[p,C] = MOD16[OKC[p]][VKC[(p+C) mod n]], n² nibbles (2,048 bytes at HIGH). Extended Mixing Profile: CS-ordered three-case traversal → W nibble stream (3n² nibbles, 6,144 bytes).
 
 7\. Cipher: W_byte XOR PT_byte = CT_byte
 
-8\. Transmit \[OpenID, eff_or, CT\]
+8\. Transmit [OpenID, eff_or, CT]
+
+Base Cipher: if more plaintext remains after each n²-nibble Case-1 window (2,048 bytes at HIGH), apply the Phase 5 update (no CS) before continuing. Extended Mixing delta: derive CS and case_order (step 5); use the CS-ordered three-case traversal (step 6, 6,144-byte window); after each window re-derive CS per Phase 5.
 
 ### Receive (Decrypt)
 
-9\. Receive \[OpenID, eff_or, CT\]
+9\. Receive [OpenID, eff_or, CT]
 
-10\. Reproduce VKC, OKC, and CS identically using received eff_or and shared EK, QK.
+10\. Reproduce VKC and OKC identically using received eff_or and shared EK, QK (Extended Mixing Profile: also reproduce CS).
 
-11\. Selection and Update: identical CS-ordered logic as sender.
+11\. Selection and Update: identical logic as sender — Case-1 W generation for the Base Cipher, CS-ordered three-case for the Extended Mixing Profile.
 
 12\. Cipher: W_byte XOR CT_byte = PT_byte
 
@@ -256,34 +221,34 @@ The operation is not invertible: for any output nibble r, there exist exactly 16
 |---------------|----------------------------------------------------------------------------------------|
 | Input (hex)   | FCB578                                                                                 |
 | nSkip         | 1                                                                                      |
-| Calculation   | Nibbles {15,12,11,5,7,8}: MOD16\[15\]\[12\]=11, MOD16\[11\]\[5\]=0, MOD16\[7\]\[8\]=15 |
+| Calculation   | Nibbles {15,12,11,5,7,8}: MOD16[15][12]=11, MOD16[11][5]=0, MOD16[7][8]=15 |
 | Output        | B0F                                                                                    |
 
 ## 5.2 Pseudo-random Data Augmentation Function (PDAF)
 
 ### 5.2.1 Purpose and Role
 
-PDAF is the primary key expansion and key derivation primitive in Enqpy™. It is used in every phase that produces new key material: Phase 1 (OR_CTR expansion), Phase 2 (VKC and OKC derivation), Phase 2B (Case Selector derivation), Phase 3 (W generation), Phase 5 (in-cipher key update), and Nil-Communication Key Update.
+PDAF is the primary key expansion and key derivation primitive in Enqpy™. In the Base Cipher it is used in Phase 1 (OR_CTR expansion), Phase 2 (VKC and OKC derivation), Phase 3 (Case-1 W generation), Phase 5 (in-cipher key update), and Nil-Communication Key Update. In the optional Extended Mixing Profile, PDAF is also used in Phase 2B to derive the Case Selector.
 
 ### 5.2.2 Mode 0 — Dual Key Pointer Add
 
-Initialize pointer p = 0, cycle counter c = 0. For each output nibble: f1 ← ok\[p % n\]; f2 ← vk\[(p + c) % n\]; out\[nN\] ← MOD16_TABLE\[f1\]\[f2\]. Increment p; when p ≥ n, reset p = 0 and increment c. Mode 0 is used as an internal component in the Nil-Communication Key Update construction (Section 7.4). It is not used in the primary cipher path.
+Initialize pointer p = 0, cycle counter c = 0. For each output nibble: f1 ← ok[p % n]; f2 ← vk[(p + c) % n]; out[nN] ← MOD16_TABLE[f1][f2]. Increment p; when p ≥ n, reset p = 0 and increment c. Mode 0 is used as an internal component in the Nil-Communication Key Update construction (Section 7.4). It is not used in the primary cipher path.
 
 ### 5.2.3 Mode 1 — Key Offset Add
 
-Both nibble arrays are tiled to minimum length 2n + 16 (sufficient for all per-phase calls where nDigits = n; the tiled arrays are indexed up to p + δ + 1 + c with maximum index 2n + 14). For each output nibble: f1 ← addKey\[p + c\]; δ ← pointKey\[p\]; f2 ← addKey\[p + δ + 1 + c\]; out\[nN\] ← MOD16_TABLE\[f1\]\[f2\], where addKey is the tiled ValueKey array and pointKey is the tiled OffsetKey array. Mode 1 uses the OffsetKey nibble at each position as a dynamic displacement into the ValueKey.
+Both nibble arrays are tiled to minimum length 2n + 16 (sufficient for all per-phase calls where nDigits = n; the tiled arrays are indexed up to p + δ + 1 + c with maximum index 2n + 14). For each output nibble: f1 ← addKey[p + c]; δ ← pointKey[p]; f2 ← addKey[p + δ + 1 + c]; out[nN] ← MOD16_TABLE[f1][f2], where addKey is the tiled ValueKey array and pointKey is the tiled OffsetKey array. Mode 1 uses the OffsetKey nibble at each position as a dynamic displacement into the ValueKey.
 
 The displacement structure creates a self-referential constraint system in the equations relating input to output: the OffsetKey controls which ValueKey positions are combined, but the OffsetKey is itself part of the unknowns when attempting inversion. This entanglement provides the Mode 1 underdetermination guarantee that is the foundation of Enqpy™’s key protection.
 
-Tiling periodicity: the tiling of input arrays creates periodic structure in Mode 1 output. The n² output is not a uniformly random n²-nibble string but has block structure with period n modulated by the cycle counter c. This means Mode 1 outputs form a proper subset of all n²-nibble strings. The preimage lower bound \|P(O\*)\| ≥ 2 (worst case) / ≥ 16 (non-degenerate) in \[12\] Theorem 1 is established for achievable outputs O\* ∈ image(PDAF₁) — not for the set of all n²-nibble strings. An adversary attempting inversion over Mode 1 outputs faces at least 2 consistent input keys (worst case) or at least 16 (non-degenerate) for any achievable output. The block structure does not reduce this floor; it restricts the domain of valid outputs over which the bound holds, which is the domain the proof characterizes.
+Tiling periodicity: the tiling of input arrays creates periodic structure in Mode 1 output. The n² output is not a uniformly random n²-nibble string but has block structure with period n modulated by the cycle counter c. This means Mode 1 outputs form a proper subset of all n²-nibble strings. The preimage lower bound \|P(O\*)\| ≥ 2 (worst case) / ≥ 16 (non-degenerate) in [12] Theorem 1 is established for achievable outputs O\* ∈ image(PDAF₁) — not for the set of all n²-nibble strings. An adversary attempting inversion over Mode 1 outputs faces at least 2 consistent input keys (worst case) or at least 16 (non-degenerate) for any achievable output. The block structure does not reduce this floor; it restricts the domain of valid outputs over which the bound holds, which is the domain the proof characterizes.
 
-Self-referential application (VK = OK): when PDAF Mode 1 is called with VK = OK (e.g., in Phase 1 OR_EXP derivation), the displacement at each output position is δ = VK_tiled\[p\], and both combined positions draw from the same tiled array. This is a distinct case from the two-independent-input construction and produces a self-referential constraint system upon inversion. The preimage lower bound of \[12\] Theorem 1 is established for the two-independent-input case; the self-referential case is used only in Phase 1 OR_EXP derivation, where the security requirement is one-way expansion of OR_CTR — a weaker property than general session key protection. The self-referential construction is the correct design for OR_EXP: there is no independent OffsetKey because OR_CTR is the sole input material.
+Self-referential application (VK = OK): when PDAF Mode 1 is called with VK = OK (e.g., in Phase 1 OR_EXP derivation), the displacement at each output position is δ = VK_tiled[p], and both combined positions draw from the same tiled array. This is a distinct case from the two-independent-input construction and produces a self-referential constraint system upon inversion. The preimage lower bound of [12] Theorem 1 is established for the two-independent-input case; the self-referential case is used only in Phase 1 OR_EXP derivation, where the security requirement is one-way expansion of OR_CTR — a weaker property than general session key protection. The self-referential construction is the correct design for OR_EXP: there is no independent OffsetKey because OR_CTR is the sole input material.
 
 ### 5.2.4 One-Way Gate Property
 
-PDAF Mode 1 is non-invertible due to the compounded structural underdetermination of its construction. The n² output is produced from n input nibbles (expansion ratio 1:n) via an OffsetKey-dependent displacement that creates entangled equations between the two input arrays. An adversary attempting inversion must simultaneously resolve both the ValueKey and the OffsetKey from the output — a task that faces genuine multi-solution ambiguity rather than the simple 16-solution reduction possible with Mode 0’s linear chaining structure. The preimage lower bound is formally proved in \[12\], Theorem 1: \|P(O\*)\| ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) for any achievable output O\* ∈ image(PDAF₁).
+PDAF Mode 1 is non-invertible due to the compounded structural underdetermination of its construction. The n² output is produced from n input nibbles (expansion ratio 1:n) via an OffsetKey-dependent displacement that creates entangled equations between the two input arrays. An adversary attempting inversion must simultaneously resolve both the ValueKey and the OffsetKey from the output — a task that faces genuine multi-solution ambiguity rather than the simple 16-solution reduction possible with Mode 0’s linear chaining structure. The preimage lower bound is formally proved in [12], Theorem 1: \|P(O\*)\| ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) for any achievable output O\* ∈ image(PDAF₁).
 
-An adversary with full known-session-key material may use the tiling periodicity as a consistency filter, eliminating candidate keys whose Mode 1 outputs do not match the observed block structure. This filter reduces the search space from all n²-nibble strings to Mode 1-consistent outputs, but does not reduce the preimage count below the proved minimum established in \[12\]. The filter narrows the search to the correct domain — n-nibble input keys — which is precisely what \[12\] Theorem 1 characterizes. Chosen-nonce cycle structure: the exact preimage count for a given output O\* depends on the cycle structure of the PDAF Mode 1 dependency graph for the corresponding OK (see \[12\], §11 / Appendix B for the exact formula). For a known (VKC, OKC) pair, a chosen-nonce adversary controls eff_or and therefore indirectly influences the dependency graph structure. Whether a chosen-nonce adversary can force the dependency graph into a cycle structure that approaches the worst-case preimage floor (rather than the non-degenerate floor) is a theoretical question. The worst-case floor of \|P(O\*)\| ≥ 2 per compatible OffsetKey (HIGH profile) remains unconditional; chosen-nonce attack can at most reduce the actual preimage count to this floor, not below it. This question is noted for completeness and does not affect the security proof bounds of \[12\].
+An adversary with full known-session-key material may use the tiling periodicity as a consistency filter, eliminating candidate keys whose Mode 1 outputs do not match the observed block structure. This filter reduces the search space from all n²-nibble strings to Mode 1-consistent outputs, but does not reduce the preimage count below the proved minimum established in [12]. The filter narrows the search to the correct domain — n-nibble input keys — which is precisely what [12] Theorem 1 characterizes. Chosen-nonce cycle structure: the exact preimage count for a given output O\* depends on the cycle structure of the PDAF Mode 1 dependency graph for the corresponding OK (see [12], §11 / Appendix B for the exact formula). For a known (VKC, OKC) pair, a chosen-nonce adversary controls eff_or and therefore indirectly influences the dependency graph structure. Whether a chosen-nonce adversary can force the dependency graph into a cycle structure that approaches the worst-case preimage floor (rather than the non-degenerate floor) is a theoretical question. The worst-case floor of \|P(O\*)\| ≥ 2 per compatible OffsetKey (HIGH profile) remains unconditional; chosen-nonce attack can at most reduce the actual preimage count to this floor, not below it. This question is noted for completeness and does not affect the security proof bounds of [12].
 
 This Mode 1 non-invertibility is the primary cryptographic barrier protecting the master keys EK and QK. The PDAF one-way gate between session key material (VKC, OKC) and master keys is the binding protection mechanism for EK and QK across all attack scenarios.
 
@@ -304,7 +269,7 @@ When properly keyed with values from a CSPRNG meeting the requirements of Sectio
 
 PDAF_SEC is the Enqpy™ encrypt/decrypt function. It combines PDAF-based key derivation with an XOR cipher step applied at the byte level using packed W nibble pairs. The function is symmetric: the same operation with the same keys encrypts plaintext and decrypts ciphertext.
 
-PDAF_SEC incorporates four architectural mechanisms that distinguish it from classical stream cipher constructions: PDAF-expanded OR_CTR nonce enforcement, domain-separated session key derivation, per-session key-dependent Selection case ordering via a PDAF Mode 1 Case Selector (CS), and cross-combined Phase 5 in-session key update.
+PDAF_SEC in the Base Cipher incorporates four architectural mechanisms that distinguish it from classical stream cipher constructions: PDAF-expanded OR_CTR nonce enforcement, nonce-derived domain-separated session key derivation, Case-1 W generation, and cross-combined Phase 5 in-session key update. The optional Extended Mixing Profile adds a fifth mechanism: per-session key-dependent Selection case ordering via a PDAF Mode 1 Case Selector (CS).
 
 ## 6.2 Parameters
 
@@ -326,15 +291,15 @@ PDAF_SEC incorporates four architectural mechanisms that distinguish it from cla
 
 The sender increments OR_CTR (persisted, pre-increment before use). A fresh n-nibble OR is generated from a CSPRNG. The OR_CTR is then expanded from its 64-bit integer form to n nibbles using PDAF Mode 1 self-expansion, providing strong diffusion of the counter across all key positions:
 
-> OR_CTR_nibs ← 16-nibble representation of the 64-bit OR_CTR value
->
-> OR_EXP\[0..n-1\] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)\[0..n-1\]
->
-> eff_or\[i\] = MOD16_TABLE\[or_nibs\[i\]\]\[OR_EXP\[i\]\]
+```
+OR_CTR_nibs ← 16-nibble representation of the 64-bit OR_CTR value
+OR_EXP[0..n-1] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)[0..n-1]
+eff_or[i] = MOD16_TABLE[or_nibs[i]][OR_EXP[i]]
+```
 
 This construction ensures two independent uniqueness guarantees: the CSPRNG OR provides probabilistic uniqueness, and the OR_EXP component provides a hard deterministic uniqueness guarantee for all sequential OR_CTR values within the 2⁶³ retirement threshold. The eff_or is transmitted in the clear alongside the ciphertext.
 
-OR_EXP self-referential call: OR_EXP is derived via PDAF Mode 1 self-application of OR_CTR_nibs (VK = OK = OR_CTR_nibs). The preimage structure of this call is distinct from the primary cipher path (where VK ≠ OK). The deterministic uniqueness guarantee rests on OR_CTR monotonicity: no two messages with distinct sequential OR_CTR values under the same (EK, QK) credential pair, within the 2⁶³ retirement threshold, produce identical OR_EXP. Note: the \[+8\] global shift property of PDAF₁ (see \[12\], Remark 6.1) means that any two OR_CTR values whose 16-nibble hex representations differ by exactly \[8,8,...,8\] mod 16 would produce identical OR_EXP; the first such pair in sequential use occurs at OR_CTR = 0x8888888888888888 ≈ 9.84×10¹⁸, which exceeds the 2⁶³ retirement threshold and is therefore unreachable in compliant deployments. The eff_or statistical uniqueness rests on CSPRNG OR independence. These are independent and complementary guarantees.
+OR_EXP self-referential call: OR_EXP is derived via PDAF Mode 1 self-application of OR_CTR_nibs (VK = OK = OR_CTR_nibs). The preimage structure of this call is distinct from the primary cipher path (where VK ≠ OK). The deterministic uniqueness guarantee rests on OR_CTR monotonicity: no two messages with distinct sequential OR_CTR values under the same (EK, QK) credential pair, within the 2⁶³ retirement threshold, produce identical OR_EXP. Note: the [+8] global shift property of PDAF₁ (see [12], Remark 6.1) means that any two OR_CTR values whose 16-nibble hex representations differ by exactly [8,8,...,8] mod 16 would produce identical OR_EXP; the first such pair in sequential use occurs at OR_CTR = 0x8888888888888888 ≈ 9.84×10¹⁸, which exceeds the 2⁶³ retirement threshold and is therefore unreachable in compliant deployments. The eff_or statistical uniqueness rests on CSPRNG OR independence. These are independent and complementary guarantees.
 
 OR_EXP entropy scope: OR_EXP provides deterministic diffusion of OR_CTR across n key positions, not entropy expansion. The entropy of OR_EXP is bounded by the 64-bit OR_CTR: distinct sequential OR_CTR values within the 2⁶³ retirement threshold always produce distinct OR_EXP values (deterministic injectivity), but OR_EXP cannot contain more than 64 bits of entropy regardless of n. The hard deterministic uniqueness guarantee means no two messages with distinct sequential OR_CTR values under the same credential pair will produce identical OR_EXP, up to OR_CTR = 2⁶³. The statistical uniqueness of eff_or is provided by the CSPRNG OR component. These are independent guarantees: deterministic (OR_CTR-based) and probabilistic (CSPRNG OR-based).
 
@@ -342,13 +307,12 @@ OR_EXP entropy scope: OR_EXP provides deterministic diffusion of OR_CTR across n
 
 Using the received or reproduced eff_or, the cipher derives two session-specific working key pointers via nonce self-expansion and a fixed domain separator:
 
-> VKP\[0..n-1\] = PDAF(eff_or, eff_or, Mode=1)\[0..n-1\] — nonce self-expansion (public, nonce-derived)
->
-> OKP\[i\] = (VKP\[i\] + DS_SEP) mod 16 where DS_SEP = 0xF — domain-separated from VKP (public, nonce-derived)
->
-> VKC = PDAF(EK, VKP, Mode=1)
->
-> OKC = PDAF(QK, OKP, Mode=1)
+```
+VKP[0..n-1] = PDAF(eff_or, eff_or, Mode=1)[0..n-1] — nonce self-expansion (public, nonce-derived)
+OKP[i] = (VKP[i] + DS_SEP) mod 16 where DS_SEP = 0xF — domain-separated from VKP (public, nonce-derived)
+VKC = PDAF(EK, VKP, Mode=1)
+OKC = PDAF(QK, OKP, Mode=1)
+```
 
 The domain separator DS_SEP = 0xF guarantees structural independence between the VKP and OKP derivation paths, preventing trivial relationships such as VKP = OKP. It is a public constant and contributes no entropy. (Note: DS_VK = 0x5 and DS_OK = 0xA are the complementary domain separators used in EnqpyADS™ HMIX-based variant configurations; they are not used in the Ideal Configuration.) Because eff_or is unique per message, VKC and OKC are unique per message even if EK and QK remain unchanged across multiple messages.
 
@@ -356,43 +320,38 @@ The domain separator DS_SEP = 0xF guarantees structural independence between the
 
 A per-session Case Selector (CS) is derived from the session working keys to vary the Selection case ordering. CS is derived using PDAF Mode 1, which provides the full entangled-displacement underdetermination property:
 
-> CS = PDAF(VKC\[0..n-1\], OKC\[0..n-1\], Mode=1)\[0..2\]
->
-> case_order = CS_PERMUTATION_TABLE\[CS mod 6\]
+**Profile scope: Phase 2B is present only in the Extended Mixing Profile. It is OMITTED ENTIRELY from the Base Cipher (Ideal Configuration), which uses Case-1 W generation with no Case Selector and no CS_PERMUTATION_TABLE. The Base Cipher proof object does not depend on the case structure; see §8.9 R6.**
+
+```
+CS = PDAF(VKC[0..n-1], OKC[0..n-1], Mode=1)[0..2]
+case_order = CS_PERMUTATION_TABLE[CS mod 6]
+```
 
 CS is a 3-nibble (12-bit) value. CS mod 6 selects one of the 3! = 6 possible orderings of Selection cases {1, 2, 3}: {1,2,3}, {1,3,2}, {2,1,3}, {2,3,1}, {3,1,2}, {3,2,1}. The selected ordering is applied cyclically throughout the Selection phase for that session.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>CS DESIGN NOTE</strong></p>
-<p>CS mod 6 produces exactly 6 orderings — this is the intended design. The CS is not a work-factor amplifier; its role is equation-system separation (DOWN attack resistance: preventing reconstruction of the Selection equation system from known W values without session key knowledge) and per-session behavioral variation. The 12-bit CS derivation via PDAF Mode 1 ensures the active ordering is unknown to any adversary who has not recovered the session keys. The constant-time lookup of CS_PERMUTATION_TABLE (CS mod 6 → case ordering) is required to prevent timing side-channel leakage of the case ordering. Scope note: the 6-ordering space is a small, fixed enumeration. An adversary with known W values can enumerate all 6 orderings in negligible time; the security benefit of CS is the opacity of the active ordering before session key recovery — not exhaustion resistance. Descriptions of Enqpy™ MUST NOT represent CS as providing meaningful independent work factor against key-recovery attacks.</p></td>
-</tr>
-</tbody>
-</table>
+> **CS DESIGN NOTE**
+>
+> CS mod 6 produces exactly 6 orderings — this is the intended design. The CS is not a work-factor amplifier; its role is equation-system separation (DOWN attack resistance: preventing reconstruction of the Selection equation system from known W values without session key knowledge) and per-session behavioral variation. The 12-bit CS derivation via PDAF Mode 1 ensures the active ordering is unknown to any adversary who has not recovered the session keys. The constant-time lookup of CS_PERMUTATION_TABLE (CS mod 6 → case ordering) is required to prevent timing side-channel leakage of the case ordering. Scope note: the 6-ordering space is a small, fixed enumeration. An adversary with known W values can enumerate all 6 orderings in negligible time; the security benefit of CS is the opacity of the active ordering before session key recovery — not exhaustion resistance. Descriptions of Enqpy™ MUST NOT represent CS as providing meaningful independent work factor against key-recovery attacks.
 
 ### Phase 3 — Selection: W Generation
 
-Selection applies the three cases in the CS-determined order, cycling pointer p = 0..n-1 and cycle counter C = 0..n-1.
+Base Cipher (normative): Selection uses Case 1 only — W[p,C] = MOD16[OKC[p]][VKC[(p+C) mod n]], cycling p = 0..n-1 and C = 0..n-1, producing n² nibbles (2,048 bytes at HIGH n=64) per window. No Case Selector, no permutation table, and no Cases 2/3 are used. Extended Mixing Profile (optional): Selection applies the three cases in the CS-determined order, cycling pointer p = 0..n-1 and cycle counter C = 0..n-1, producing 3n² nibbles (6,144 bytes at HIGH). Cases 2 and 3 are defined below; they are not part of the Base Cipher proof object and provide known-plaintext equation-system separation plus a larger pre-update window.
 
 | **Case**               | **Expression**                                                 | **Description**                                                              |
 |------------------------|----------------------------------------------------------------|------------------------------------------------------------------------------|
-| Case 1 — Dual Key Add  | W = MOD16\[OKC\[p\]\]\[VKC\[p+C\]\]                            | OKC digit at p added to VKC digit at p+C.                                    |
-| Case 2 — VK Offset Add | W = MOD16\[VKC\[p+C\]\]\[VKC\[p+δ+1+C\]\] where δ = OKC\[p\]   | VKC digit at p+C added to VKC digit at offset position. δ derived from OKC.  |
-| Case 3 — OK Offset Add | W = MOD16\[OKC\[p+C\]\]\[OKC\[p+δ₂+1+C\]\] where δ₂ = VKC\[p\] | OKC digit at p+C added to OKC digit at offset position. δ₂ derived from VKC. |
+| Case 1 — Dual Key Add  | W = MOD16[OKC[p]][VKC[p+C]]                            | OKC digit at p added to VKC digit at p+C.                                    |
+| Case 2 — VK Offset Add | W = MOD16[VKC[p+C]][VKC[p+δ+1+C]] where δ = OKC[p]   | VKC digit at p+C added to VKC digit at offset position. δ derived from OKC.  |
+| Case 3 — OK Offset Add | W = MOD16[OKC[p+C]][OKC[p+δ₂+1+C]] where δ₂ = VKC[p] | OKC digit at p+C added to OKC digit at offset position. δ₂ derived from VKC. |
 
-Single-key self-reference note: Cases 2 and 3 each draw both combined values from a single key array (VKC and OKC respectively), using the other array only as a displacement source. If the case ordering and the displacement-source array values are both known, Cases 2 and 3 produce single-array constraint equations of the form MOD16(K\[a\], K\[b\]) = W. Each such equation has exactly 16 consistent value pairs (the MOD16 fiber). A full-session known-plaintext attack over all n² W values yields at most 16ⁿ jointly consistent key candidates per array — an upper bound from Lemma 1 (16 preimage pairs per nibble), consistent with the Mode 1 preimage lower bound proved in \[12\]. Complete decoupling of the VKC and OKC systems requires both the case ordering (known via 6-ordering exhaustive search) and knowledge of the displacement-source array values (which requires session key recovery), because OKC\[p\] appears as the displacement index in Case 2 equations, and VKC\[p\] appears as the displacement index in Case 3 equations.
+Single-key self-reference note: Cases 2 and 3 each draw both combined values from a single key array (VKC and OKC respectively), using the other array only as a displacement source. If the case ordering and the displacement-source array values are both known, Cases 2 and 3 produce single-array constraint equations of the form MOD16(K[a], K[b]) = W. Each such equation has exactly 16 consistent value pairs (the MOD16 fiber). A full-session known-plaintext attack over all n² W values yields at most 16ⁿ jointly consistent key candidates per array — an upper bound from Lemma 1 (16 preimage pairs per nibble), consistent with the Mode 1 preimage lower bound proved in [12]. Complete decoupling of the VKC and OKC systems requires both the case ordering (known via 6-ordering exhaustive search) and knowledge of the displacement-source array values (which requires session key recovery), because OKC[p] appears as the displacement index in Case 2 equations, and VKC[p] appears as the displacement index in Case 3 equations.
 
 ### Phase 4 — Cipher: XOR Encryption / Decryption
 
-> W_byte = (W_nibble_even \<\< 4) \| W_nibble_odd
->
-> CT_byte = W_byte XOR PT_byte (encrypt)
->
-> PT_byte = W_byte XOR CT_byte (decrypt)
+```
+W_byte = (W_nibble_even << 4) | W_nibble_odd
+CT_byte = W_byte XOR PT_byte (encrypt)
+PT_byte = W_byte XOR CT_byte (decrypt)
+```
 
 The XOR is a single machine instruction — approximately 4 machine cycles per byte on any architecture. Ciphertext length equals plaintext length exactly; there is no expansion overhead.
 
@@ -400,13 +359,16 @@ The XOR is a single machine instruction — approximately 4 machine cycles per b
 
 After each complete traversal of the key space (n² W values per case), if more plaintext or ciphertext remains, both working keys are updated using Mode 1 PDAF with cross-combined inputs:
 
-> VKNext = PDAF(OKC\[0..n-1\], VKP, Mode=1)
->
-> OKNext = PDAF(VKC\[0..n-1\], OKP, Mode=1)
+**Base Cipher window (normative): the session keys SHALL be updated no later than every n²/2 = 2,048 plaintext bytes at HIGH (n=64), i.e. after each Case-1 W window. VKNext and OKNext are computed with [:n] truncation. No CS re-derivation occurs in the Base Cipher (there is no CS). NIL synchronized key updates MAY be performed earlier than the window boundary at any time.**
+
+```
+VKNext = PDAF(OKC[0..n-1], VKP, Mode=1)
+OKNext = PDAF(VKC[0..n-1], OKP, Mode=1)
+```
 
 Phase 5 provides in-session key evolution that prevents reuse of W material across cycle boundaries within a session. An adversary who recovers the session keys (VKC, OKC) can advance the in-session key chain using VKP and OKP, which are deterministic functions of (EK, QK, eff_or). Cross-session isolation is provided exclusively by per-message eff_or uniqueness (OR_CTR + CSPRNG), not by Phase 5 key update.
 
-CS re-derivation (REQUIRED): after updating VKC ← VKNext and OKC ← OKNext, CS MUST be re-derived: CS = PDAF(VKC\[0..n-1\], OKC\[0..n-1\], Mode=1)\[0..2\]; case_order = CS_PERMUTATION_TABLE\[CS mod 6\]. This re-derivation MUST be performed before beginning the next W generation cycle. Implementations that omit CS re-derivation will use a fixed case ordering across all update cycles, eliminating per-cycle case variation and reducing equation-system separation to one-time protection only.
+CS re-derivation (REQUIRED — Extended Mixing Profile only): after updating VKC ← VKNext and OKC ← OKNext, CS MUST be re-derived: CS = PDAF(VKC[0..n-1], OKC[0..n-1], Mode=1)[0..2]; case_order = CS_PERMUTATION_TABLE[CS mod 6]. This re-derivation MUST be performed before beginning the next W generation cycle. Implementations that omit CS re-derivation will use a fixed case ordering across all update cycles, eliminating per-cycle case variation and reducing equation-system separation to one-time protection only. The Base Cipher has no CS and performs no CS re-derivation.
 
 # 7. Key Management
 
@@ -422,29 +384,13 @@ For each message, the sender: (1) increments OR_CTR by 1 and writes to non-volat
 
 The OR_CTR component provides a hard uniqueness bound even if the CSPRNG produces a repeated OR value. The (EK, QK) credential pair MUST be retired when OR_CTR reaches 2⁶³.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>OR_CTR PERSISTENCE REQUIREMENTS</strong></p>
-<p>1. OR_CTR write to non-volatile storage MUST be synchronous (fsync or hardware commit) before any encryption operation is considered committed for transmission. Write-back caching that defers the write until after transmission violates the deterministic uniqueness guarantee. 2. On restart following unclean shutdown (power loss, crash, watchdog reset), OR_CTR MUST be advanced by a guard increment of at least 1 before the next OR generation. Implementations MAY use a fixed guard increment of 2 to account for both the last unconfirmed increment and any write-back caching artifacts. 3. HIGH profile deployments MUST use hardware-secured monotonic counter storage (e.g., TPM NV counter, secure element) that guarantees atomic increment-then-commit semantics. OS-level persistence primitives alone do not satisfy this requirement. 4. The OR_CTR guard increment requirement applies regardless of OS-level persistence primitives and must be enforced at the cipher layer.</p></td>
-</tr>
-</tbody>
-</table>
+> **OR_CTR PERSISTENCE REQUIREMENTS**
+>
+> 1. OR_CTR write to non-volatile storage MUST be synchronous (fsync or hardware commit) before any encryption operation is considered committed for transmission. Write-back caching that defers the write until after transmission violates the deterministic uniqueness guarantee. 2. On restart following unclean shutdown (power loss, crash, watchdog reset), OR_CTR MUST be advanced by a guard increment of at least 1 before the next OR generation. Implementations MAY use a fixed guard increment of 2 to account for both the last unconfirmed increment and any write-back caching artifacts. 3. HIGH profile deployments MUST use hardware-secured monotonic counter storage (e.g., TPM NV counter, secure element) that guarantees atomic increment-then-commit semantics. OS-level persistence primitives alone do not satisfy this requirement. 4. The OR_CTR guard increment requirement applies regardless of OS-level persistence primitives and must be enforced at the cipher layer.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>CREDENTIAL ROTATION GUIDANCE</strong></p>
-<p>OR_CTR Warning Threshold: When OR_CTR reaches 2⁶² (half of the retirement threshold), the sender SHOULD begin a credential rotation procedure. Rotation Options: (a) Nil-Communication Key Update (Method 1 or Method 2) may be used as a credential rotation mechanism. After a successful Nil-Comm update, OR_CTR is reset to 0 and the new (EK_new, QK_new) credential pair begins fresh. Both parties MUST agree on the rotation schedule before the threshold is reached. (b) Out-of-band re-keying with independently generated EK and QK is always acceptable and provides the strongest forward secrecy. Mandatory Retirement: The (EK, QK) credential pair MUST be retired and MUST NOT be used for any further encryption when OR_CTR reaches 2⁶³. Implementations SHOULD enforce this limit at the cipher layer and return an error on any encryption attempt beyond this threshold.</p></td>
-</tr>
-</tbody>
-</table>
+> **CREDENTIAL ROTATION GUIDANCE**
+>
+> OR_CTR Warning Threshold: When OR_CTR reaches 2⁶² (half of the retirement threshold), the sender SHOULD begin a credential rotation procedure. Rotation Options: (a) Nil-Communication Key Update may be used as a credential rotation mechanism. For the Base Cipher, credential rotation MUST use Method 2 (External Entropy Injection) or out-of-band re-keying; Method 1 is prohibited as the Base-profile rotation mechanism (its deterministic chain collapses the equivocation coset 4→1 — see §7.4, Lemma B4). Method 1 MAY be used only outside the Base Cipher proof profile, where its deterministic-chain limitation is accepted. After a successful Nil-Comm update, OR_CTR is reset to 0 and the new (EK_new, QK_new) credential pair begins fresh. Both parties MUST agree on the rotation schedule before the threshold is reached. (b) Out-of-band re-keying with independently generated EK and QK is always acceptable and provides the strongest forward secrecy. Mandatory Retirement: The (EK, QK) credential pair MUST be retired and MUST NOT be used for any further encryption when OR_CTR reaches 2⁶³. Implementations SHOULD enforce this limit at the cipher layer and return an error on any encryption attempt beyond this threshold.
 
 ## 7.3 In-Cipher Key Update (Phase 5)
 
@@ -454,71 +400,47 @@ The in-cipher key update evolves the session working keys automatically during e
 
 Enqpy™ supports complete evolution of the master keys EK and QK without any communication between participants. Both parties independently apply the same deterministic transformation to their shared key material, arriving at identical new key values. This eliminates the key-exchange attack surface that all other key management systems expose.
 
+**Base Cipher requirement: NIL Method 2 (External Entropy Injection) is REQUIRED for Base Cipher master-key rotation; Method 1 is prohibited as the Base-profile rotation mechanism.** Coset propagation (proof Lemma B4): both NIL methods preserve the four-element transcript-equivalent coset {EK, EK+8·1} × {QK, QK+8·1} — all four members produce the identical E_seed (Mode 0 shifts uniformly by +8 under a coset shift, and OWC cancels the +8 because each OWC output sums two nibbles of the same array) and the identical post-update credential pair. Equivocation about the original credential therefore remains exactly 2 bits across NIL updates. However, the update maps all four coset members to the SAME new pair (a 4→1 collapse); under Method 1 (deterministic chain), in the T∞ known-plaintext limit the post-rotation current-epoch key value is then determined. Method 2’s external entropy (≥128-bit, out-of-band, unknown to the adversary) re-injects key uncertainty at each rotation, which is why the Base Cipher requires it.
+
 ### Method 1 — Deterministic Schedule Update
 
-> E_seed = OWC(PDAF(EK, QK, Mode=0)\[0..n-1\], nSkip=1)
->
-> EK_new = PDAF(EK, E_seed, Mode=1, n_param=n)\[0..n-1\]
->
-> QK_new = PDAF(QK, E_seed, Mode=1, n_param=n)\[0..n-1\]
->
-> OR_CTR = 0 (reset for new credential pair)
+```
+E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1], nSkip=1)
+EK_new = PDAF(EK, E_seed, Mode=1, n_param=n)[0..n-1]
+QK_new = PDAF(QK, E_seed, Mode=1, n_param=n)[0..n-1]
+OR_CTR = 0 (reset for new credential pair)
+```
 
 Note: E_seed has n/2 nibbles (OWC output); PDAF tiles E_seed cyclically to the required length.
 
 Because E_seed is derived deterministically from the shared (EK, QK) state, both parties arrive at identical new keys with no communication.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>METHOD 1 — TWO-LAYER PREIMAGE STRUCTURE AND FORWARD SECRECY</strong></p>
-<p>Method 1 uses a two-layer key derivation structure: (1) E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1]) produces an n/2-nibble seed. The Mode 0 linear chaining structure provides a preimage space of 16ⁿ⁄² at this stage. (2) EK_new = PDAF(EK, E_seed, Mode=1) applies a Mode 1 expansion. Recovery of EK from EK_new requires inverting the outer Mode 1 gate — which is the primary cryptographic barrier — and faces a preimage lower bound of ≥ 2 (worst case) or ≥ 16 (non-degenerate) per compatible OffsetKey, as proved in [12] Theorem 1, regardless of E_seed’s entropy. FORWARD SECRECY: Method 1 is a deterministic forward chain. The key sequence from any update point forward is fully determined by the key state at that point. Compromise of any key state enables derivation of all future key states in that chain. Method 1 does not provide forward secrecy. For long-lived key relationships or HIGH profile deployments where forward secrecy is required, Method 2 MUST be used. Method 2 is the default for HIGH profile deployments; Method 1 requires explicit documented justification when used at HIGH profile.</p></td>
-</tr>
-</tbody>
-</table>
+> **METHOD 1 — TWO-LAYER PREIMAGE STRUCTURE AND FORWARD SECRECY**
+>
+> Method 1 uses a two-layer key derivation structure: (1) E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1]) produces an n/2-nibble seed. The Mode 0 linear chaining structure provides a preimage space of 16ⁿ⁄² at this stage. (2) EK_new = PDAF(EK, E_seed, Mode=1) applies a Mode 1 expansion. Recovery of EK from EK_new requires inverting the outer Mode 1 gate — which is the primary cryptographic barrier — and faces a preimage lower bound of ≥ 2 (worst case) or ≥ 16 (non-degenerate) per compatible OffsetKey, as proved in [12] Theorem 1, regardless of E_seed’s entropy. FORWARD SECRECY: Method 1 is a deterministic forward chain. The key sequence from any update point forward is fully determined by the key state at that point. Compromise of any key state enables derivation of all future key states in that chain. Method 1 does not provide forward secrecy. For long-lived key relationships or HIGH profile deployments where forward secrecy is required, Method 2 MUST be used. Method 2 is the default for HIGH profile deployments; Method 1 requires explicit documented justification when used at HIGH profile.
 
 ### Method 2 — External Entropy Injection
 
 For HIGH profile deployments with long-lived key relationships, external entropy injection breaks the deterministic forward chain. Both parties incorporate a pre-agreed out-of-band entropy value (E_ext):
 
-> E_seed = OWC(PDAF(EK, QK, Mode=0)\[0..n-1\], nSkip=1)
->
-> E_combined\[i\] = MOD16\[E_seed\[i\]\]\[E_ext_nibs\[i\]\] (for i = 0..n/2-1)
->
-> EK_new = PDAF(EK, E_combined, Mode=1, n_param=n)\[0..n-1\]
->
-> QK_new = PDAF(QK, E_combined, Mode=1, n_param=n)\[0..n-1\]
+```
+E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1], nSkip=1)
+E_combined[i] = MOD16[E_seed[i]][E_ext_nibs[i]] (for i = 0..n/2-1)
+EK_new = PDAF(EK, E_combined, Mode=1, n_param=n)[0..n-1]
+QK_new = PDAF(QK, E_combined, Mode=1, n_param=n)[0..n-1]
+```
 
 Note: E_ext_nibs MUST have n/2 nibbles, matching E_seed length. E_seed and E_combined each have n/2 nibbles; PDAF tiles them cyclically to the required length.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>E_ext ENTROPY REQUIREMENTS (MANDATORY)</strong></p>
-<p>E_ext MUST be generated by a CSPRNG meeting NIST SP 800-90A requirements, or be a sufficiently random out-of-band value from a documented entropy source. The min-entropy of E_ext MUST be ≥ n/2 nibbles (≥ 128 bits for HIGH profile), equal to the E_seed length. E_ext values derived from predictable or low-entropy sources — including timestamps, counters, device identifiers, sequence numbers, or any deterministic value — are prohibited and negate the forward secrecy property of Method 2. Each E_ext value MUST be used exactly once per key update event. Method 2 provides forward secrecy with respect to any adversary who cannot compromise future out-of-band E_ext values.</p></td>
-</tr>
-</tbody>
-</table>
+> **E_ext ENTROPY REQUIREMENTS (MANDATORY)**
+>
+> E_ext MUST be generated by a CSPRNG meeting NIST SP 800-90A requirements, or be a sufficiently random out-of-band value from a documented entropy source. The min-entropy of E_ext MUST be ≥ n/2 nibbles (≥ 128 bits for HIGH profile), equal to the E_seed length. E_ext values derived from predictable or low-entropy sources — including timestamps, counters, device identifiers, sequence numbers, or any deterministic value — are prohibited and negate the forward secrecy property of Method 2. Each E_ext value MUST be used exactly once per key update event. Method 2 provides forward secrecy with respect to any adversary who cannot compromise future out-of-band E_ext values.
 
 Method 2 is the required update method for HIGH profile deployments where key material protects data with a confidentiality requirement extending beyond the current session. Method 2 is the default Nil-Communication Key Update method for HIGH profile deployments; Method 1 MUST NOT be used as the default in HIGH profile implementations and MUST require explicit, documented justification when selected. Nil-Communication Key Update has no attack surface because there is no key exchange to intercept.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>E_ext SYNCHRONIZATION PROTOCOL — REQUIRED BEFORE APPLYING METHOD 2</strong></p>
-<p>(1) Both parties independently compute E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1], nSkip=1) from the current shared key state. No communication is required for this step. (2) Both parties compute the update commitment C = HMAC-SHA-256(E_seed, E_ext_bytes). Each party transmits C to the other through the out-of-band channel used to deliver E_ext. This commitment reveals neither E_ext nor EK; it confirms only that both parties hold the same E_ext for this update event. (3) Both parties verify that the received C matches their own computed C. If commitments do not match, the Method 2 update MUST NOT be applied. Both parties retain the current (EK, QK) state. The E_ext value is retired; a new E_ext must be established before retrying. (4) The key update MUST be applied at the same agreed message boundary: OR_CTR = N, where N is pre-agreed before the warning threshold. Both parties MUST apply the update after processing message N and before generating OR_CTR = N+1. (5) Recovery: if decryption fails after a scheduled Method 2 update, the receiver SHOULD attempt decryption with the pre-update key state as a single recovery attempt. If successful, the update was not applied by the sender; both parties SHOULD revert to the pre-update state and retry with a fresh E_ext. If recovery fails, escalate to out-of-band re-keying.</p></td>
-</tr>
-</tbody>
-</table>
+> **E_ext SYNCHRONIZATION PROTOCOL — REQUIRED BEFORE APPLYING METHOD 2**
+>
+> (1) Both parties independently compute E_seed = OWC(PDAF(EK, QK, Mode=0)[0..n-1], nSkip=1) from the current shared key state. No communication is required for this step. (2) Both parties compute the update commitment C = HMAC-SHA-256(E_seed, E_ext_bytes). Each party transmits C to the other through the out-of-band channel used to deliver E_ext. This commitment reveals neither E_ext nor EK; it confirms only that both parties hold the same E_ext for this update event. (3) Both parties verify that the received C matches their own computed C. If commitments do not match, the Method 2 update MUST NOT be applied. Both parties retain the current (EK, QK) state. The E_ext value is retired; a new E_ext must be established before retrying. (4) The key update MUST be applied at the same agreed message boundary: OR_CTR = N, where N is pre-agreed before the warning threshold. Both parties MUST apply the update after processing message N and before generating OR_CTR = N+1. (5) Recovery: if decryption fails after a scheduled Method 2 update, the receiver SHOULD attempt decryption with the pre-update key state as a single recovery attempt. If successful, the update was not applied by the sender; both parties SHOULD revert to the pre-update state and retry with a fresh E_ext. If recovery fails, escalate to out-of-band re-keying.
 
 ## 7.5 Key Size Flexibility
 
@@ -530,68 +452,52 @@ Note: the EnqpyADS™ BTA architecture supports key size variation across deploy
 
 ## 8.1 Security Claims
 
-| **Claim**                                                                                                                                                                                                                                                                                                                                                                       | **Description**                                                                                                                                                                                                                                                                                                                                                                                                    |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Shannon Ideal System                                                                                                                                                                                                                                                                                                                                                            | Enqpy™, in its Ideal Configuration, is the first finite-key cipher proved to satisfy Shannon’s Ideal System definition. H(EK, QK \| T^∞) = log₂(4) = 2 bits exactly (unconditional). The Ideal Configuration is the default implementation. EnqpyADS™ variant configurations carry per-session equivocation (Theorem 1) but not the formal global IS guarantee. Formally proved in \[12\]; see also §8.8 and §8.9. |
-| Underdetermination                                                                                                                                                                                                                                                                                                                                                              | For any observed ciphertext CT, there exist at least two distinct plaintexts PT₁ ≠ PT₂ and corresponding (EK₁, QK₁, OR₁) and (EK₂, QK₂, OR₂) such that PDAF_SEC(EK₁, QK₁, OR₁, PT₁) = PDAF_SEC(EK₂, QK₂, OR₂, PT₂) = CT. This is structural, not probabilistic. Preimage count formally bounded in \[12\].                                                                                                         |
-| Unconditional Quantum Resistance                                                                                                                                                                                                                                                                                                                                                | The underdetermination property is platform-independent. A quantum computer cannot resolve the structurally absent information in the ciphertext. Algebraically proved in \[12\], Corollary 2.                                                                                                                                                                                                                     |
-| One-Way Key Gates                                                                                                                                                                                                                                                                                                                                                               | Every application of OWC and PDAF Mode 1 places an irreversible gate between key versions. Full session key recovery does not expose master keys due to PDAF Mode 1 non-invertibility.                                                                                                                                                                                                                             |
-| In-Session Key Evolution                                                                                                                                                                                                                                                                                                                                                        | Working keys for each cycle are derived from the prior session key state via Phase 5 PDAF Mode 1 update. This prevents reuse of W material across cycle boundaries within a session. Cross-session isolation is provided by per-message eff_or uniqueness (OR_CTR + CSPRNG), not by Phase 5 key update.                                                                                                            |
-| Plaintext Enqpy™, in its Ideal Configuration, guarantees Equivocation that for any ciphertext and public nonce at least 2^128 plaintexts are consistent with (CT,OR) — \|S(CT,OR)\| ≥ 2^128 (HIGH profile, n=64) — all equally probable within the proved Case 1 achievable subset; the full-map posterior bound is stated as an open problem (\[12\] §12.7). Independent of key equivocation. Proved in \[12\], Theorem 3. Immune to equivalent-key normalization. Structured-Plaintext Origin Inference | Where the receiver can validate plaintext structure through application-layer means (e.g., protocol headers, format identifiers, checksums), correct decryption to a structurally valid result provides evidence of message origin. This is an application-layer inference, not a cryptographic authentication primitive. For arbitrary binary data, HMAC per Section 8.6 is MANDATORY.                            |
+| **Claim**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | **Description**                                                                                                                                                                                                                                                                                                                                                                                                    |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Shannon Ideal System                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Enqpy™, in its Ideal Configuration, is the first finite-key cipher proved to satisfy Shannon’s Ideal System definition. H(EK, QK \| T^∞) = log₂(4) = 2 bits exactly (unconditional). The Ideal Configuration is the default implementation. EnqpyADS™ variant configurations carry per-session equivocation (Theorem 1) but not the formal global IS guarantee. Formally proved in [12]; see also §8.8 and §8.9. |
+| Underdetermination                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | For any observed ciphertext CT, there exist at least two distinct plaintexts PT₁ ≠ PT₂ and corresponding (EK₁, QK₁, OR₁) and (EK₂, QK₂, OR₂) such that PDAF_SEC(EK₁, QK₁, OR₁, PT₁) = PDAF_SEC(EK₂, QK₂, OR₂, PT₂) = CT. This is structural, not probabilistic. Preimage count formally bounded in [12].                                                                                                         |
+| Unconditional Quantum Resistance                                                                                                                                                                                                                                                                                                                                                                                                                                                           | The underdetermination property is platform-independent. A quantum computer cannot resolve the structurally absent information in the ciphertext. Algebraically proved in [12], Corollary 2.                                                                                                                                                                                                                     |
+| One-Way Key Gates                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Every application of OWC and PDAF Mode 1 places an irreversible gate between key versions. Full session key recovery does not expose master keys due to PDAF Mode 1 non-invertibility.                                                                                                                                                                                                                             |
+| In-Session Key Evolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Working keys for each cycle are derived from the prior session key state via Phase 5 PDAF Mode 1 update. This prevents reuse of W material across cycle boundaries within a session. Cross-session isolation is provided by per-message eff_or uniqueness (OR_CTR + CSPRNG), not by Phase 5 key update.                                                                                                            |
+| Plaintext Equivocation (Base Cipher). Enqpy™ Base Cipher (Case-1 W generation) achieves \|S(CT,OR)\| ≥ 2^128 (HIGH profile, n=64): for any ciphertext and public nonce, at least 2^128 plaintexts are consistent with (CT,OR), and the posterior is uniform over the full consistent set, so H(PT\|CT,OR) = H∞(PT\|CT,OR) ≥ 128 bits (closed). Independent of key equivocation. Proved in [12], Theorem 3. Immune to equivalent-key normalization. Structured-Plaintext Origin Inference | Where the receiver can validate plaintext structure through application-layer means (e.g., protocol headers, format identifiers, checksums), correct decryption to a structurally valid result provides evidence of message origin. This is an application-layer inference, not a cryptographic authentication primitive. For arbitrary binary data, HMAC per Section 8.6 is MANDATORY.                            |
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>MANDATORY INTEGRITY REQUIREMENT</strong></p>
-<p>The Structured-Plaintext Origin Inference claim applies only where the receiver can validate plaintext structure through application-layer means. For ANY deployment involving arbitrary binary data, compressed payloads, or encrypted inner layers where the receiver has no structural validation path, HMAC-SHA-256 per Section 8.6 is MANDATORY — not optional. Absence of a MAC exposes the deployment to ciphertext manipulation attacks.</p></td>
-</tr>
-</tbody>
-</table>
+> **MANDATORY INTEGRITY REQUIREMENT**
+>
+> The Structured-Plaintext Origin Inference claim applies only where the receiver can validate plaintext structure through application-layer means. For ANY deployment involving arbitrary binary data, compressed payloads, or encrypted inner layers where the receiver has no structural validation path, HMAC-SHA-256 per Section 8.6 is MANDATORY — not optional. Absence of a MAC exposes the deployment to ciphertext manipulation attacks.
 
 ## 8.2 PDAF Mode 1 as the Architectural Key Protection Boundary
 
 The security of EK and QK depends on PDAF Mode 1 non-invertibility. HMIX is a nibble-wise MOD16 group operation: given HMIX output, eff_or, and the domain separator constant, the corresponding master key nibble is directly recoverable by subtraction mod 16. HMIX is therefore not a cryptographic barrier; it is a domain separation mechanism that guarantees structural independence (VKP ≠ OKP) and provides no secrecy.
 
-The sole cryptographic barrier protecting EK and QK is the PDAF Mode 1 gate between the session keys (VKC, OKC) and the key pointers (VKP, OKP). Any reduction in the Mode 1 preimage count below its proved minimum directly reduces the master key security margin by the same factor. This architectural dependency is sound because PDAF Mode 1’s entangled-displacement structure creates genuine underdetermination that is not reducible by any known method. For HIGH profile (n = 64), the preimage lower bound is ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) per compatible OffsetKey — unconditional and proved in \[12\], Theorem 1 and Corollary 2.
+The sole cryptographic barrier protecting EK and QK is the PDAF Mode 1 gate between the session keys (VKC, OKC) and the key pointers (VKP, OKP). Any reduction in the Mode 1 preimage count below its proved minimum directly reduces the master key security margin by the same factor. This architectural dependency is sound because PDAF Mode 1’s entangled-displacement structure creates genuine underdetermination that is not reducible by any known method. For HIGH profile (n = 64), the preimage lower bound is ≥ 2 (worst case: μ_odd ≥ 1) or ≥ 16 (non-degenerate: μ_odd = 0) per compatible OffsetKey — unconditional and proved in [12], Theorem 1 and Corollary 2.
 
 ## 8.3 Perfect Security Cross Analysis
 
-| **Attack Direction**        | **Threat**                                                     | **Enqpy™ Defense**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|-----------------------------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| UP — Master Key Recovery    | Recover EK/QK from a broken session.                           | PDAF Mode 1 one-way gate between VKC/OKC and VKP/OKP; HMIX inversion then provides direct QK/EK recovery — but VKP/OKP are unreachable through the PDAF Mode 1 gate. The PDAF Mode 1 gate is the sole cryptographic barrier; see Single-Barrier Architecture disclosure in §3.3.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| RIGHT — Forward Propagation | Break future sessions from a broken session.                   | Per-message eff_or uniqueness (OR_CTR with PDAF expansion) ensures that each session uses unique key material. Phase 5 in-session key evolution does not bind future sessions to the plaintext; cross-session isolation is exclusively eff_or-based.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| LEFT — Backward Propagation | Break past sessions from a broken session.                     | eff_or uniqueness and one-way PDAF update prevent backward propagation. Each session’s VKC/OKC are unique functions of that session’s eff_or.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| DOWN — Partial KP Attack    | Recover unknown PT from partial known-plaintext.               | CS-ordered case selection makes the case ordering unknown without session key access. An adversary performing exhaustive 6-ordering search obtains the case partitioning of known W values. Within each case: Case 1 produces cross-array (OKC, VKC) constraints; Cases 2 and 3 produce single-array constraints (VKC-only and OKC-only) with displacement indices that depend on the other array. The effective work factor is: 6 ordering candidates × inversion of the resulting constraint system, where each system faces a preimage lower bound of ≥ 2 (worst case) or ≥ 16 (non-degenerate) per compatible OffsetKey over n-nibble session keys. Full decoupling of the VKC and OKC systems requires complete session key recovery. |
-| LATERAL — Related-Nonce     | Correlate keystreams from messages with related eff_or values. | Per-message eff_or uniqueness is the primary lateral attack defense. Domain separation constants DS_VK = 0x5 and DS_OK = 0xA are public structural constants guaranteeing VKP ≠ OKP (structural independence of the two derivation paths). They contribute no entropy and provide no secrecy.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Attack Direction**        | **Threat**                                                     | **Enqpy™ Defense**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+|-----------------------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| UP — Master Key Recovery    | Recover EK/QK from a broken session.                           | PDAF Mode 1 one-way gate between VKC/OKC and VKP/OKP; HMIX inversion then provides direct QK/EK recovery — but VKP/OKP are unreachable through the PDAF Mode 1 gate. The PDAF Mode 1 gate is the sole cryptographic barrier; see Single-Barrier Architecture disclosure in §3.3.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| RIGHT — Forward Propagation | Break future sessions from a broken session.                   | Per-message eff_or uniqueness (OR_CTR with PDAF expansion) ensures that each session uses unique key material. Phase 5 in-session key evolution does not bind future sessions to the plaintext; cross-session isolation is exclusively eff_or-based.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| LEFT — Backward Propagation | Break past sessions from a broken session.                     | eff_or uniqueness and one-way PDAF update prevent backward propagation. Each session’s VKC/OKC are unique functions of that session’s eff_or.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| DOWN — Partial KP Attack    | Recover unknown PT from partial known-plaintext.               | Base Cipher: there is no case ordering; within a message, a rank-complete set of known W values (e.g. 64 known bytes at HIGH) linearly determines the remaining window W (see §8.5). This does NOT recover the session keys VKC/OKC or the master keys: the PDAF Mode 1 one-way gate between (VKC, OKC) and (VKP, OKP) still requires inversion facing a preimage lower bound of ≥ 2 (worst case) or ≥ 16 (non-degenerate) per compatible OffsetKey, and the exposure is confined to the current message by fresh eff_or. Extended Mixing Profile: CS-ordered case selection makes the case ordering unknown without session key access. An adversary performing exhaustive 6-ordering search obtains the case partitioning of known W values. Within each case: Case 1 produces cross-array (OKC, VKC) constraints; Cases 2 and 3 produce single-array constraints (VKC-only and OKC-only) with displacement indices that depend on the other array. The effective work factor is: 6 ordering candidates × inversion of the resulting constraint system, where each system faces a preimage lower bound of ≥ 2 (worst case) or ≥ 16 (non-degenerate) per compatible OffsetKey over n-nibble session keys. Full decoupling of the VKC and OKC systems requires complete session key recovery. |
+| LATERAL — Related-Nonce     | Correlate keystreams from messages with related eff_or values. | Per-message eff_or uniqueness is the primary lateral attack defense. Domain separation constants DS_VK = 0x5 and DS_OK = 0xA are public structural constants guaranteeing VKP ≠ OKP (structural independence of the two derivation paths). They contribute no entropy and provide no secrecy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## 8.4 Underdetermination Property — Formal Statement
 
 For any ciphertext CT produced by Enqpy™ PDAF_SEC, there exist at least two distinct plaintexts PT₁ ≠ PT₂ and corresponding credential and nonce combinations (EK₁, QK₁, OR₁) and (EK₂, QK₂, OR₂) such that PDAF_SEC(EK₁, QK₁, OR₁, PT₁) = PDAF_SEC(EK₂, QK₂, OR₂, PT₂) = CT. This property is inherent to the MOD16 structure at every key derivation, selection, and update step.
 
-The exact preimage count is formally established in \[12\]: \|P(O\*)\| = Σ\_{compatible OK ∈ ℤ₁₆ⁿ} ∏\_i f(μ\_{i,odd}(OK)) \[f(0)=16, f(k≥1)=2\], where c(OK) is the number of connected components of the dependency graph and μ\_{i,odd}(OK) is the number of independent odd-length cycles in component i. For HIGH profile (n = 64), the per-compatible-OK VK solution count is ≥ 2 (worst case: μ_odd≥1 per component; 2 solutions per component) and ≥ 16 (non-degenerate: μ_odd=0; 16 solutions per component), with the total scaling as 2^c (worst case) or 16^c (non-degenerate) across c connected components.
+The exact preimage count is formally established in [12]: \|P(O\*)\| = Σ\_{compatible OK ∈ ℤ₁₆ⁿ} ∏\_i f(μ\_{i,odd}(OK)) [f(0)=16, f(k≥1)=2], where c(OK) is the number of connected components of the dependency graph and μ\_{i,odd}(OK) is the number of independent odd-length cycles in component i. For HIGH profile (n = 64), the per-compatible-OK VK solution count is ≥ 2 (worst case: μ_odd≥1 per component; 2 solutions per component) and ≥ 16 (non-degenerate: μ_odd=0; 16 solutions per component), with the total scaling as 2^c (worst case) or 16^c (non-degenerate) across c connected components.
 
 ## 8.5 Known-Plaintext Properties
 
-Enqpy™, as an Ideal System, is technically “susceptible” to known-plaintext in the following limited sense: if both a plaintext unit and its corresponding ciphertext unit are known, the W value for that unit is revealed by W = PT ⊕ CT. However, the Perfect Security Cross analysis ensures that revealing W for one unit does not reveal W for other units, past messages, future messages, or the master keys. Additionally, the CS-ordered case selection means that an adversary with known W values cannot reconstruct the Selection equation system without first recovering the session keys, because the active case ordering is unknown.
+Enqpy™, as an Ideal System, is technically “susceptible” to known-plaintext in the following limited sense: if both a plaintext unit and its corresponding ciphertext unit are known, the W value for that unit is revealed by W = PT ⊕ CT. The scope of this exposure differs by profile. Base Cipher (Case-1 W generation): the per-window keystream is a ℤ₁₆-linear system in the 2n session nibbles (VKC, OKC) of effective rank 2n−1. Knowledge of W on a rank-complete set of positions therefore determines the remaining window keystream up to a 16-element kernel; for example, the first two W rows — W[p,0] = OKC[p] + VKC[p] and W[p,1] = OKC[p] + VKC[(p+1) mod n], a rank-complete set corresponding to 64 known plaintext bytes at HIGH — determine the full 2,048-byte window’s W stream, and via the public Phase 5 chain the remainder of that message. This is a genuine within-message degradation specific to the Base Cipher’s linearity and is the operational price of the closed message-axis min-entropy theorem (proof Theorem 3). It does NOT propagate beyond the message: cross-message isolation is provided by fresh eff_or per message, and the master keys EK and QK remain protected by the PDAF Mode 1 one-way gate (Theorem 1), which is independent of the case structure. The ciphertext-only theorems are unaffected. Extended Mixing Profile (Cases 1/2/3, CS-ordered): the CS-ordered case selection means an adversary with known W values cannot reconstruct the Selection equation system without first recovering the session keys, because the active case ordering is unknown and Cases 2/3 introduce data-dependent displacements that do not linearly determine unexposed positions. This known-plaintext equation-system separation is the concrete security property that Cases 2/3 add beyond the 3× pre-update window; Cases 2/3 are not required for any Ideal System theorem but provide this practical known-plaintext hardening.
 
 ## 8.6 Integrity and Authentication Guidance
 
 The Structured-Plaintext Origin Inference property applies where the receiver can validate plaintext structure through application-layer means. For arbitrary binary data, compressed payloads, or encrypted inner layers where the receiver has no structural validation path, applications MUST apply one of the following integrity mechanisms:
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>NORMATIVE INTEGRITY SPECIFICATION — RECOMMENDED METHOD</strong></p>
-<p>Integrity Key Derivation: Derive the HMAC key IK using HKDF-SHA-256 (RFC 5869) as follows: IK = HKDF-SHA-256(IKM=EK_bytes, salt=eff_or_bytes, info=0x456E717079494E54454752495459, [ASCII: EnqpyINTEGRITY] L=32) MAC Computation: Tag = HMAC-SHA-256(IK, eff_or_bytes || CT_bytes) Transmission: Transmit Tag alongside [OpenID, eff_or, CT]. Verification: Verify Tag using a constant-time comparison function before processing decrypted output. Return a generic error response regardless of whether MAC verification or PT structure validation fails, to prevent distinguishing oracles. IK lifecycle: IK is a per-message secret. IK MUST be zeroized from memory immediately after Tag computation (sender) or Tag verification (receiver). IK MUST NOT be stored, logged, or reused across messages. Security properties: (1) Implicit nonce binding — eff_or is authenticated both explicitly (as MAC input) and implicitly (through IK derivation). An adversary cannot replay a valid (eff_or, CT, Tag) triple under a substituted eff_or without access to EK, because IK would differ. (2) Scope-limited IK exposure — if IK for a given eff_or is exposed through a side channel, forgery is limited to (CT, Tag) pairs for that specific eff_or value only. Per-message IK re-derivation ensures other messages are unaffected.</p></td>
-</tr>
-</tbody>
-</table>
+> **NORMATIVE INTEGRITY SPECIFICATION — RECOMMENDED METHOD**
+>
+> Integrity Key Derivation: Derive the HMAC key IK using HKDF-SHA-256 (RFC 5869) as follows: IK = HKDF-SHA-256(IKM=EK_bytes, salt=eff_or_bytes, info=0x456E717079494E54454752495459, [ASCII: EnqpyINTEGRITY] L=32) MAC Computation: Tag = HMAC-SHA-256(IK, eff_or_bytes || CT_bytes) Transmission: Transmit Tag alongside [OpenID, eff_or, CT]. Verification: Verify Tag using a constant-time comparison function before processing decrypted output. Return a generic error response regardless of whether MAC verification or PT structure validation fails, to prevent distinguishing oracles. IK lifecycle: IK is a per-message secret. IK MUST be zeroized from memory immediately after Tag computation (sender) or Tag verification (receiver). IK MUST NOT be stored, logged, or reused across messages. Security properties: (1) Implicit nonce binding — eff_or is authenticated both explicitly (as MAC input) and implicitly (through IK derivation). An adversary cannot replay a valid (eff_or, CT, Tag) triple under a substituted eff_or without access to EK, because IK would differ. (2) Scope-limited IK exposure — if IK for a given eff_or is exposed through a side channel, forgery is limited to (CT, Tag) pairs for that specific eff_or value only. Per-message IK re-derivation ensures other messages are unaffected.
 
 HKDF info string registry: the info string 0x456E717079494E54454752495459 (EnqpyINTEGRITY) is the sole currently registered context label for Enqpy™ integrity key derivation. Any future extension of Enqpy™ that derives additional key material from EK using HKDF MUST use a distinct, registered info string. Reserved namespace: EnqpyINTEGRITY (current), EnqpyKEYCONFIRM (reserved), EnqpySESSIONID (reserved). New info strings MUST be registered with NQP LLC before deployment to prevent context collision.
 
@@ -605,7 +511,7 @@ Minimum: Include a plaintext CRC or checksum within the plaintext structure. Thi
 
 | **Cipher**        | **Security basis**                                           | **Quantum**             | **Key equivocation**                          | **Key size**     | **Auth**                                                       | **Speed**                                                          |
 |-------------------|--------------------------------------------------------------|-------------------------|-----------------------------------------------|------------------|----------------------------------------------------------------|--------------------------------------------------------------------|
-| Enqpy™ PDAF_SEC   | Shannon underdetermination (Ideal System — proved \[12,13\]) | Unconditional           | ≥ 1–4 bits (worst case / non-degenerate; c=1) | ≥ 128–256 bit    | Origin inference (structured PT); HMAC mandatory (binary data) | ~2,900 MB/s (Phase 4 XOR; full PDAF_SEC ~399–454 MB/s — see §10.2) |
+| Enqpy™ PDAF_SEC   | Shannon underdetermination (Ideal System — proved [12,13]) | Unconditional           | ≥ 1–4 bits (worst case / non-degenerate; c=1) | ≥ 128–256 bit    | Origin inference (structured PT); HMAC mandatory (binary data) | ~2,900 MB/s (Phase 4 XOR; full PDAF_SEC ~399–454 MB/s — see §10.2) |
 | AES-256-GCM       | Computational hardness (block cipher)                        | Partial (Grover halves) | 0 bits                                        | 256 bits fixed   | AEAD tag 28 bytes                                              | 92–125 MB/s enc (software) 3,000+ MB/s (AES-NI)                    |
 | ChaCha20-Poly1305 | Computational hardness (ARX)                                 | Partial (Grover halves) | 0 bits                                        | 256 bits fixed   | Poly1305 28 bytes                                              | 995–1,457 MB/s                                                     |
 | NIST PQC (Kyber)  | Lattice hardness (conditional)                               | Conditional             | 0 bits                                        | Fixed param sets | None                                                           | Varies                                                             |
@@ -615,23 +521,23 @@ Note: AES-256-GCM software-only speed is shown for non-AES-NI environments. On x
 
 ## 8.8 Formal Proof Status — First Provably Secure Shannon Ideal System
 
-Enqpy™, in its Ideal Configuration, is the first finite-key cipher construction formally proved to satisfy Shannon’s Ideal System definition — a specific information-theoretic property distinct from computational security — with an exact equivocation floor of 2 bits. The proof is unconditional: it requires no computational hardness assumption and holds against any adversary, including quantum adversaries. Second Axis — Plaintext Equivocation (Theorem 3 in \[12\]): Independent of the key equivocation result, the companion Plaintext Equivocation Theorem establishes that at least 2^128 plaintexts are consistent with any observation — \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile (n=64) — all equally probable within the proved Case 1 achievable subset (extension of uniformity to the full consistent set is Conjecture 1, stated as open in \[12\] together with the corresponding min-entropy bound, §12.7). This completes the Shannon non-uniqueness result on both axes: the adversary obtains a unique solution for neither the key (2 bits of key equivocation) nor the message (at least 2^128 consistent plaintexts). The plaintext-axis result is independent of equivalent-key normalization: the consistent plaintext set is a property of the cipher’s keystream output, not of how keys are counted.
+Enqpy™, in its Ideal Configuration, is the first finite-key cipher construction formally proved to satisfy Shannon’s Ideal System definition — a specific information-theoretic property distinct from computational security — with an exact equivocation floor of 2 bits. The proof is unconditional: it requires no computational hardness assumption and holds against any adversary, including quantum adversaries. Second Axis — Plaintext Equivocation (Theorem 3 in [12]): Independent of the key equivocation result, for the Base Cipher (Case-1 W generation) the companion Plaintext Equivocation Theorem establishes that at least 2^128 plaintexts are consistent with any observation — \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile (n=64) — and that the posterior is uniform over the full consistent set. Shannon entropy and min-entropy therefore coincide: H(PT\|CT,OR) = H∞(PT\|CT,OR) = log₂\|S(CT,OR)\| ≥ 128 bits, a closed message-axis result, under the uniform key prior and a uniform plaintext prior (or an approved PRE/POST conditioning transform inducing it). This completes the Shannon non-uniqueness result on both axes for the Base Cipher: the adversary obtains a unique solution for neither the key (2 bits of key equivocation) nor the message (closed ≥128-bit message min-entropy). The full-map min-entropy of the optional Extended Mixing Profile remains an open research addendum ([12] §12.7) and is not part of the Base Cipher proof. The plaintext-axis result is independent of equivalent-key normalization: the consistent plaintext set is a property of the cipher’s keystream output, not of how keys are counted.
 
 The One-Time Pad satisfies Perfect Secrecy (a strictly stronger property than the Ideal System) but requires a key equal in length to every message, rendering it impractical for general communications. Enqpy™ achieves the Ideal System property with a fixed, finite, reusable key.
 
 Formal result (HIGH profile, n = 64 nibbles):
 
-> H(EK, QK \| T^∞) = log₂(4) = 2 bits (exact; Ideal Configuration)
->
-> H(EK, QK \| C^m, M^m) ≥ 4 bits (Layer 2 non-degenerate bound; non-degenerate: no odd-length cycles, c=1)
->
-> T\_{\>t} ⊥ (EK, QK) \| T\_{≤t} (exact conditional independence; Ideal Configuration) H(PT\|CT,OR) ≥ 128 bits (HIGH profile, n=64) — message-axis result: at least 2^128 consistent plaintexts per ciphertext, all equally probable. Proved in companion document \[12\], Theorem 3.
+```
+H(EK, QK | T^∞) = log₂(4) = 2 bits (exact; Ideal Configuration)
+H(EK, QK | C^m, M^m) ≥ 4 bits (Layer 2 non-degenerate bound; non-degenerate: no odd-length cycles, c=1)
+T_{>t} ⊥ (EK, QK) | T_{≤t} (exact conditional independence; Ideal Configuration) Base Cipher message axis: |S(CT,OR)| ≥ 2^128 (HIGH profile, n=64) with uniform posterior over the full consistent set, so H(PT|CT,OR) = H∞(PT|CT,OR) ≥ 128 bits (closed; Theorem 3). The full-map min-entropy of the optional Extended Mixing Profile is open ([12] §12.7).
+```
 
-The equivocation is exact and permanent: the ambiguity set is exactly the 4-element coset {EK, EK+8·1} × {QK, QK+8·1}. Structural source of the 2-bit exact floor: the irreducible 4-element ciphertext-equivalent coset is {EK, EK+8·1} × {QK, QK+8·1} — the four proved-secure operationally-indistinguishable key pairs related by nibble-wise addition of 8 (mod 16) to all positions of EK, QK, or both. All four pairs produce identical PDAF₁ outputs and identical ciphertext for all messages and all nonces, because adding 8 to both positions of any PDAF₁ ModSum produces a net shift of +16 ≡ 0 (mod 16), and in the Ideal Configuration neither EK nor QK appears as an OffsetKey parameter (so the \[+8\] shift propagates cleanly through both derivation paths). No observation of any transcript can distinguish the four coset elements. The 2-bit equivocation floor is the exact information-theoretic bound on adversarial key certainty. Configuration scope. This result holds for the Ideal Enqpy Configuration, in which EK and QK appear only as ValueKey parameters in their respective PDAF₁ calls, and VKP/OKP are derived from the public nonce alone. In the standard deployment profiles (LOW n=32, MED n=48, HIGH n=64), EK and QK also enter HMIX to derive VKP and OKP. At these key lengths (8 mod n ≠ 0), the \[+8\] shift on EK changes OKP, and PDAF₁(QK, OKP+8) ≠ PDAF₁(QK, OKP), breaking the coset. The standard profiles gain defense-in-depth key mixing but do not carry the provable global Ideal System guarantee. Deployments requiring the formal Shannon Ideal System property should use the Ideal Configuration.
+The equivocation is exact and permanent: the ambiguity set is exactly the 4-element coset {EK, EK+8·1} × {QK, QK+8·1}. Structural source of the 2-bit exact floor: the irreducible 4-element ciphertext-equivalent coset is {EK, EK+8·1} × {QK, QK+8·1} — the four proved-secure operationally-indistinguishable key pairs related by nibble-wise addition of 8 (mod 16) to all positions of EK, QK, or both. All four pairs produce identical PDAF₁ outputs and identical ciphertext for all messages and all nonces, because adding 8 to both positions of any PDAF₁ ModSum produces a net shift of +16 ≡ 0 (mod 16), and in the Ideal Configuration neither EK nor QK appears as an OffsetKey parameter (so the [+8] shift propagates cleanly through both derivation paths). No observation of any transcript can distinguish the four coset elements. The 2-bit equivocation floor is the exact information-theoretic bound on adversarial key certainty. Configuration scope. This result holds for the Ideal Enqpy Configuration, in which EK and QK appear only as ValueKey parameters in their respective PDAF₁ calls, and VKP/OKP are derived from the public nonce alone. In the standard deployment profiles (LOW n=32, MED n=48, HIGH n=64), EK and QK also enter HMIX to derive VKP and OKP. At these key lengths (8 mod n ≠ 0), the [+8] shift on EK changes OKP, and PDAF₁(QK, OKP+8) ≠ PDAF₁(QK, OKP), breaking the coset. The standard profiles gain defense-in-depth key mixing but do not carry the provable global Ideal System guarantee. Deployments requiring the formal Shannon Ideal System property should use the Ideal Configuration.
 
-| **Document**                                       | **Content**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| \[12\] Formal Information-Theoretic Proof, Rev 1.1 | Lemma 1 (MOD16 fiber size = 16, algebraic); Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate); Theorem 2 (Shannon Ideal System — proved for Ideal Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exact; T\_{\>t} ⊥ (EK, QK) \| T\_{≤t} conditional independence; six-step proof); Theorem 3 (plaintext support floor: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile; min-entropy bound open, §12.7); Ideal Configuration definition and standard profile trade-off characterization (§6.1); Corollary 2 (quantum invariance). §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula \|P(O\*)\| = Σ\_{compatible OK} ∏\_i f(μ\_{i,odd}(OK)) \[f(0)=16, f(k≥1)=2\]; equivocation tightness (rank-ceiling argument over ℤ₁₆); cycle case completeness; exact solution count with cycles. All proofs unconditional and constructive. |
+| **Document**                                       | **Content**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [12] Formal Information-Theoretic Proof, Rev 2.0 | Lemma 1 (MOD16 fiber size = 16, algebraic); Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate); Theorem 2 (Shannon Ideal System — proved for Ideal Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exact; T\_{\>t} ⊥ (EK, QK) \| T\_{≤t} conditional independence; six-step proof); Theorem 3 (Base Cipher Plaintext Equivocation — closed: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile, uniform posterior over the full consistent set, H = H∞ ≥ 128 bits); Lemma B3 (multi-window composition; finite-key ceiling); Lemma B4 (NIL-update coset propagation; Method 2 required for Base rotation); Base Cipher / Extended Mixing Profile definitions and standard profile trade-off characterization (§6.1); Corollary 2 (quantum invariance). Extended Mixing Profile full-map min-entropy open (§12.7). §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula \|P(O\*)\| = Σ\_{compatible OK} ∏\_i f(μ\_{i,odd}(OK)) [f(0)=16, f(k≥1)=2]; equivocation tightness (rank-ceiling argument over ℤ₁₆); cycle case completeness; exact solution count with cycles. All proofs unconditional and constructive. |
 
 # 8.9 Ideal Enqpy™ Configuration
 
@@ -643,7 +549,7 @@ Key Role Separation Principle. Each master key (EK, QK) appears as the ValueKey 
 
 Under this principle, the per-session key derivation proceeds as follows:
 
-VKP_t = PDAF₁(OR_t, OR_t)\[:n\] (nonce only — public)
+VKP_t = PDAF₁(OR_t, OR_t)[:n] (nonce only — public)
 
 OKP_t = (VKP_t + DS_SEP) mod 16 (nonce only — public, domain-separated)
 
@@ -657,15 +563,17 @@ The OffsetKey parameters VKP_t and OKP_t are derived from the per-session public
 
 ## 8.9.2 Why This Configuration Delivers the Ideal System Property
 
-The algebraic foundation is the \[+8\] global shift invariant of PDAF Mode 1: PDAF₁(VK + 8·1, OK) = PDAF₁(VK, OK) for all VK, OK ∈ ℤ₁₆ⁿ and all n. When each master key appears only as ValueKey, this invariant propagates cleanly through both derivation paths:
+The algebraic foundation is the [+8] global shift invariant of PDAF Mode 1: PDAF₁(VK + 8·1, OK) = PDAF₁(VK, OK) for all VK, OK ∈ ℤ₁₆ⁿ and all n. When each master key appears only as ValueKey, this invariant propagates cleanly through both derivation paths:
 
 - EK → EK + 8·1: VKP_t is derived from OR_t only (not EK), so VKP_t is unchanged. Therefore VKC_t = PDAF₁(EK+8, VKP_t) = PDAF₁(EK, VKP_t) = VKC_t (unchanged). OKC_t is also unchanged, since EK does not enter its derivation.
+
+<!-- -->
 
 - QK → QK + 8·1: Symmetrically, OKP_t is unchanged, so OKC_t = PDAF₁(QK+8, OKP_t) = PDAF₁(QK, OKP_t) = OKC_t (unchanged). VKC_t is also unchanged.
 
 Consequently, all four key pairs in the coset {EK, EK+8·1} × {QK, QK+8·1} produce identical VKC_t, OKC_t, W_t, and ciphertext C_t for every nonce OR_t and every plaintext. The coset is permanently and unconditionally transcript-indistinguishable. No accumulation of observed transcripts, however large, can separate the four coset elements. The exact equivocation floor log₂(4) = 2 bits is therefore permanent and exact, not merely a lower bound.
 
-The complete six-step proof of Theorem 2 (No-Later-Information, Version C — exact conditional independence) appears in \[12\] §6.1.
+The complete six-step proof of Theorem 2 (No-Later-Information, Version C — exact conditional independence) appears in [12] §6.1.
 
 ## 8.9.3 Operational Requirements
 
@@ -675,9 +583,13 @@ To operate Enqpy™ in the Ideal Configuration, the following requirements apply
 
 VKP and OKP MUST be derived from OR_t alone. Specifically:
 
-- VKP_t MUST be computed as PDAF₁(OR_t, OR_t)\[:n\] — the same self-referential nonce expansion used for OR_EXP in Phase 1, applied to the full nonce nibble representation and truncated to n nibbles.
+- VKP_t MUST be computed as PDAF₁(OR_t, OR_t)[:n] — the same self-referential nonce expansion used for OR_EXP in Phase 1, applied to the full nonce nibble representation and truncated to n nibbles.
 
-- OKP_t MUST be derived from VKP_t by a fixed, publicly known domain separator addition: OKP_t\[i\] = (VKP_t\[i\] + DS_SEP) mod 16, where DS_SEP is a fixed constant (recommended: DS_SEP = 0xF, complementary to the OR_EXP domain structure). OKP MUST NOT incorporate EK, QK, or any other secret material.
+<!-- -->
+
+- OKP_t MUST be derived from VKP_t by a fixed, publicly known domain separator addition: OKP_t[i] = (VKP_t[i] + DS_SEP) mod 16, where DS_SEP is a fixed constant (recommended: DS_SEP = 0xF, complementary to the OR_EXP domain structure). OKP MUST NOT incorporate EK, QK, or any other secret material.
+
+<!-- -->
 
 - The standard HMIX-based derivation (VKP = HMIX(QK, OR, DS_VK); OKP = HMIX(EK, OR, DS_OK)) MUST NOT be used for Ideal Configuration deployments.
 
@@ -687,33 +599,43 @@ EK MUST appear only as the ValueKey parameter in PDAF₁(EK, VKP_t). QK MUST app
 
 ### R3 — Phase 5 In-Session Key Update
 
-The Phase 5 cross-combined key update (Section 6.3, Phase 5) is compatible with the Ideal Configuration because PDAF₁ is called with OKC_t and VKC_t as ValueKey parameters, and the \[+8\] invariant propagates through these calls. However, implementations MUST verify that VKP_t and OKP_t used in Phase 5 are the original nonce-derived values from R1, not values that incorporate master key material.
+The Phase 5 cross-combined key update (Section 6.3, Phase 5) is compatible with the Ideal Configuration because PDAF₁ is called with OKC_t and VKC_t as ValueKey parameters, and the [+8] invariant propagates through these calls. However, implementations MUST verify that VKP_t and OKP_t used in Phase 5 are the original nonce-derived values from R1, not values that incorporate master key material.
 
 ### R4 — CS Derivation
 
-The Case Selector CS_t = PDAF₁(VKC_t, OKC_t)\[0..2\] is derived from the session working keys, not from EK or QK directly. This is unchanged from the standard construction and is compatible with the Ideal Configuration.
+The Case Selector CS_t = PDAF₁(VKC_t, OKC_t)[0..2] is derived from the session working keys, not from EK or QK directly. This is unchanged from the standard construction and is compatible with the Ideal Configuration.
 
 ### R5 — EK ≠ QK Requirement
 
 The EK ≠ QK requirement (Section 3.3) remains mandatory. The Ideal Configuration preserves the two-key architecture: EK protects the VKC derivation path; QK protects the OKC derivation path. Setting EK = QK collapses the two-key separation and reduces the equivocation coset.
 
+### R6 — Case-1 W Generation (Base Cipher)
+
+The Base Cipher SHALL generate W using Case 1 only: W[p,C] = MOD16[OKC[p]][VKC[(p+C) mod n]] for p, C in 0..n-1, with VKC and OKC defined as n-nibble values (VKC = PDAF₁(EK, VKP)[:n], OKC = PDAF₁(QK, OKP)[:n]). Phase 2B (Case Selector derivation) and the CS_PERMUTATION_TABLE are OMITTED in the Base Cipher. This restriction is what makes the (EK,QK) → W map a ℤ₁₆-module homomorphism, which yields the closed message-axis min-entropy result of Theorem 3. Cases 2/3 are available only in the Extended Mixing Profile.
+
+### R7 — Window Bound, Update, Rotation, and Conditioning (Base Cipher)
+
+The Base Cipher SHALL update the session keys no later than every n²/2 = 2,048 plaintext bytes at HIGH (n=64) via the Phase 5 cross-combined update (with [:n] truncation); NIL synchronized updates MAY be applied earlier at any time. Master-key rotation SHALL use NIL Method 2 (External Entropy Injection); Method 1 is prohibited as the Base-profile rotation mechanism (see §7.4, Lemma B4 rationale). For plaintext of arbitrary or low redundancy, PRE/POST input conditioning SHALL be applied so that the modeled (effectively uniform) plaintext distribution holds; this conditioning is a stated hypothesis of the Theorem 3 min-entropy result, because per-session keystream entropy is bounded by the finite key/state size (≤ 512 bits at HIGH; Lemma B3).
+
 ## 8.9.4 Relationship to Standard Deployment Profiles
 
-EnqpyADS™ variant configurations may use alternative pointer derivation, such as HMIX-based derivation where EK enters HMIX to produce OKP and QK enters HMIX to produce VKP. This couples each master key into the OffsetKey path of the other’s PDAF₁ call (defense-in-depth) at the cost of breaking the \[+8\] coset where 8 mod n ≠ 0. These are EnqpyADS™ variants, not alternative implementations of the Ideal Configuration.
+EnqpyADS™ variant configurations may use alternative pointer derivation, such as HMIX-based derivation where EK enters HMIX to produce OKP and QK enters HMIX to produce VKP. This couples each master key into the OffsetKey path of the other’s PDAF₁ call (defense-in-depth) at the cost of breaking the [+8] coset where 8 mod n ≠ 0. These are EnqpyADS™ variants, not alternative implementations of the Ideal Configuration.
 
 The distinction between the Ideal Configuration and EnqpyADS™ variants is deliberate and explicit:
 
 - Ideal Configuration (this document): formal Shannon Ideal System guarantee (H(EK,QK\|T^∞) = 2 bits exactly); nonce-only pointer derivation; EK and QK as ValueKey only. Benchmarked performance is equivalent to HMIX-based variants across all message sizes.
 
+<!-- -->
+
 - EnqpyADS™ HMIX-based variant: defense-in-depth key mixing; master keys protect the pointer derivation layer as well as the cipher output; per-session PDAF₁ preimage equivocation (Theorem 1) guaranteed; global Shannon IS property not formally proved. Appropriate for deployments where defense-in-depth takes precedence over the formal IS guarantee.
 
-The Ideal Configuration is the default implementation specified in this document. Key Role Separation (EK and QK as ValueKey only; VKP and OKP derived from nonce alone) is the condition under which the exact coset-indistinguishability theorem holds for this PDAF₁ construction — the proof breaks if and only if a master key enters an OffsetKey path. Necessity and sufficiency within this construction are proved formally in \[12\] §6.1. The Ideal Configuration is therefore not a fragile or arbitrary wiring: it is precisely the minimal sufficient boundary. Deployments with specific EnqpyADS™ requirements — defense-in-depth key mixing, hardware optimization, or other constraints — should consult the EnqpyADS™ specification for the appropriate variant configuration. There is no performance penalty for using the Ideal Configuration: benchmark testing confirms equivalent throughput to HMIX-based variants across all message sizes (see §12 for benchmark results).
+The Ideal Configuration is the default implementation specified in this document. Key Role Separation (EK and QK as ValueKey only; VKP and OKP derived from nonce alone) is the condition under which the exact coset-indistinguishability theorem holds for this PDAF₁ construction — the proof breaks if and only if a master key enters an OffsetKey path. Necessity and sufficiency within this construction are proved formally in [12] §6.1. The Ideal Configuration is therefore not a fragile or arbitrary wiring: it is precisely the minimal sufficient boundary. Deployments with specific EnqpyADS™ requirements — defense-in-depth key mixing, hardware optimization, or other constraints — should consult the EnqpyADS™ specification for the appropriate variant configuration. There is no performance penalty for using the Ideal Configuration: benchmark testing confirms equivalent throughput to HMIX-based variants across all message sizes (see §12 for benchmark results).
 
 # 9. Singular Capabilities
 
 | **Capability**                   | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                    |
 |----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Shannon Ideal System — Proved    | The only stream cipher other than the One-Time Pad proved to satisfy Shannon’s Ideal System definition with a finite, reusable key — H(EK,QK\|T^∞) = log₂(4) = 2 bits exactly; T\_{\>t} ⊥ (EK, QK) \| T\_{≤t}; unconditional, quantum-invariant. This is the Ideal Configuration — the default and sole proved-secure implementation in this document. EnqpyADS™ variants serve specific deployment requirements. Proof in \[12\]. |
+| Shannon Ideal System — Proved    | The only stream cipher other than the One-Time Pad proved to satisfy Shannon’s Ideal System definition with a finite, reusable key — H(EK,QK\|T^∞) = log₂(4) = 2 bits exactly; T\_{\>t} ⊥ (EK, QK) \| T\_{≤t}; unconditional, quantum-invariant. This is the Ideal Configuration — the default and sole proved-secure implementation in this document. EnqpyADS™ variants serve specific deployment requirements. Proof in [12]. |
 | Nil-Communication Key Update     | Complete master key evolution between parties without any data exchange. Eliminates the key-exchange attack surface present in every other key management system. Method 1 provides deterministic key evolution (no forward secrecy). Method 2 (external entropy injection) provides forward secrecy and is required for HIGH profile long-lived key relationships. See Section 7.4.                                               |
 | Key-Dependent Selection Ordering | The Selection case ordering is derived from session keys VKC and OKC via PDAF Mode 1, making it unknown to any adversary without master key knowledge. CS mod 6 produces exactly 6 orderings by design, providing equation-system separation (DOWN attack resistance) and per-session behavioral variation.                                                                                                                        |
 | Domain-Separated Nonce Mixing    | VKP and OKP derivation use a fixed domain separator (DS_SEP = 0xF in the Ideal Configuration), ensuring structural independence of the two derivation paths (VKP ≠ OKP). This is a public constant and contributes no entropy. (EnqpyADS™ HMIX-based variants use DS_VK = 0x5 and DS_OK = 0xA.)                                                                                                                                    |
@@ -743,7 +665,7 @@ Enqpy™’s cipher step (Phase 4) is a single XOR operation against a pre-compu
 
 AES-256-GCM software-only figures reflect non-AES-NI implementations. On modern x86 hardware with AES-NI and PCLMULQDQ instructions, AES-256-GCM achieves 3,000+ MB/s. The Enqpy™ ~2,900 MB/s figure reflects the Phase 4 XOR path with pre-computed W material amortized across large messages. A forthcoming Enqpy™ Technical Supplement will provide full benchmark environment documentation (CPU, compiler, flags), AES-NI comparison baselines, and per-message overhead at representative payload sizes (128 B, 1 KB, 64 KB, 1 MB).
 
-In hardware FPGA implementations (VHDL Rev 3.0 parallel pipeline), Enqpy™ performs 256-bit encryption and decryption with approximately 15 clock cycles of key-setup latency, compared to approximately 4,310 cycles in the Rev 1 sequential implementation — a 287× improvement in key-setup latency. After key setup, Phase 4 streams bytes at 1 byte per clock cycle.
+In hardware FPGA implementations (VHDL Rev 3.0 parallel pipeline), Enqpy™ performs 256-bit encryption and decryption with approximately 15 clock cycles of key-setup latency, compared to approximately 4,310 cycles in the Rev 1 sequential implementation — a 287× improvement in key-setup latency. After key setup, Phase 4 streams at the configured data-path width: 64 bytes per clock in the current reference (6,400 MB/s at 100 MHz), parameterizable to 128 or 256 bytes per clock (12,800 / 25,600 MB/s) by widening the combinational XOR bus with no change to the cryptographic logic. See the Enqpy™ Performance Benchmark Report Rev 2.0 (§4) for the full per-phase latency and throughput-scaling detail.
 
 ## 10.3 Code Size
 
@@ -772,43 +694,53 @@ The only values transmitted beyond the ciphertext are the OpenID (public identif
 
 The optimized C implementation is verified correct against the naive (spec-literal) implementation by byte-exact output comparison across 128 MB of test data, and benchmarked to confirm throughput improvement under -O3 -march=native compilation.
 
+**Profile scope of this reference: the C reference walkthrough and test vectors in this section document the Extended Mixing Profile path (CS-ordered three-case Selection, 6,144-byte window). A minimal Base Cipher (Case-1, 2,048-byte window, no Phase 2B) reference implementation, with its own official KATs and statistical validation, will be published alongside this revision as the normative proof-profile reference. Where this section shows Phase 2B, CS derivation, three-case Selection, or the 6,144-byte window, those steps are Extended-only; the Base Cipher uses Case-1 W generation per §6.3 (R6) and updates at the 2,048-byte boundary.**
+
 ## 12.2 Function Signatures (Section 12 — Complete API)
 
 ### Initialization — Shared Lookup Tables
 
 Call enqpy_init() once at program startup. This initializes the MOD16_TABLE lookup table. The persisted_or_ctr parameter is for caller documentation purposes; the caller manages OR_CTR persistence. EnqpySDK™ deployments MUST use the provided OR_CTR persistence wrapper (enqpy_or_ctr_init / enqpy_or_ctr_commit), which implements synchronous write, guard-increment-on-restart, and hardware monotonic counter integration for HIGH profile. Direct management of OR_CTR without this wrapper is permitted only for embedded targets that implement the full OR_CTR PERSISTENCE REQUIREMENTS of Section 7.2 at the application layer.
 
-> void enqpy_init(uint64_t persisted_or_ctr);
+```c
+void enqpy_init(uint64_t persisted_or_ctr);
+```
 
 ### OWC — One-Way Computation
 
-> int OWC(const uint8_t \*key_nibs, int nLen, int nSkip, uint8_t \*out_nibs);
+```c
+int OWC(const uint8_t *key_nibs, int nLen, int nSkip, uint8_t *out_nibs);
+```
 
 ### PDAF — Pseudo-random Data Augmentation Function
 
-> int PDAF(const uint8_t \*vk, const uint8_t \*ok, int n, int nMode, int nDigits, uint8_t \*out);
+```c
+int PDAF(const uint8_t *vk, const uint8_t *ok, int n, int nMode, int nDigits, uint8_t *out);
+```
 
 ### Case Selector Derivation
 
-> int ENQPY_DERIVE_CS(const uint8_t \*vkc, const uint8_t \*okc, int n, uint8_t \*cs_out);
+```c
+int ENQPY_DERIVE_CS(const uint8_t *vkc, const uint8_t *okc, int n, uint8_t *cs_out);
+```
 
 ENQPY_DERIVE_CS uses a 3-position unrolled PDAF Mode 1 computation (c=0). The CS permutation lookup MUST be accessed in constant time to prevent timing side-channel leakage of the case ordering.
 
 ### PDAF_SEC — Enqpy™ Encrypt / Decrypt
 
-> int PDAF_SEC(const uint8_t \*ek, const uint8_t \*qk, const uint8_t \*or_nibs,
->
-> uint64_t or_ctr, int n, const uint8_t \*restrict target,
->
-> int nTextLen, uint8_t \*restrict out);
+```c
+int PDAF_SEC(const uint8_t *ek, const uint8_t *qk, const uint8_t *or_nibs,
+uint64_t or_ctr, int n, const uint8_t *restrict target,
+int nTextLen, uint8_t *restrict out);
+```
 
 ### Nil-Communication Key Update
 
-> int ENQPY_NIL_COMM_UPDATE(const uint8_t \*ek, const uint8_t \*qk, int n,
->
-> const uint8_t \*e_ext, int method,
->
-> uint8_t \*ek_new, uint8_t \*qk_new);
+```c
+int ENQPY_NIL_COMM_UPDATE(const uint8_t *ek, const uint8_t *qk, int n,
+const uint8_t *e_ext, int method,
+uint8_t *ek_new, uint8_t *qk_new);
+```
 
 Set method=1 for deterministic schedule update, method=2 for external entropy injection. e_ext is ignored for method=1 and MUST be non-NULL and meet the entropy requirements of Section 7.4 for method=2.
 
@@ -826,7 +758,7 @@ EK ≠ QK enforcement: PDAF_SEC implementations SHOULD return −1 with an appro
 |---------------|----------------------------------------------------------------------------------------|
 | Input (hex)   | FCB578                                                                                 |
 | nSkip         | 1                                                                                      |
-| Calculation   | Nibbles {15,12,11,5,7,8}: MOD16\[15\]\[12\]=11, MOD16\[11\]\[5\]=0, MOD16\[7\]\[8\]=15 |
+| Calculation   | Nibbles {15,12,11,5,7,8}: MOD16[15][12]=11, MOD16[11][5]=0, MOD16[7][8]=15 |
 | Output        | B0F                                                                                    |
 
 ## 13.2 PDAF Test Vectors
@@ -846,7 +778,7 @@ The Phase 1 OR_EXP derivation calls PDAF Mode 1 with VK = OK = OR_CTR_nibs (the 
 | 0x0000000000000002 | 0000000000000002                      | 0000000000000022                    |
 | 0x000000000000A5C3 | 000000000000A5C3                      | 00000000000AA5C3                    |
 
-*Note: OR_CTR values 1 and 2 produce low-entropy OR_EXP output due to leading zeros in the 16-nibble representation. This is expected and correct — OR_EXP deterministic uniqueness rests on OR_CTR monotonicity, not on individual output entropy. Statistical uniqueness of eff_or is provided by the CSPRNG OR component mixed in Phase 1 (eff_or\[i\] = MOD16\[or_nibs\[i\]\]\[OR_EXP\[i\]\]). OR_CTR 0xA5C3 shows the propagation behaviour for a non-trivial value.*
+*Note: OR_CTR values 1 and 2 produce low-entropy OR_EXP output due to leading zeros in the 16-nibble representation. This is expected and correct — OR_EXP deterministic uniqueness rests on OR_CTR monotonicity, not on individual output entropy. Statistical uniqueness of eff_or is provided by the CSPRNG OR component mixed in Phase 1 (eff_or[i] = MOD16[or_nibs[i]][OR_EXP[i]]). OR_CTR 0xA5C3 shows the propagation behaviour for a non-trivial value.*
 
 ## 13.3 PDAF_SEC Round-Trip Test
 
@@ -894,7 +826,7 @@ The National Institute of Standards and Technology (NIST) Special Publication 80
 | 3                   | Runs                           | 0.156777    | **PASS**           |
 | 4                   | Longest Run of Ones            | 0.771850    | **PASS**           |
 | 5                   | Binary Matrix Rank             | 0.325591    | **PASS**           |
-| 6                   | DFT (Spectral)                 | 0.287107    | **PASS**           |
+| 6                   | DFT (Spectral)<sup>†</sup>     | 0.287107    | **PASS**           |
 | 7                   | Non-overlapping Template (m=9) | 0.849404    | **PASS**           |
 | 8                   | Overlapping Template (m=9)     | 0.375944    | **PASS**           |
 | 9                   | Maurer’s Universal Statistical | 0.121548    | **PASS**           |
@@ -906,11 +838,21 @@ The National Institute of Standards and Technology (NIST) Special Publication 80
 | 15                  | Random Excursions Variant      | 0.266222    | **PASS**           |
 | **OVERALL RESULT:** |                                |             | **15 / 15 PASSED** |
 
+*<sup>†</sup> Single-sample, single-stream value. The Spectral (DFT) test does not pass under the full multi-stream SP 800-22 methodology; see §14.4 for the result, its structural cause, and its relationship to the Theorem 2 and Theorem 3 guarantees.*
+
 ## 14.4 Interpretation
 
-The p-values range from 0.121548 (Maurer’s Universal) to 0.939419 (Frequency/Monobit), all well above the critical threshold of 0.01. No test exhibited values near the rejection boundary, indicating robust randomness properties across all statistical dimensions evaluated. These results are consistent with the theoretical underdetermination property of PDAF: the n² expansion from n input nibbles via modular-16 arithmetic, combined with the CS-ordered three-case Selection mechanism and per-cycle key updates, produces output that passes all standard tests for cryptographic randomness.
+Single-stream results. At the standard SP 800-22 stream length of 1,000,000 bits, both profiles pass. The Extended Mixing Profile single-sample result is tabulated in §14.3 (15/15). The Base C1 keystream, tested in its intended deployment configuration (a fresh CSPRNG nonce per message), passes the full Rev. 1a battery: all 41 reported p-values are ≥ 0.01, including every Random Excursions and Variant state, with no value below 0.026. The test implementation was first validated against the binary expansion of *e*, reproducing NIST’s documented reference p-values, and against PCG64 and OS-entropy controls.
 
-These results represent a single-sample test on one (EK, QK, OR) configuration and confirm that Enqpy™ PDAF_SEC output passes all NIST SP 800-22 Rev. 1a tests at the standard significance level of α = 0.01. NIST SP 800-22 is a necessary but not sufficient condition for cryptographic quality. These results do not replace cryptographic security analysis. Multi-sample testing across independently generated key configurations, including related-key, related-nonce, all-zero-key, and all-ones-key samples, will be published in a forthcoming Enqpy™ Technical Supplement.
+**Multi-stream results, stated plainly.** The full SP 800-22 methodology evaluates many independent streams against both a pass-proportion criterion and a p-value-uniformity criterion. Assessed this way over 100 independent 1,000,000-bit streams, the Spectral (DFT) test does not pass for the Base C1 keystream in either the multi-nonce or the single-session regime, and the same is observed for the Extended profile. The keystream carries a detectable, structured spectral signature. This corrects an earlier characterization of the effect as a single-session chaining artifact: it is present under per-message re-nonce-ing as well, and it is structural rather than incidental. It is disclosed here without reservation.
+
+**Cause.** The signature originates in the Case-1 window construction W[c·n+p] = (OKC[p] + VKC[(p+c) mod n]) mod 16, a circulant additive lattice over Z₁₆. It is verifiable directly on recovered keystream: within any window, every diagonal-difference column W[c,p] − W[c+1,p−1] is exactly constant (equal to OKC[p] − OKC[p−1]). That lattice is not incidental. It is precisely the Z₁₆-module homomorphism on which the message-axis min-entropy result (Theorem 3) is proved. Removing it would whiten the keystream and, in the same stroke, dissolve the proof of message secrecy.
+
+**Relationship to the security claims.** Enqpy’s guarantees are information-theoretic equivocation and min-entropy statements (Theorems 2 and 3), not claims of keystream indistinguishability, and no such claim is made anywhere in this document. A known-plaintext adversary is expected to recover W, including its structure; both theorems are stated against the complete transcript T^∞ and already condition on this recovery. By monotonicity of conditional entropy — conditioning on more data cannot increase uncertainty — no known-plaintext keystream recovery, of one window or of arbitrarily many, can reduce key equivocation below the proven floor H(EK, QK \| T^∞) = 2 bits (Theorem 2), nor reduce unknown-message min-entropy below H∞(PT \| CT, OR) ≥ 128 bits at HIGH, n = 64 (Theorem 3). A demonstrated keystream recovery is, formally, a finite subset of T^∞; it therefore cannot do better than the proof already grants to an adversary holding the whole of T^∞. The visible keystream structure is thus the mechanism of the guarantee, not a counterexample to it. The companion note “Recovering the Keystream Is Not Breaking the Cipher” develops this argument in full and in plain language.
+
+**Operational guidance.** The information-theoretic results are algebraic and independent of keystream statistics; no profile choice or output conditioning is required to obtain them. An implementer who additionally requires a statistically white keystream for an out-of-scope purpose (for example, use as a general-purpose PRNG) should select the Extended profile or apply output conditioning. Neither is necessary for, nor does either strengthen, the Theorem 2 and Theorem 3 guarantees.
+
+The §14.3 table reports single-sample, single-stream values at α = 0.01. As the multi-stream analysis above makes explicit, single-stream passes do not by themselves establish multi-stream randomness, and for the Spectral test they do not hold at full resolution. NIST SP 800-22 is a necessary-but-not-sufficient indicator of pseudorandomness for conventional ciphers; it is neither necessary nor sufficient for Enqpy’s information-theoretic guarantees, which do not depend on keystream statistics. The complete battery, the validation against e and the control RNGs, the 100-stream proportion and uniformity analysis, and the Extended-profile contrast are detailed in the companion Enqpy™ Base C1 SP 800-22 Statistical Validation report.
 
 # Acknowledgments
 
@@ -920,73 +862,64 @@ The author wishes to disclose that nonhuman artificial intelligence systems were
 
 ## ENCRYPT
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p><strong>INITIAL SETUP</strong></p>
-<p>Credentials — OpenID, EK, QK, OR_CTR = 0 (pre-shared out-of-band)</p></td>
-</tr>
-</tbody>
-</table>
+> **INITIAL SETUP**
+>
+> Credentials — OpenID, EK, QK, OR_CTR = 0 (pre-shared out-of-band)
 
 **PHASE 1 — Initial Message Setup:**
 
-> Increment OR_CTR (write to non-volatile storage synchronously; hardware counter for HIGH profile)
->
-> Generate random OR from CSPRNG (n nibbles)
->
-> OR_CTR_nibs ← 16-nibble representation of OR_CTR
->
-> OR_EXP\[0..n-1\] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)\[0..n-1\]
->
-> eff_or\[i\] = MOD16_TABLE\[or_nibs\[i\]\]\[OR_EXP\[i\]\]
+```
+Increment OR_CTR (write to non-volatile storage synchronously; hardware counter for HIGH profile)
+Generate random OR from CSPRNG (n nibbles)
+OR_CTR_nibs ← 16-nibble representation of OR_CTR
+OR_EXP[0..n-1] = PDAF(OR_CTR_nibs, OR_CTR_nibs, Mode=1, n_param=16)[0..n-1]
+eff_or[i] = MOD16_TABLE[or_nibs[i]][OR_EXP[i]]
+```
 
 **PHASE 2 — Key Generation (Ideal Configuration):**
 
-> VKP\[0..n-1\] = PDAF(eff_or, eff_or, Mode=1)\[0..n-1\]
->
-> OKP\[i\] = (VKP\[i\] + 0xF) mod 16
->
-> VKC = PDAF(EK, VKP, Mode=1)
->
-> OKC = PDAF(QK, OKP, Mode=1)
+```
+VKP[0..n-1] = PDAF(eff_or, eff_or, Mode=1)[0..n-1]
+OKP[i] = (VKP[i] + 0xF) mod 16
+VKC = PDAF(EK, VKP, Mode=1)
+OKC = PDAF(QK, OKP, Mode=1)
+```
 
 **PHASE 2B — Case Selector Derivation (PDAF Mode 1, 3-nibble unrolled):**
 
-> CS = PDAF(VKC\[0..n-1\], OKC\[0..n-1\], Mode=1)\[0..2\]
->
-> case_order = CS_PERMUTATION_TABLE\[CS mod 6\] ← constant-time lookup
+```
+CS = PDAF(VKC[0..n-1], OKC[0..n-1], Mode=1)[0..2]
+case_order = CS_PERMUTATION_TABLE[CS mod 6] ← constant-time lookup
+```
 
 **PHASE 3 — Selection (CS-ordered cases, cycling p = 0..n-1, C = 0..n-1):**
 
-> Case 1: w = MOD16\[OKC\[p\]\]\[VKC\[p+C\]\]
->
-> Case 2: w = MOD16\[VKC\[p+C\]\]\[VKC\[p+d+1+C\]\] where d = OKC\[p\]
->
-> Case 3: w = MOD16\[OKC\[p+C\]\]\[OKC\[p+d2+1+C\]\] where d2 = VKC\[p\]
+```
+Case 1: w = MOD16[OKC[p]][VKC[p+C]]
+Case 2: w = MOD16[VKC[p+C]][VKC[p+d+1+C]] where d = OKC[p]
+Case 3: w = MOD16[OKC[p+C]][OKC[p+d2+1+C]] where d2 = VKC[p]
+```
 
 **PHASE 4 — Cipher (byte-level, nibble-packed):**
 
-> W_byte = (W_nibble_even \<\< 4) \| W_nibble_odd
->
-> CT_byte = W_byte XOR PT_byte
+```
+W_byte = (W_nibble_even << 4) | W_nibble_odd
+CT_byte = W_byte XOR PT_byte
+```
 
 **PHASE 5 — In-Session Key Update (when cycle exhausted and more PT remains):**
 
-> VKNext = PDAF(OKC\[0..n-1\], VKP, Mode=1)
->
-> OKNext = PDAF(VKC\[0..n-1\], OKP, Mode=1)
->
-> VKC ← VKNext, OKC ← OKNext; re-derive CS
+```
+VKNext = PDAF(OKC[0..n-1], VKP, Mode=1)
+OKNext = PDAF(VKC[0..n-1], OKP, Mode=1)
+VKC ← VKNext, OKC ← OKNext; re-derive CS
+```
 
-**SEND: \[OpenID, eff_or, CT\] to recipient**
+**SEND: [OpenID, eff_or, CT] to recipient**
 
 ## DECRYPT
 
-**RECEIVE: \[OpenID, eff_or, CT\]**
+**RECEIVE: [OpenID, eff_or, CT]**
 
 NOTE: The receiver does not execute Phase 1. eff_or is received directly from the sender and used as-is. PHASE 2: Reproduce VKC and OKC identically using received eff_or and shared EK, QK.
 
@@ -994,7 +927,9 @@ PHASE 2B: Reproduce CS and case_order identically.
 
 PHASE 3 + 4 + 5: Identical CS-ordered pointer and nibble-packing logic as sender.
 
-> PT_byte = W_byte XOR CT_byte (XOR is self-inverse)
+```
+PT_byte = W_byte XOR CT_byte (XOR is self-inverse)
+```
 
 # Appendix B — Extended Test Vector Reference
 
@@ -1002,35 +937,33 @@ PHASE 3 + 4 + 5: Identical CS-ordered pointer and nibble-packing logic as sender
 
 ValueKey: 0123456789ABCDEF \| OffsetKey: FEDCBA9876543210
 
-> FFFFFFFFFFFFFFFF000000000000000011111111111111112222222222222222
->
-> 3333333333333333444444444444444455555555555555556666666666666666
->
-> 777777777777777788888888888888889999999999999999AAAAAAAAAAAAAAAA
->
-> BBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEE
+```
+FFFFFFFFFFFFFFFF000000000000000011111111111111112222222222222222
+3333333333333333444444444444444455555555555555556666666666666666
+777777777777777788888888888888889999999999999999AAAAAAAAAAAAAAAA
+BBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEE
+```
 
 ## B.2 PDAF Mode 1 Full n² Output (n = 16, 256 nibbles)
 
 ValueKey: 0123456789ABCDEF \| OffsetKey: FEDCBA9876543210
 
-> 0123456789ABCDEF23456789ABCDEF01456789ABCDEF01236789ABCDEF012345
->
-> 89ABCDEF01234567ABCDEF0123456789CDEF0123456789ABEF0123456789ABCD
->
-> 0123456789ABCDEF23456789ABCDEF01456789ABCDEF01236789ABCDEF012345
->
-> 89ABCDEF01234567ABCDEF0123456789CDEF0123456789ABEF0123456789ABCD
+```
+0123456789ABCDEF23456789ABCDEF01456789ABCDEF01236789ABCDEF012345
+89ABCDEF01234567ABCDEF0123456789CDEF0123456789ABEF0123456789ABCD
+0123456789ABCDEF23456789ABCDEF01456789ABCDEF01236789ABCDEF012345
+89ABCDEF01234567ABCDEF0123456789CDEF0123456789ABEF0123456789ABCD
+```
 
 # Appendix C — Security Definitions
 
 ## C.1 Shannon Perfect Secrecy (OTP Form)
 
-A cryptosystem achieves Perfect Secrecy if, for all messages M and all ciphertexts C: Pr\[M = m \| C = c\] = Pr\[M = m\] for all m, c. Observing the ciphertext provides no information about the plaintext. Shannon proved this requires \|K\| ≥ \|M\|.
+A cryptosystem achieves Perfect Secrecy if, for all messages M and all ciphertexts C: Pr[M = m \| C = c] = Pr[M = m] for all m, c. Observing the ciphertext provides no information about the plaintext. Shannon proved this requires \|K\| ≥ \|M\|.
 
 ## C.2 Shannon Ideal System
 
-A cryptosystem is an Ideal System if the equivocation H(K \| Cⁿ, Mⁿ) does not approach zero as n → ∞. In an Ideal System, even with unlimited ciphertext, the adversary is left with multiple alternative keys and plaintexts of reasonable probability. Enqpy™ is the first finite-key cipher formally proved to satisfy this definition; see \[12\].
+A cryptosystem is an Ideal System if the equivocation H(K \| Cⁿ, Mⁿ) does not approach zero as n → ∞. In an Ideal System, even with unlimited ciphertext, the adversary is left with multiple alternative keys and plaintexts of reasonable probability. Enqpy™ is the first finite-key cipher formally proved to satisfy this definition; see [12].
 
 ## C.3 Underdetermination
 
@@ -1038,38 +971,38 @@ A cryptosystem is underdetermined if, for every ciphertext C, there exist multip
 
 ## C.4 PDAF Mode 1 Entangled Underdetermination
 
-PDAF Mode 1 creates a stronger form of underdetermination than a simple many-to-one mapping. The OffsetKey controls dynamic displacements into the ValueKey during output generation, creating an entangled equation system when attempting inversion: the displacements that determine which ValueKey positions are combined are themselves the unknowns being sought. This self-referential constraint structure prevents the equation system from reducing to a small fixed number of solutions. The exact solution count is characterized in \[12\], Theorem 1 and §11 (Appendix B).
+PDAF Mode 1 creates a stronger form of underdetermination than a simple many-to-one mapping. The OffsetKey controls dynamic displacements into the ValueKey during output generation, creating an entangled equation system when attempting inversion: the displacements that determine which ValueKey positions are combined are themselves the unknowns being sought. This self-referential constraint structure prevents the equation system from reducing to a small fixed number of solutions. The exact solution count is characterized in [12], Theorem 1 and §11 (Appendix B).
 
 ## C.5 Computational Security (for comparison)
 
-A cipher is computationally secure if breaking it requires resources exceeding a computational bound. AES, ChaCha20, and all NIST PQC standards are computationally secure but not unconditionally secure. Enqpy™ claims unconditional security through structural underdetermination, formally proved in \[12\].
+A cipher is computationally secure if breaking it requires resources exceeding a computational bound. AES, ChaCha20, and all NIST PQC standards are computationally secure but not unconditionally secure. Enqpy™ claims unconditional security through structural underdetermination, formally proved in [12].
 
 # Appendix D — References
 
-\[1\] Shannon, C. E. (1949). Communication Theory of Secrecy Systems. Bell System Technical Journal, 28(4), 656–715.
+[1] Shannon, C. E. (1949). Communication Theory of Secrecy Systems. Bell System Technical Journal, 28(4), 656–715.
 
-\[2\] McGough, P. (2010, updated 2020). Qwyit Protocol Reference, V3.0. Qwyit LLC \[now NQP LLC\].
+[2] McGough, P. (2010, updated 2020). Qwyit Protocol Reference, V3.0. Qwyit LLC [now NQP LLC].
 
-\[3\] NQP LLC (2021). QwyitCipher (Enqpy™) PDAF_SEC Cipher Configuration — Reference Guide V2.0.
+[3] NQP LLC (2021). QwyitCipher (Enqpy™) PDAF_SEC Cipher Configuration — Reference Guide V2.0.
 
-\[4\] NQP LLC (2026). Enqpy™ Stream Cipher — Technical Description, Features, Benefits, and Singular Capabilities.
+[4] NQP LLC (2026). Enqpy™ Stream Cipher — Technical Description, Features, Benefits, and Singular Capabilities.
 
-\[5\] NQP LLC (2026). Enqpy™ Flexible Security — Statement of BTA Capabilities V1.
+[5] NQP LLC (2026). Enqpy™ Flexible Security — Statement of BTA Capabilities V1.
 
-\[6\] NIST (2010). SP 800-22 Rev. 1a — A Statistical Test Suite for Random and Pseudorandom Number Generators for Cryptographic Applications.
+[6] NIST (2010). SP 800-22 Rev. 1a — A Statistical Test Suite for Random and Pseudorandom Number Generators for Cryptographic Applications.
 
-\[7\] NIST (2012). SP 800-90A — Recommendation for Random Number Generation Using Deterministic Random Bit Generators.
+[7] NIST (2012). SP 800-90A — Recommendation for Random Number Generation Using Deterministic Random Bit Generators.
 
-\[8\] NIST (2018). SP 800-90B — Recommendation for the Entropy Sources Used for Random Bit Generation.
+[8] NIST (2018). SP 800-90B — Recommendation for the Entropy Sources Used for Random Bit Generation.
 
-\[9\] NIST (2024). Post-Quantum Cryptography Standardization. FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
+[9] NIST (2024). Post-Quantum Cryptography Standardization. FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
 
-\[10\] Bernstein, D. J. (2008). ChaCha, a variant of Salsa20. Workshop Record of SASC.
+[10] Bernstein, D. J. (2008). ChaCha, a variant of Salsa20. Workshop Record of SASC.
 
-\[11\] NIST (2001). Advanced Encryption Standard (AES). FIPS PUB 197.
+[11] NIST (2001). Advanced Encryption Standard (AES). FIPS PUB 197.
 
 ## Formal Proof Documents
 
-\[12\] McGough, P. / NQP LLC (2026). Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System for a Finite-Key Cipher, Revision 1.1. Public record: enqpy.com and github.com/nqp-llc/enqpy, 2026. Establishes Lemma 1 (MOD16 fiber size), Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate), Theorem 2 (Shannon Ideal System — proved for Ideal Enqpy Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exact; conditional independence T\_{\>t} ⊥ S_t \| T\_{≤t}; six-step proof), Theorem 3 (plaintext support floor: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile, with posterior uniformity on the Case 1 achievable subset; extension to the full consistent set is Conjecture 1, stated as open together with the corresponding min-entropy bound, §12.7), Corollary 2 (quantum invariance), and the Ideal Configuration definition with standard-profile trade-off characterization. §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula \|P(O\*)\| = Σ\_{compatible OK} ∏\_i f(μ\_{i,odd}(OK)) \[f(0)=16, f(k≥1)=2\]; equivocation tightness (rank argument over ℤ₁₆); cycle case completeness (ℤ₁₆ vs. ℤ₂); exact solution count with cycles (induction proof). All proofs are unconditional and constructive.
+[12] McGough, P. / NQP LLC (2026). Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System for a Finite-Key Cipher, Revision 2.0. Public record: enqpy.com and github.com/nqp-llc/enqpy, 2026. Establishes Lemma 1 (MOD16 fiber size), Theorem 1 (PDAF Mode 1 preimage lower bound \|P(O\*)\| ≥ 2 worst case / ≥ 16 non-degenerate), Theorem 2 (Shannon Ideal System — proved for Ideal Enqpy Configuration: H(EK,QK\|T^∞) = log₂(4) = 2 bits exact; conditional independence T\_{\>t} ⊥ (EK, QK) \| T\_{≤t}; six-step proof), Theorem 3 (Base Cipher Plaintext Equivocation — closed: \|S(CT,OR)\| ≥ 2^128 unconditionally for HIGH profile, with the posterior uniform over the full consistent set, giving H(PT\|CT,OR) = H∞(PT\|CT,OR) ≥ 128 bits, via the ℤ₁₆-module homomorphism of the Case-1 map and the First Isomorphism Theorem), Lemma B3 (multi-window composition; session floor inherited; 512-bit finite-key ceiling), Lemma B4 (NIL-update coset propagation via OWC pair-cancellation; Method 2 required for Base credential rotation), Corollary 2 (quantum invariance), and the Base Cipher / Extended Mixing Profile definitions with standard-profile trade-off characterization. The optional Extended Mixing Profile’s full-map min-entropy (Conjecture 1) is the single open research addendum (§12.7). §11 (Appendix B) provides the extended algebraic proofs: exact preimage count formula \|P(O\*)\| = Σ\_{compatible OK} ∏\_i f(μ\_{i,odd}(OK)) [f(0)=16, f(k≥1)=2]; equivocation tightness (rank argument over ℤ₁₆); cycle case completeness (ℤ₁₆ vs. ℤ₂); exact solution count with cycles (induction proof). All proofs are unconditional and constructive.
 
 © 2026 NQP LLC • Licensed under CC-BY-4.0 • www.enqpy.com

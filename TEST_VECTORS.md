@@ -1,6 +1,6 @@
 # Enqpy™ Canonical Test Vectors
 
-These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. They are exported from the reference self-test harness (`-DENQPY_SELFTEST`, **78/78 passing**) so that anyone can implement Enqpy™ in any language and prove their implementation is correct without trusting us, and without us trusting them.
+These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships **two** reference profiles that share the same primitives and inputs but generate different keystreams (Phase 3 differs): the **Base Cipher** (`enqpy_reference_base_c1.c`, Case-1, proof-complete — `-DENQPY_SELFTEST` runs **84/84**) and the **Extended Mixing Profile** (`enqpy_reference.c`, three-case — runs **78/78**). The shared primitives (OWC, PDAF Mode 0/1) are identical across both; the `PDAF_SEC` keystream differs, so both values are given below. The Base Cipher is the canonical conformance target for the proved Rev 2.0 claims.
 
 Passing these vectors is the *technical* bar. It puts a port at the **Reference-Compatible** level (self-attested) and is the prerequisite for the Foundation's higher levels — but it is not certification, and it does not by itself grant any right to the Enqpy™ marks. See "Conformance levels" below.
 
@@ -50,7 +50,7 @@ The real subtle-bug surface is the **`W` generation pipeline**, not the combine.
 
 ## Verified canonical vectors
 
-All values below are taken from the reference self-test (78/78 PASS) and are authoritative.
+All values below are taken from the reference self-tests and are authoritative. OWC and PDAF Mode 0/1 are **shared** between the two profiles; the `PDAF_SEC` keystream is given for **both**.
 
 **OWC** (FCD §13.1) — input `FCB578`, `nSkip = 1` → output `B0F`.
 
@@ -60,7 +60,7 @@ All values below are taken from the reference self-test (78/78 PASS) and are aut
 **PDAF Mode 1** — VK `FB382C001A`, OK `CC69100AB4`, n=10, nDigits=30 →
 `7DD02C010CDF74C01B5BF8D811B92B`
 
-**PDAF_SEC — Ideal Configuration, HIGH profile (n=64), zero plaintext.** Because the 8-byte plaintext is all zeros, the ciphertext equals the keystream `W[0..7]` exactly — making this the cleanest isolation of `W` generation.
+**PDAF_SEC — HIGH profile (n=64), zero plaintext.** Because the 8-byte plaintext is all zeros, the ciphertext equals the keystream `W[0..7]` exactly — the cleanest isolation of `W` generation. The two profiles share these inputs but produce **different** keystreams:
 
 ```
 EK     = CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957
@@ -68,10 +68,12 @@ QK     = 0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680
 OR     = 3667A507E1109EE32CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C
 OR_CTR = 1
 PT     = 0000000000000000        (8 bytes)
-CT     = 24C43F3E949BBC35        (8 bytes)  == W[0..7]
+
+CT (Base Cipher,  enqpy_reference_base_c1.c) = 2434B58845C6FDE8   (8 bytes)  == W[0..7]
+CT (Extended Mix, enqpy_reference.c)         = 24C43F3E949BBC35   (8 bytes)  == W[0..7]
 ```
 
-Round-trip: `PDAF_SEC` applied to `CT` with the same parameters returns the zero plaintext. Coset invariant ([+8] global shift): `EK + 8·1` and `QK + 8·1` (nibble-wise, mod 16) both produce the identical `CT` — a port that reproduces this confirms the Key Role Separation wiring of the Ideal Configuration.
+Both round-trip: applying `PDAF_SEC` to each profile's own `CT` with the same parameters returns the zero plaintext. The `[+8]` coset invariants (`EK + 8·1`, `QK + 8·1`, and both together — nibble-wise mod 16) reproduce that profile's identical `CT`, confirming the Key Role Separation wiring. The **Base Cipher** additionally verifies the 2,048-byte window boundary (TV7) and the NIL key-update policy (TV8); see the README self-test breakdown.
 
 ## How to verify a port
 

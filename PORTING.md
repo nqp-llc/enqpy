@@ -34,7 +34,7 @@ So: write the port freely; deploy it under the Covenant (patent-safe, no license
 Everything to build and verify a port lives in this repo:
 
 - **Canonical test vectors** — `tests/vectors/enqpy-vectors.json`, documented in [`TEST_VECTORS.md`](TEST_VECTORS.md). The authoritative inputs and expected outputs (UPPERCASE hex). Your port matches the reference if and only if it reproduces these exactly.
-- **Reference implementation** — the C reference (`-DENQPY_SELFTEST` runs 78/78). Ground truth when in doubt.
+- **Reference implementations** — the **Base Cipher** (`enqpy_reference_base_c1.c`, `-DENQPY_SELFTEST` runs **84/84**, the proof-complete Case-1 profile and canonical conformance target) and the **Extended Mixing Profile** (`enqpy_reference.c`, runs **78/78**, the optional three-case profile). Ground truth when in doubt.
 - **Formal Cryptographic Description (FCD)** — the full specification of OWC, PDAF, PDAF_SEC, the five phases, profiles, and key management.
 - **The proof / paper** — [the formal proof paper](https://enqpy.com/technical.html) (companion [12]). Why it works; not required to port.
 - **Conformance Specification** — [`CONFORMANCE.md`](CONFORMANCE.md). The three conformance levels, canonical sources, and the submission process.
@@ -62,7 +62,7 @@ We verify against the canonical vectors and, on a pass, list your port in [`PORT
 
 ## One note specific to cryptography
 
-A port that *looks* like it works can still be subtly wrong in a way that silently weakens security — and it would carry the Enqpy™ name. The message combine is plain XOR, so that part is hard to get wrong; the real bug surface is keystream (`W`) generation — the five phases, PDAF Mode 1 tiling, the CS-ordered Selection with required re-derivation after each Phase-5 update, and the Ideal Configuration's key-role separation. That is exactly why the vectors define correctness by exact reproduction rather than "it runs." If you find a discrepancy with the vectors or the reference, open an issue — that's a report we want.
+A port that *looks* like it works can still be subtly wrong in a way that silently weakens security — and it would carry the Enqpy™ name. The message combine is plain XOR, so that part is hard to get wrong; the real bug surface is keystream (`W`) generation — the five phases, PDAF Mode 1 tiling, the Ideal Configuration's key-role separation, and (in the Extended Mixing Profile only) the CS-ordered Selection with required re-derivation after each Phase-5 update. The Base Cipher uses Case-1 generation alone, with no Case Selector. That is exactly why the vectors define correctness by exact reproduction rather than "it runs." If you find a discrepancy with the vectors or the reference, open an issue — that's a report we want.
 
 ## Questions
 

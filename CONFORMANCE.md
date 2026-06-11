@@ -64,8 +64,9 @@ software implementation. The C Reference is:
 
 - **Single-file C11.** No external dependencies; portable across 8-bit
   microcontrollers to 64-bit servers.
-- **Test-anchored.** Ships with 78 self-test assertions against
-  published test vectors.
+- **Test-anchored.** Ships with 84 self-test assertions (Base Cipher;
+  78 for the optional Extended Mixing Profile) against published test
+  vectors.
 - **Apache-2.0 licensed.** Source-code rights are granted under the
   Apache License 2.0 (see the LICENSE and NOTICE files). Patent rights
   in the cipher are addressed by the Open-Infrastructure Patent
@@ -114,8 +115,9 @@ the deterministic input/output triples (key, plaintext, expected
 ciphertext) and their reverse forms (key, ciphertext, expected
 plaintext) against which implementations are validated.
 
-The launch-day Test Vectors are the 78 input/output triples consumed
-by the C Reference's self-test harness. Rev 1.0 of this Conformance
+The launch-day Test Vectors are the 84 input/output triples consumed
+by the Base Cipher C Reference's self-test harness (the Extended Mixing
+Profile reference runs the 78-assertion TV1–TV5 subset). Rev 1.0 of this Conformance
 Specification will extend the Test Vector set substantially.
 
 Test Vectors are published at `github.com/nqp-llc/enqpy` under
@@ -318,7 +320,7 @@ and will be addressed in Rev 1.0 (Months 4–6 post-launch):
 
 | Out of scope at Rev 0.1 | Addressed in Rev 1.0 |
 |---|---|
-| Full conformance test harness (beyond the 78-assertion baseline) | ☑ |
+| Full conformance test harness (beyond the 84-assertion baseline) | ☑ |
 | Side-channel resistance requirements (timing, power, EM) | ☑ |
 | Hardware-specific conformance criteria (FPGA, ASIC, secure element) | ☑ |
 | Performance benchmarking requirements | ☑ |
