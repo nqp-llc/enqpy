@@ -1,10 +1,16 @@
 name: build
 
-# Builds the Enqpy(TM) C reference on clean machines and asserts that the
-# published self-test reports 78 PASS / 0 FAIL. This is the verify-don't-believe
-# claim made checkable: GitHub builds the artifact from a fresh checkout, on
-# hardware no one controls, on every push — and the badge goes red if it ever
-# fails to compile OR the pass count drifts from 78.
+# Builds the Enqpy(TM) C reference (Rev 3.0 -- the Canonical Configuration,
+# Case-1 W generation) on clean machines and asserts that the published
+# self-test reports 84 PASS / 0 FAIL. This is the verify-don't-believe claim
+# made checkable: GitHub builds the artifact from a fresh checkout, on hardware
+# no one controls, on every push -- and the badge goes red if it ever fails to
+# compile OR the pass count drifts from 84.
+#
+# The job additionally builds the cross-cipher AEAD benchmark and asserts its
+# known-answer tests pass (including Enqpy, keyed with the official Rev 3.0
+# test vectors), and validates the canonical test-vector file against the
+# published Enqpy keystream.
 
 on:
   push:
@@ -20,7 +26,7 @@ concurrency:
 
 jobs:
   selftest:
-    name: build + 78/78 self-test
+    name: build + 84/84 self-test
     strategy:
       fail-fast: false
       matrix:
@@ -33,7 +39,7 @@ jobs:
       - name: Show compiler version
         run: cc --version || true
 
-      - name: Build, run self-test + benchmark, and assert 78/78
+      - name: Build, run self-test + benchmark, and assert 84/84
         run: |
           chmod +x build.sh
           # Run exactly the documented command; capture all output.
@@ -48,20 +54,61 @@ jobs:
           cat selftest_output.txt
           echo "::endgroup::"
           # Belt-and-suspenders: require the exact pass line and the PASSED banner.
-          if ! grep -Eq 'Self-test: 78 PASS +0 FAIL' selftest_output.txt; then
-            echo "::error::did not find 'Self-test: 78 PASS  0 FAIL' — pass count drifted or tests changed"
+          if ! grep -Eq 'Self-test: 84 PASS +0 FAIL' selftest_output.txt; then
+            echo "::error::did not find 'Self-test: 84 PASS  0 FAIL' — pass count drifted or tests changed"
             exit 1
           fi
           if ! grep -q 'Self-test PASSED.' selftest_output.txt; then
             echo "::error::did not find 'Self-test PASSED.' banner"
             exit 1
           fi
-          echo "PASS: 78/78 self-tests passed on ${{ matrix.os }}"
+          echo "PASS: 84/84 self-tests passed on ${{ matrix.os }}"
 
-      - name: Upload self-test log
+      - name: Build AEAD benchmark and assert known-answer tests pass
+        run: |
+          # The cross-cipher AEAD harness KAT-verifies every cipher (including
+          # Enqpy, using the official Rev 3.0 test-vector keys) before timing,
+          # and exits non-zero if any KAT fails. Benchmark numbers themselves
+          # are machine-dependent and are not asserted here.
+          cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L \
+              src/aead_bench.c src/enqpy_reference.c -o aead_bench
+          if ! ./aead_bench > aead_output.txt 2>&1; then
+            echo "::group::AEAD benchmark output"
+            cat aead_output.txt
+            echo "::endgroup::"
+            echo "::error::aead_bench exited non-zero (a known-answer test failed)"
+            exit 1
+          fi
+          echo "::group::AEAD benchmark output"
+          cat aead_output.txt
+          echo "::endgroup::"
+          if ! grep -q 'Enqpy PASS' aead_output.txt; then
+            echo "::error::did not find 'Enqpy PASS' in the AEAD KAT line"
+            exit 1
+          fi
+          echo "PASS: AEAD known-answer tests passed on ${{ matrix.os }}"
+
+      - name: Validate canonical test vectors
+        run: |
+          # The published vectors are the machine-readable source of truth.
+          # Assert the file is valid JSON, is at vectors_version 3.0, and carries
+          # the canonical Enqpy zero-plaintext keystream (CT = W[0..7]). The
+          # self-test above independently confirms the reference emits the same CT.
+          VEC=tests/vectors/enqpy-vectors.json
+          python3 -m json.tool "$VEC" > /dev/null \
+            || { echo "::error::$VEC is not valid JSON"; exit 1; }
+          grep -Eq '"vectors_version":[[:space:]]*"3.0"' "$VEC" \
+            || { echo "::error::vectors_version is not '3.0'"; exit 1; }
+          grep -Eq '"ct":[[:space:]]*"2434B58845C6FDE8"' "$VEC" \
+            || { echo "::error::canonical pdaf_sec CT (2434B58845C6FDE8) not found"; exit 1; }
+          echo "PASS: enqpy-vectors.json is valid, v3.0, canonical CT matches"
+
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: selftest-log-${{ matrix.os }}
-          path: selftest_output.txt
+          path: |
+            selftest_output.txt
+            aead_output.txt
           if-no-files-found: ignore
