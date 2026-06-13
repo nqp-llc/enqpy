@@ -1,18 +1,21 @@
 {
-  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 2.0 reference implementation (78/78 self-test PASS). Hex is UPPERCASE with no separators. The base cipher has no associated-data field (AD/HMIX is the EnqpyADS variant, specified separately). A port is Reference-Compatible (CONFORMANCE.md §2.1) when it reproduces every output below exactly.",
+  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 3.0 reference implementation (84/84 self-test PASS). Hex is UPPERCASE with no separators. Enqpy has no associated-data field. A port is Reference-Compatible (CONFORMANCE.md §2.1) when it reproduces every output below exactly.",
   "cipher": "Enqpy",
-  "vectors_version": "1.0",
-  "reference": "Enqpy reference implementation Rev 2.0 (Ideal Configuration); 78/78 self-test",
-  "spec": "FCD Rev 1.0 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
+  "vectors_version": "3.0",
+  "reference": "Enqpy reference implementation Rev 3.0 (Canonical Configuration); 84/84 self-test",
+  "spec": "FCD Rev 3.0 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
   "assertions": {
-    "_comment": "Counts the 78 self-test assertions (PDAF + PDAF_SEC). The OWC vector below is a supplementary FCD §13.1 vector; OWC is not exercised by the self-test.",
-    "total": 78,
+    "_comment": "Counts the 84 self-test assertions (PDAF + PDAF_SEC + window boundary + NIL key-update). The OWC vector below is a supplementary FCD §13.1 vector; OWC is not exercised by the self-test.",
+    "total": 84,
     "pdaf_mode0": 30,
     "pdaf_mode1": 30,
     "pdaf_sec_w": 8,
     "pdaf_sec_roundtrip": 8,
     "coset_ek_plus_8": 1,
-    "coset_qk_plus_8": 1
+    "coset_qk_plus_8": 1,
+    "coset_ek_qk_plus_8": 1,
+    "window_boundary": 2,
+    "nil_key_update": 3
   },
   "encoding": {
     "hex": "uppercase, no separators",
@@ -22,7 +25,7 @@
   "groups": [
     {
       "group": "owc",
-      "description": "One-Way Computation primitive (Nil-Communication Key Update path). Non-overlapping pairs: advance the position pointer by (1+nSkip) per output nibble; output is ~half the input. Matches FCD Rev 1.0 §13.1. Supplementary vector — not part of the 78-assertion self-test.",
+      "description": "One-Way Computation primitive (Nil-Communication Key Update path). Non-overlapping pairs: advance the position pointer by (1+nSkip) per output nibble; output is ~half the input. Matches FCD §13.1. Supplementary vector — not part of the 84-assertion self-test.",
       "tests": [
         {
           "id": "owc-0001",
@@ -62,7 +65,7 @@
     },
     {
       "group": "pdaf_sec",
-      "description": "Full encrypt/decrypt, Ideal Configuration, HIGH profile (n=64). CT length == PT length. For zero plaintext, CT == keystream W. Decryption round-trips to PT; the [+8] coset on either master key yields identical CT (Theorem 2 equivocation basis).",
+      "description": "Full encrypt/decrypt, Canonical Configuration, HIGH profile (n=64). CT length == PT length. For zero plaintext, CT == keystream W. Decryption round-trips to PT; the [+8] coset on either master key yields identical CT (Theorem 2 equivocation basis).",
       "tests": [
         {
           "id": "sec-0001-zeroPT",
@@ -72,9 +75,9 @@
           "or_ctr": 1,
           "n": 64,
           "pt": "0000000000000000",
-          "ct": "24C43F3E949BBC35",
+          "ct": "2434B58845C6FDE8",
           "roundtrip": {
-            "input": "24C43F3E949BBC35",
+            "input": "2434B58845C6FDE8",
             "output": "0000000000000000",
             "result": "PT recovered"
           },
