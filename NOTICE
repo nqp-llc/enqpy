@@ -25,12 +25,10 @@ patent grant is a narrower, code-scoped license that rides along with
 this specific code. The two instruments are complementary: nothing in
 the Apache License limits, narrows, or terminates the Covenant, and the
 Covenant is the controlling patent promise. For copyright in this
-repository, the Apache License, Version 2.0 is the governing public
-license within the meaning of the Covenant's references to the
-repository's public license.
+repository, the Apache License, Version 2.0 is the governing license.
 
 TRADEMARKS
-Enqpy(TM), EnqpyADS(TM), and Enqpy(TM)-Certified are trademarks of
+Enqpy(TM) and Enqpy(TM)-Certified are trademarks of
 Enqpy(TM) Foundation Inc., licensed to NQP LLC. Neither the Apache
 License (see its Section 6) nor the Covenant grants any trademark
 rights. Trademark use is governed by the Foundation Trademark Use
@@ -43,4 +41,4 @@ replace independent cryptanalytic review, formal verification, or
 deployment-specific security engineering. Production deployment requires
 the additional operational mechanisms specified in Section 16 of the
 paper (integrity, nonce uniqueness infrastructure, secure key storage,
-constant-time CS permutation lookup, secure erase of key material).
+constant-time MOD16 table lookups, secure erase of key material).

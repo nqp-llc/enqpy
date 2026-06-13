@@ -1,6 +1,6 @@
 # Enqpy™ Canonical Test Vectors
 
-These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships **two** reference profiles that share the same primitives and inputs but generate different keystreams (Phase 3 differs): the **Base Cipher** (`enqpy_reference_base_c1.c`, Case-1, proof-complete — `-DENQPY_SELFTEST` runs **84/84**) and the **Extended Mixing Profile** (`enqpy_reference.c`, three-case — runs **78/78**). The shared primitives (OWC, PDAF Mode 0/1) are identical across both; the `PDAF_SEC` keystream differs, so both values are given below. The Base Cipher is the canonical conformance target for the proved Rev 2.0 claims.
+These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships a single canonical C reference, `enqpy_reference.c` (Enqpy, Case-1 `W` generation — `-DENQPY_SELFTEST` runs **84/84**). It is the conformance target for the proved Rev 3.0 claims.
 
 Passing these vectors is the *technical* bar. It puts a port at the **Reference-Compatible** level (self-attested) and is the prerequisite for the Foundation's higher levels — but it is not certification, and it does not by itself grant any right to the Enqpy™ marks. See "Conformance levels" below.
 
@@ -15,7 +15,7 @@ All hexadecimal in these vectors is **UPPERCASE, no separators**, matching §2 o
 
 JSON is canonical because every language parses it with zero dependencies. If you also publish a human-readable `.txt`, **generate it from the JSON** so the two cannot drift; the JSON always wins.
 
-## The I/O contract (base / Ideal Configuration)
+## The I/O contract (Canonical Configuration)
 
 Enqpy™ is a two-key stream cipher. The reference entry point is:
 
@@ -32,11 +32,11 @@ PDAF_SEC(ek, qk, or_nibs, or_ctr, n, target, nTextLen, out)  ->  bytes written, 
 | `n` | Key length in nibbles: 32 (LOW), 48 (MEDIUM), or 64 (HIGH, default). |
 | `pt` / `ct` | Plaintext / ciphertext bytes. Output length equals input length exactly. |
 
-There is **no associated-data field** in the base cipher. AD / HMIX is the **EnqpyADS™** variant, specified separately; do not add an `ad` field to base-cipher vectors. The transmitted public value `eff_or` is *derived* inside the cipher from `or` + `or_ctr`; it is an intermediate, not an input.
+There is **no associated-data field** in Enqpy; do not add an `ad` field to the vectors. The transmitted public value `eff_or` is *derived* inside the cipher from `or` + `or_ctr`; it is an intermediate, not an input.
 
 ## How the keystream combines with the message — it IS XOR
 
-The keystream unit `W` is produced as nibbles through the cipher's internal pipeline, which uses MOD16 (modular-16) arithmetic throughout — PDAF, OWC, and the three Selection cases. **But the message-combine step is plain byte-wise XOR.** Per FCD Phase 4:
+The keystream unit `W` is produced as nibbles through the cipher's internal pipeline, which uses MOD16 (modular-16) arithmetic throughout — PDAF, OWC, and Case-1 `W` generation. **But the message-combine step is plain byte-wise XOR.** Per FCD Phase 4:
 
 ```
 W_byte  = (W_nibble_even << 4) | W_nibble_odd     // high nibble = even index
@@ -46,11 +46,11 @@ PT_byte = W_byte XOR CT_byte                       // decrypt
 
 So the reflexive `ct = pt ^ keystream` is correct. **Do not** reach for modular addition at the combine step — the MOD16 arithmetic lives inside `W` generation, not in the plaintext combine.
 
-The real subtle-bug surface is the **`W` generation pipeline**, not the combine. A port can XOR correctly and still be wrong if it gets any of these wrong: the five phases (setup → key generation → Selection → cipher → Phase-5 update); PDAF Mode 1 tiling to length `2n + 16`; the CS-ordered three-case Selection and the **required CS re-derivation after each Phase-5 update**; and the Key Role Separation of the Ideal Configuration (EK and QK appear only as ValueKey; VKP/OKP derive from the nonce alone). The zero-plaintext vector below is the fastest way to isolate a `W`-generation bug, because there CT equals `W` directly.
+The real subtle-bug surface is the **`W` generation pipeline**, not the combine. A port can XOR correctly and still be wrong if it gets any of these wrong: the five phases (setup → key generation → `W` generation → cipher → Phase-5 update); PDAF Mode 1 tiling to length `2n + 16`; Case-1 `W` generation; and the Key Role Separation of the Canonical Configuration (EK and QK appear only as ValueKey; VKP/OKP derive from the nonce alone). The zero-plaintext vector below is the fastest way to isolate a `W`-generation bug, because there CT equals `W` directly.
 
 ## Verified canonical vectors
 
-All values below are taken from the reference self-tests and are authoritative. OWC and PDAF Mode 0/1 are **shared** between the two profiles; the `PDAF_SEC` keystream is given for **both**.
+All values below are taken from the reference self-test and are authoritative.
 
 **OWC** (FCD §13.1) — input `FCB578`, `nSkip = 1` → output `B0F`.
 
@@ -60,7 +60,7 @@ All values below are taken from the reference self-tests and are authoritative. 
 **PDAF Mode 1** — VK `FB382C001A`, OK `CC69100AB4`, n=10, nDigits=30 →
 `7DD02C010CDF74C01B5BF8D811B92B`
 
-**PDAF_SEC — HIGH profile (n=64), zero plaintext.** Because the 8-byte plaintext is all zeros, the ciphertext equals the keystream `W[0..7]` exactly — the cleanest isolation of `W` generation. The two profiles share these inputs but produce **different** keystreams:
+**PDAF_SEC — HIGH profile (n=64), zero plaintext.** Because the 8-byte plaintext is all zeros, the ciphertext equals the keystream `W[0..7]` exactly — the cleanest isolation of `W` generation.
 
 ```
 EK     = CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957
@@ -69,11 +69,10 @@ OR     = 3667A507E1109EE32CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C
 OR_CTR = 1
 PT     = 0000000000000000        (8 bytes)
 
-CT (Base Cipher,  enqpy_reference_base_c1.c) = 2434B58845C6FDE8   (8 bytes)  == W[0..7]
-CT (Extended Mix, enqpy_reference.c)         = 24C43F3E949BBC35   (8 bytes)  == W[0..7]
+CT = 2434B58845C6FDE8   (8 bytes)  == W[0..7]
 ```
 
-Both round-trip: applying `PDAF_SEC` to each profile's own `CT` with the same parameters returns the zero plaintext. The `[+8]` coset invariants (`EK + 8·1`, `QK + 8·1`, and both together — nibble-wise mod 16) reproduce that profile's identical `CT`, confirming the Key Role Separation wiring. The **Base Cipher** additionally verifies the 2,048-byte window boundary (TV7) and the NIL key-update policy (TV8); see the README self-test breakdown.
+It round-trips: applying `PDAF_SEC` to the `CT` with the same parameters returns the zero plaintext. The `[+8]` coset invariants (`EK + 8·1`, `QK + 8·1`, and both together — nibble-wise mod 16) reproduce the identical `CT`, confirming the Key Role Separation wiring. The self-test additionally verifies the 2,048-byte window boundary (TV7) and the NIL key-update policy (TV8); see the README self-test breakdown.
 
 ## How to verify a port
 
@@ -129,7 +128,7 @@ To make "passes the vectors" mean "passes the reference," export the full self-t
 - [ ] PDAF_SEC round-trip (decrypt(encrypt(PT)) == PT)
 - [ ] [+8] coset invariants (EK+8 and QK+8)
 - [ ] empty plaintext (zero-length)
-- [ ] lengths crossing the n² W-cycle boundary, to exercise Phase-5 update + CS re-derivation
+- [ ] lengths crossing the n² W-cycle boundary, to exercise the Phase-5 update
 - [ ] each profile you support: n = 32, 48, 64
 - [ ] EK = QK rejected (returns −1)
 

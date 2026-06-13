@@ -50,7 +50,7 @@ For the avoidance of doubt, **Covered Patents do not include any patents owned b
 
 **2.3 Reliance.** This Covenant is intended to be relied upon by all Beneficiaries, whether or not they are in privity with NQP and whether or not they receive any notice of this Covenant. Any Beneficiary may rely on this Covenant as a defense to any claim of infringement of a Covered Patent arising out of any act within the Covered Field of Use.
 
-**2.4 No License of Other Rights.** This Covenant is a covenant not to assert the Covered Patents within the Covered Field of Use. It is **not**, and shall not be construed as, a license or assignment of any copyright, trademark, trade secret, or other intellectual property right of NQP or any other Person. The *NQP LLC Public License for Enqpy™* (Rev 2.0 or later) separately governs copyright in NQP's reference implementation; the *Enqpy™ Trademark Use Guidelines* and *Trademark Assignment* separately govern the Enqpy™ and EnqpyADS™ trademarks.
+**2.4 No License of Other Rights.** This Covenant is a covenant not to assert the Covered Patents within the Covered Field of Use. It is **not**, and shall not be construed as, a license or assignment of any copyright, trademark, trade secret, or other intellectual property right of NQP or any other Person. The *Apache License, Version 2.0* separately governs copyright in NQP's reference implementation; the *Enqpy™ Trademark Use Guidelines* and *Trademark Assignment* separately govern the Enqpy™ trademarks.
 
 **2.5 Successors and Assigns.** This Covenant runs with the Covered Patents. NQP shall not assign, transfer, exclusively license, sell, or otherwise convey any Covered Patent except subject to this Covenant, and any transferee or successor in interest takes such Covered Patent bound by this Covenant. **Any purported assignment or transfer of a Covered Patent that does not expressly preserve this Covenant is void to the extent it would impair this Covenant.**
 
@@ -58,9 +58,9 @@ For the avoidance of doubt, **Covered Patents do not include any patents owned b
 
 Nothing in this Covenant grants any right or permission with respect to, and the Covenant does not apply to, the following Reserved Activities — each of which remains governed by separate agreement with NQP, the Foundation, or both:
 
-**3.1** Use of the **Enqpy™, EnqpyADS™, or Enqpy™-Certified** trademarks (or any colorable imitation thereof), which is governed by the Trademark Use Guidelines maintained by the Foundation and by separate trademark licensing.
+**3.1** Use of the **Enqpy™ or Enqpy™-Certified** trademarks (or any colorable imitation thereof), which is governed by the Trademark Use Guidelines maintained by the Foundation and by separate trademark licensing.
 
-**3.2** Use of the term **"Enqpy™-Compatible"** as a product designation, status claim, or marketing claim, which (consistent with the LICENSE §D and the Trademark Use Guidelines) is reserved to implementations that have received Foundation certification under the Conformance Specification and a trademark license.
+**3.2** Use of the term **"Enqpy™-Compatible"** as a product designation, status claim, or marketing claim, which (consistent with the Trademark Use Guidelines) is reserved to implementations that have received Foundation certification under the Conformance Specification and a trademark license.
 
 **3.3** **Foundation conformance certification**, the **Conformant Implementation** review process, and listing in the Foundation's public registry.
 
@@ -90,9 +90,9 @@ For the avoidance of doubt: a Beneficiary's practice within the Covered Field of
 
 If NQP submits the Enqpy™ cipher, or any portion of the subject matter of the Covered Patents, to any standards-setting organization, NQP shall make whatever royalty-free or RAND-Z licensing commitment is required by that organization's intellectual-property-rights policy with respect to implementation of the resulting standard. This Section is intended to confirm and effectuate NQP's intention that the Enqpy™ cipher be available for adoption by standards bodies worldwide.
 
-## 6. Coordination with the NQP Public License
+## 6. Coordination with the Apache License
 
-This Covenant supplements and is read together with the *NQP LLC Public License for Enqpy™* (Rev 2.0 or later) (the "Public License"). In the event of any conflict between this Covenant and the Public License with respect to patent rights in the Covered Field of Use, the more permissive provision (i.e., the provision granting the broader patent-safety to the Beneficiary) governs. The Public License's copyright terms with respect to NQP's reference implementation, and its other provisions not relating to patent rights, are unaffected by this Covenant.
+This Covenant supplements and is read together with the *Apache License, Version 2.0* (the "Apache License"), under which NQP's reference implementation is published. In the event of any conflict between this Covenant and the Apache License with respect to patent rights in the Covered Field of Use, the more permissive provision (i.e., the provision granting the broader patent-safety to the Beneficiary) governs. The Apache License's copyright terms with respect to NQP's reference implementation, and its other provisions not relating to patent rights, are unaffected by this Covenant.
 
 ## 7. Foundation as Steward
 
@@ -112,7 +112,7 @@ NQP acknowledges the role of the Foundation as the public-benefit steward of the
 
 **9.1 Publication.** NQP shall publish this Covenant, with its Effective Date, on the Enqpy™ website (currently **enqpy.com**) and in the public code repository for the Enqpy™ reference implementation (currently **github.com/nqp-llc/enqpy**). Successor URLs designated by NQP or the Foundation shall be deemed substituted automatically.
 
-**9.2 Notice in Successor Documents.** NQP shall ensure that the *NQP LLC Public License for Enqpy™*, the README, and the *Conformance Specification* each include a reference to and link to this Covenant.
+**9.2 Notice in Successor Documents.** NQP shall ensure that the *NOTICE* file, the README, and the *Conformance Specification* each include a reference to and link to this Covenant.
 
 **9.3 Notice to Transferees.** NQP shall, in any agreement assigning, transferring, or exclusively licensing any Covered Patent, give the transferee or licensee actual written notice of this Covenant and shall require acknowledgment in writing that the Covered Patent is taken subject to it.
 
@@ -130,7 +130,7 @@ NQP acknowledges the role of the Foundation as the public-benefit steward of the
 
 **11.3 No Waiver.** No failure or delay by NQP in exercising any right under this Covenant shall operate as a waiver of that right; nor shall any waiver of any provision constitute a waiver of any other provision or any subsequent breach.
 
-**11.4 Entire Covenant.** This Covenant, together with the *NQP LLC Public License for Enqpy™* and the Trademark Use Guidelines, constitutes the entire understanding of NQP with respect to the Covered Patents and the Covered Field of Use, and supersedes any prior or contemporaneous communication on these subjects.
+**11.4 Entire Covenant.** This Covenant, together with the *Apache License, Version 2.0* and the Trademark Use Guidelines, constitutes the entire understanding of NQP with respect to the Covered Patents and the Covered Field of Use, and supersedes any prior or contemporaneous communication on these subjects.
 
 **11.5 Headings.** Headings are for convenience and do not affect interpretation.
 

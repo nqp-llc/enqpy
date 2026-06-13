@@ -120,7 +120,7 @@ standard coordinated-disclosure norms:
 
 ## Trademark use
 
-The Enqpy™ and EnqpyADS™ marks are trademarks of Enqpy™ Foundation Inc.,
+The Enqpy™ mark is a trademark of Enqpy™ Foundation Inc.,
 and Enqpy™-Certified is a certification mark of the Foundation.
 "Enqpy™-Compatible" is a conformance designation granted only through the
 Foundation conformance program. Their use in derivative work is governed by

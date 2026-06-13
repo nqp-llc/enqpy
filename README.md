@@ -18,31 +18,23 @@ paper link are maintained on the website — see
 
 ---
 
-## Two reference implementations
+## The reference implementation
 
-This repository ships **two** C reference implementations. They share the same
-Phase 1/2 derivation, the same OWC and PDAF primitives, and the same plain-XOR
-message combine — they differ only in Phase 3 (keystream `W` generation):
+This repository ships a single canonical C reference implementation,
+**`src/enqpy_reference.c`** — Enqpy in its **Canonical Configuration**
+(nonce-only OffsetKey derivation / Key Role Separation, Case-1 `W` generation,
+a normative 2,048-byte HIGH window, and synchronized key update). It is the
+profile on which the Rev 3.0 results are proved **closed on both axes** — key
+axis H(EK,QK | T^∞) = log₂(4) = 2 bits exactly (Theorem 2) and message axis
+H(PT | CT,OR) = H∞ ≥ 128 bits with a uniform posterior (Theorem 3). Generating
+`W` by Case 1 is exactly what makes the (EK,QK) → W map a ℤ₁₆-module
+homomorphism, which closes the message-axis min-entropy theorem.
 
-| File | Profile | Phase 3 `W` generation | Window (HIGH) | Self-test |
-|---|---|---|---|---|
-| **`src/enqpy_reference_base_c1.c`** | **Base Cipher** (proof-complete) | Case-1 only | 2,048-byte | **84/84** |
-| `src/enqpy_reference.c` | Extended Mixing Profile (optional) | three-case, CS-ordered | 6,144-byte | 78/78 |
+| File | Phase 3 `W` generation | Window (HIGH) | Self-test |
+|---|---|---|---|
+| **`src/enqpy_reference.c`** | Case-1 | 2,048-byte | **84/84** |
 
-- The **Base Cipher** is the profile on which the Rev 2.0 results are proved
-  **closed on both axes** — key axis H(EK,QK | T^∞) = log₂(4) = 2 bits exactly
-  (Theorem 2) and message axis H(PT | CT,OR) = H∞ ≥ 128 bits with a uniform
-  posterior (Theorem 3). Restricting `W` to Case 1 is exactly what makes the
-  (EK,QK) → W map a Z₁₆-module homomorphism, which closes the message-axis
-  min-entropy theorem. **This is the canonical reference for the proved
-  claims** and the recommended starting point.
-- The **Extended Mixing Profile** is the optional three-case cipher (Case
-  Selector + Phase 2B). It produces a *different* keystream and therefore
-  *different* test vectors (see [`TEST_VECTORS.md`](./TEST_VECTORS.md)); its
-  full-map min-entropy is the single open problem (proof §12.7).
-
-Both build and self-test identically (`-DENQPY_SELFTEST`); the sections below
-default to the Base Cipher.
+Build and self-test with `-DENQPY_SELFTEST`.
 
 ## Quick verify
 
@@ -54,27 +46,23 @@ no permission.
 git clone https://github.com/nqp-llc/enqpy.git
 cd enqpy
 
-# Build the Base Cipher (proof-complete profile) with self-test + benchmark
+# Build the reference with self-test + benchmark
 cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK \
-    src/enqpy_reference_base_c1.c -o enqpy_base_test
-./enqpy_base_test
+    src/enqpy_reference.c -o enqpy_test
+./enqpy_test
 ```
 
 Expected output begins with:
 
 ```
-Enqpy(tm) Stream Cipher -- Base Cipher Reference  Rev 2.0
-Ideal Configuration, Case-1 W generation (proof-complete profile)
+Enqpy(tm) Stream Cipher -- Reference  Rev 3.0
+Canonical Configuration, Case-1 W generation (proof-complete profile)
 Copyright (c) 2026 NQP LLC -- Apache License 2.0
 Platform: n=64, tile_len=144, W_bytes=2048 (window)
 
 Self-test: 84 PASS  0 FAIL
 Self-test PASSED.
 ```
-
-To verify the Extended Mixing Profile instead, build `src/enqpy_reference.c`
-the same way; it reports `Self-test: 78 PASS  0 FAIL` with
-`Platform: n=64, tile_len=144, W_bytes=6144`.
 
 followed by the benchmark tables. Total wall-clock time is well under a
 second on any modern machine.
@@ -103,7 +91,7 @@ code here; check the math there.
 
 The Enqpy™ reference implementation is stewarded by the **Enqpy™ Foundation
 Inc.** (a Delaware nonstock nonprofit corporation, formed April 2026), which
-owns the Enqpy™ and EnqpyADS™ trademarks. Commercial relationships are
+owns the Enqpy™ trademark. Commercial relationships are
 operated by **NQP LLC** (the inventor's Virginia commercial entity,
 incorporated March 19, 2026), under a perpetual, non-exclusive license from
 the Foundation (the Foundation–NQP IP License Agreement). The Foundation makes
@@ -151,23 +139,18 @@ email RPM@enqpy.com with `[Commercial]` in the subject line.
 
 This repository contains:
 
-- **`src/enqpy_reference_base_c1.c`** — the C11 reference for the **Base
-  Cipher** (Case-1 W generation, the proof-complete profile). Single file, no
-  external dependencies, portable from 8-bit microcontrollers to 64-bit
-  servers. The canonical reference for the proved Rev 2.0 results.
-- **`src/enqpy_reference.c`** — the C11 reference for the **Extended Mixing
-  Profile** (three-case CS-ordered W generation). Same Phase 1/2 derivation,
-  same primitives and XOR combine; the optional profile, with the open
-  min-entropy problem (§12.7).
+- **`src/enqpy_reference.c`** — the C11 reference for Enqpy (Case-1 `W`
+  generation, the Canonical Configuration). Single file, no external
+  dependencies, portable from 8-bit microcontrollers to 64-bit servers. The
+  canonical reference for the proved Rev 3.0 results.
 - **[`FCD.md`](./FCD.md)** — the Formal Cryptographic Description: the
   prose-and-mathematics specification of the cipher (OWC, PDAF, PDAF_SEC, the
   five phases, key management, security analysis, and the §13 test vectors the
   self-tests check against). The authoritative statement of *what* the cipher
   does; the C reference shows *how* one implementation does it.
-- **84 embedded self-test assertions** in the Base Cipher (78 in the Extended
-  Mixing Profile) covering PDAF Mode 0/1, PDAF_SEC output and round-trip, the
-  `[+8]` coset invariants that drive the Shannon Ideal System result, and — in
-  the Base Cipher — the window-boundary and NIL key-update vectors.
+- **84 embedded self-test assertions** covering PDAF Mode 0/1, PDAF_SEC output
+  and round-trip, the `[+8]` coset invariants that drive the Shannon Ideal
+  System result, and the window-boundary and NIL key-update vectors.
 - **Built-in benchmark harness** reproducing the performance numbers reported
   in the paper.
 - **`src/aead_bench.c`** — a separate cross-cipher AEAD benchmark
@@ -180,7 +163,7 @@ This repository contains:
 - **Not production-ready** without the additional operational mechanisms
   described in §16 of the paper: integrity (a MAC over ciphertext and
   `eff_or`), nonce uniqueness infrastructure, secure key storage, constant-time
-  implementation of the CS permutation lookup, and secure erase of key
+  implementation of the MOD16 table lookups, and secure erase of key
   material after use. See the implementation comments in `src/enqpy_reference.c`
   for specifics.
 
@@ -188,13 +171,13 @@ This repository contains:
 
 ## What the self-tests verify
 
-The Base Cipher's 84 assertions map directly onto claims made in the paper:
+The 84 assertions map directly onto claims made in the paper:
 
 | Assertion group | Count | Verifies |
 |---|---:|---|
 | TV1 — PDAF Mode 0 (n=10, 30 nibbles) | 30 | Core PDAF primitive, additive mode — matches FCD §13.2 |
 | TV2 — PDAF Mode 1 (n=10, 30 nibbles) | 30 | Core PDAF primitive, one-way gate mode — matches FCD §13.2 |
-| TV3 — PDAF_SEC W-output (n=64, Base Cipher) | 8 | Base Cipher keystream `W[0..7]` = `2434B58845C6FDE8` (CT = W on zero plaintext) |
+| TV3 — PDAF_SEC W-output (n=64) | 8 | Enqpy keystream `W[0..7]` = `2434B58845C6FDE8` (CT = W on zero plaintext) |
 | TV3 RT — Round-trip decryption | 8 | W ⊕ (W ⊕ PT) = PT; confirms XOR-streaming correctness |
 | TV4 — `[+8]` coset invariance on EK axis | 1 | EK+8·**1** produces identical ciphertext (Remark 1, Theorem 2) |
 | TV5 — `[+8]` coset invariance on QK axis | 1 | QK+8·**1** produces identical ciphertext (Remark 1, Theorem 2) |
@@ -202,10 +185,6 @@ The Base Cipher's 84 assertions map directly onto claims made in the paper:
 | TV7 — Window boundary (2,048-byte window) | 2 | Byte [2046,2047] tail + a 2,050-byte round-trip across the Phase-5 update |
 | TV8 — NIL key-update policy | 3 | Method 1 rejected, Method 2 succeeds, and the coset collapses 4→1 (Lemma B4) |
 | **Total** | **84** | |
-
-The Extended Mixing Profile runs the **78**-assertion subset TV1–TV5 (its
-PDAF_SEC vector is `24C43F3E949BBC35`); it has no TV6–TV8, because the
-window-boundary and NIL-update behaviors are Base-Cipher-specific.
 
 TV4 and TV5 are the empirical confirmation of the `[+8]` global shift invariant
 that drives the 4-element ciphertext-equivalent coset
@@ -230,16 +209,15 @@ The reference supports three mandatory key-length profiles per the FCD:
 
 The paper's numerical bounds are all stated for the HIGH profile (n=64):
 plaintext equivocation H(PT | CT, OR) ≥ 128 bits (uniform posterior over
-≥ 2^128 consistent plaintexts; Base Cipher, closed), key equivocation = 2 bits
-exact under the Ideal Configuration.
+≥ 2^128 consistent plaintexts; closed), key equivocation = 2 bits
+exact under the Canonical Configuration.
 
 ---
 
 ## Building from source
 
-> The standalone commands below build the **Base Cipher**
-> (`src/enqpy_reference_base_c1.c`). To build the Extended Mixing Profile
-> instead, substitute `src/enqpy_reference.c` for the source filename.
+> The standalone commands below build the reference,
+> `src/enqpy_reference.c`.
 
 ### Requirements
 
@@ -250,31 +228,31 @@ exact under the Ideal Configuration.
 ### One-line build (library only)
 
 ```bash
-cc -O2 -std=c11 -c src/enqpy_reference_base_c1.c -o enqpy.o
+cc -O2 -std=c11 -c src/enqpy_reference.c -o enqpy.o
 ```
 
 ### With self-test
 
 ```bash
-cc -O3 -std=c11 -DENQPY_SELFTEST src/enqpy_reference_base_c1.c -o enqpy_test
+cc -O3 -std=c11 -DENQPY_SELFTEST src/enqpy_reference.c -o enqpy_test
 ./enqpy_test
 ```
 
 ### With benchmark
 
 ```bash
-cc -O3 -std=c11 -DENQPY_BENCHMARK src/enqpy_reference_base_c1.c -o enqpy_bench
+cc -O3 -std=c11 -DENQPY_BENCHMARK src/enqpy_reference.c -o enqpy_bench
 ./enqpy_bench
 ```
 
 ### With both (recommended for first check)
 
 ```bash
-cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK src/enqpy_reference_base_c1.c -o enqpy_all
+cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK src/enqpy_reference.c -o enqpy_all
 ./enqpy_all
 ```
 
-The included `build.sh` does this combined build of the Base Cipher and
+The included `build.sh` does this combined build and
 places the binary in `./build/enqpy_test`.
 
 ### Cross-cipher benchmark (apples-to-apples AEAD)
@@ -286,14 +264,14 @@ verified against its known-answer test vectors before any timing. It is the
 apples-to-apples comparison behind
 [enqpy.com/speed_bench.html](https://enqpy.com/speed_bench.html). The other
 ciphers are implemented inline (no external libraries); only the `PDAF_SEC`
-primitive is linked from the reference (the Base Cipher,
-`src/enqpy_reference_base_c1.c`), so build the two files together. Do
+primitive is linked from the reference,
+`src/enqpy_reference.c`, so build the two files together. Do
 **not** pass `-DENQPY_SELFTEST` / `-DENQPY_BENCHMARK` here — those enable the
 reference's own `main` and would collide with the harness's.
 
 ```bash
 cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L \
-    src/aead_bench.c src/enqpy_reference_base_c1.c -o aead_bench
+    src/aead_bench.c src/enqpy_reference.c -o aead_bench
 ./aead_bench
 ```
 
@@ -340,15 +318,14 @@ Principal results:
 
 - **Theorem 1 (§5)** — PDAF Mode 1 inversion lower bound: |P(O*)| ≥ 16ⁿ.
 - **Theorem 2 (§6)** — Shannon Ideal System property:
-  H(EK, QK | T^∞) = log₂(4) = 2 bits exact for the Ideal Configuration;
+  H(EK, QK | T^∞) = log₂(4) = 2 bits exact for the Canonical Configuration;
   T_{>t} ⊥ (EK, QK) | T_{≤t}.
 - **Corollary 2 (§7)** — All bounds invariant under quantum computation
   (no computational hardness assumption invoked in the proof).
-- **Theorem 3 (§12)** — Base Cipher plaintext equivocation (closed):
+- **Theorem 3 (§12)** — Enqpy plaintext equivocation (closed):
   H(PT | CT, OR) = H∞ ≥ 128 bits for HIGH profile, with the posterior uniform
   over the full consistent set; at least 2^128 consistent plaintexts for any
-  ciphertext. The optional Extended Mixing Profile's full-map min-entropy is
-  the one open problem (§12.7).
+  ciphertext.
 
 A companion technical note, [*Adversarial Outcome Equivalence — proved under
 the DSMV*](https://enqpy.com/papers/enqpy-dsmv.pdf), proves that Enqpy™ and
@@ -412,7 +389,7 @@ citation export. BibTeX form:
                  Shannon's Ideal System for a Finite-Key Cipher},
   institution = {NQP LLC},
   year        = {2026},
-  number      = {Rev 2.0},
+  number      = {Rev 3.0},
   note        = {Canonical citation and paper link: https://enqpy.com/technical.html}
 }
 ```
@@ -423,9 +400,9 @@ citation export. BibTeX form:
 
 | Artifact | Status |
 |---|---|
-| C reference implementations | ✅ Rev 2.0 — Base Cipher (Case-1) + Extended Mixing Profile |
+| C reference implementation | ✅ Rev 3.0 — Enqpy (Canonical Configuration, Case-1) |
 | Formal Cryptographic Description | ✅ `FCD.md` |
-| Test vectors | ✅ Base Cipher 84/84 · Extended 78/78 PASS |
+| Test vectors | ✅ 84/84 PASS |
 | Benchmark harness | ✅ Included |
 | Formal proof paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
 | Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
@@ -439,5 +416,5 @@ citation export. BibTeX form:
 
 *Copyright © 2026 NQP LLC. Code licensed under the Apache License 2.0;
 documentation under CC-BY-4.0. See [`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE).*
-*Enqpy™, EnqpyADS™, and Enqpy™-Certified are trademarks
+*Enqpy™ and Enqpy™-Certified are trademarks
 of Enqpy™ Foundation Inc., licensed to NQP LLC.*

@@ -64,9 +64,8 @@ software implementation. The C Reference is:
 
 - **Single-file C11.** No external dependencies; portable across 8-bit
   microcontrollers to 64-bit servers.
-- **Test-anchored.** Ships with 84 self-test assertions (Base Cipher;
-  78 for the optional Extended Mixing Profile) against published test
-  vectors.
+- **Test-anchored.** Ships with 84 self-test assertions against published
+  test vectors.
 - **Apache-2.0 licensed.** Source-code rights are granted under the
   Apache License 2.0 (see the LICENSE and NOTICE files). Patent rights
   in the cipher are addressed by the Open-Infrastructure Patent
@@ -116,8 +115,7 @@ ciphertext) and their reverse forms (key, ciphertext, expected
 plaintext) against which implementations are validated.
 
 The launch-day Test Vectors are the 84 input/output triples consumed
-by the Base Cipher C Reference's self-test harness (the Extended Mixing
-Profile reference runs the 78-assertion TV1–TV5 subset). Rev 1.0 of this Conformance
+by the Enqpy C Reference's self-test harness. Rev 1.0 of this Conformance
 Specification will extend the Test Vector set substantially.
 
 Test Vectors are published at `github.com/nqp-llc/enqpy` under
@@ -306,7 +304,7 @@ at Rev 0.1:
 | Rule | Detail |
 |---|---|
 | **Source of truth** | `github.com/nqp-llc/enqpy` — the Test Vectors committed to the repository at the time of an implementation's claimed Reference-Compatibility |
-| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v2.0 corresponds to C Reference Rev 2.0) |
+| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v3.0 corresponds to C Reference Rev 3.0) |
 | **Backward compatibility** | New Test Vectors may be added; existing Test Vectors will not be changed except to correct demonstrated errors |
 | **Validation** | An implementation must pass the Test Vectors version current at the time of its claim |
 | **Extension** | Rev 1.0 will add Test Vector coverage for boundary conditions, error states, and cryptographic edge cases identified during the first months of community implementation work |

@@ -2,14 +2,14 @@
 
 Enqpy™ (pronounced *"En-Q-P"*) is meant to be used. If you want it in your language, runtime, or stack, please port it — you don't need to ask anyone to start writing one.
 
-Two things to read before you ship a port: how the rights work (the cipher is patented and the reference is source-available, not OSI open source), and how naming works (the Enqpy™ marks are certified, not self-claimed).
+Two things to read before you ship a port: how the rights work (the cipher is patented, and the reference is open source under Apache-2.0), and how naming works (the Enqpy™ marks are certified, not self-claimed).
 
 ## How the rights work
 
-Two instruments govern use, and they do different jobs. The **Open-Infrastructure Patent Non-Assertion Covenant** (at https://enqpy.com/covenant and in this repo) covers the **patent**; the **NQP LLC Public License** (see [`LICENSE`](LICENSE)) covers **copyright in NQP's reference source**. In short:
+Two instruments govern use, and they do different jobs. The **Open-Infrastructure Patent Non-Assertion Covenant** (at https://enqpy.com/covenant and in this repo) covers the **patent**; the **Apache License 2.0** (see [`LICENSE`](LICENSE)) covers **copyright in NQP's reference source**. In short:
 
 - **The cipher is patent-safe for everyone.** Under the Covenant, NQP LLC irrevocably commits not to assert the NQP Patents against any conforming implementation of the cipher — by anyone, for any purpose, at any scale, including commercial deployment. No fee, no signup, and no license is required to write a port, deploy it, or ship it in a product. There are no size thresholds and nothing to "outgrow."
-- **Source-code rights — everyone.** Under the Evaluation License, anyone may clone, build, run the self-test and benchmark harnesses, analyze the source, compare output against the vectors and paper, and cite the work with attribution. You may **not** redistribute NQP's reference source, relicense it, or remove the license/notice. Your port is your own code — writing an independent implementation needs no copyright license here; that right comes from the Covenant.
+- **Source-code rights — everyone.** NQP's reference source is licensed under the **Apache License 2.0**: anyone may use, copy, modify, and redistribute it — including in commercial and closed-source products — subject to the Apache-2.0 conditions (retain the copyright and license notices and the `NOTICE` file, and state any significant changes). Apache-2.0 Section 3 also grants an express, code-scoped patent license for the reference code itself; the Covenant remains the broader, controlling patent promise. Your port is your own code — writing an independent implementation needs no copyright license at all; that right comes from the Covenant.
 - **Optional commercial relationships — the earned edge.** Foundation certification + marks, NQP's high-performance proprietary implementations, services/support/indemnity, the Partner Program, and an optional signed patent license are available at **https://enqpy.com/use.html** for organizations that want them — but none is a condition of using the cipher.
 
 A port is your own code implementing a patent-safe cipher: write it, deploy it, ship it under the Covenant, with no license required for that use. The [Covenant](https://enqpy.com/covenant) and the [`LICENSE`](LICENSE) are the authoritative terms — this page is a plain-English pointer, not the grant itself.
@@ -34,7 +34,7 @@ So: write the port freely; deploy it under the Covenant (patent-safe, no license
 Everything to build and verify a port lives in this repo:
 
 - **Canonical test vectors** — `tests/vectors/enqpy-vectors.json`, documented in [`TEST_VECTORS.md`](TEST_VECTORS.md). The authoritative inputs and expected outputs (UPPERCASE hex). Your port matches the reference if and only if it reproduces these exactly.
-- **Reference implementations** — the **Base Cipher** (`enqpy_reference_base_c1.c`, `-DENQPY_SELFTEST` runs **84/84**, the proof-complete Case-1 profile and canonical conformance target) and the **Extended Mixing Profile** (`enqpy_reference.c`, runs **78/78**, the optional three-case profile). Ground truth when in doubt.
+- **Reference implementation** — the canonical C reference (`enqpy_reference.c`, `-DENQPY_SELFTEST` runs **84/84**), Enqpy in its Canonical Configuration with Case-1 `W` generation. Ground truth when in doubt.
 - **Formal Cryptographic Description (FCD)** — the full specification of OWC, PDAF, PDAF_SEC, the five phases, profiles, and key management.
 - **The proof / paper** — [the formal proof paper](https://enqpy.com/technical.html) (companion [12]). Why it works; not required to port.
 - **Conformance Specification** — [`CONFORMANCE.md`](CONFORMANCE.md). The three conformance levels, canonical sources, and the submission process.
@@ -62,7 +62,7 @@ We verify against the canonical vectors and, on a pass, list your port in [`PORT
 
 ## One note specific to cryptography
 
-A port that *looks* like it works can still be subtly wrong in a way that silently weakens security — and it would carry the Enqpy™ name. The message combine is plain XOR, so that part is hard to get wrong; the real bug surface is keystream (`W`) generation — the five phases, PDAF Mode 1 tiling, the Ideal Configuration's key-role separation, and (in the Extended Mixing Profile only) the CS-ordered Selection with required re-derivation after each Phase-5 update. The Base Cipher uses Case-1 generation alone, with no Case Selector. That is exactly why the vectors define correctness by exact reproduction rather than "it runs." If you find a discrepancy with the vectors or the reference, open an issue — that's a report we want.
+A port that *looks* like it works can still be subtly wrong in a way that silently weakens security — and it would carry the Enqpy™ name. The message combine is plain XOR, so that part is hard to get wrong; the real bug surface is keystream (`W`) generation — the five phases, PDAF Mode 1 tiling, the Canonical Configuration's key-role separation, and Case-1 `W` generation. That is exactly why the vectors define correctness by exact reproduction rather than "it runs." If you find a discrepancy with the vectors or the reference, open an issue — that's a report we want.
 
 ## Questions
 
