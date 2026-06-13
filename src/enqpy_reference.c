@@ -2,20 +2,44 @@
 /* Copyright 2026 NQP LLC (Paul McGough) */
 #define _POSIX_C_SOURCE 200809L
 /* =============================================================================
- * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 2.0
+ * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 3.0
  * Copyright (c) 2026 NQP LLC (Paul McGough).
  *
- * IMPLEMENTATION NOTE (2026-06, KAT-identical optimization)
- * ---------------------------------------------------------
- * Phase 3 (W generation) was restructured to mirror the v5 hardware pipeline:
- * three independent per-case streams, arithmetic MOD16 (4-bit add), and
- * branch-free byte-aligned packing.  Output is BYTE-IDENTICAL to the prior
- * reference -- all published test vectors and the 78/78 self-test are
- * unchanged.  Measured effect on the reference platform (portable scalar C,
- * -O3): ~2.1x Phase-3 W generation, ~2.15x end-to-end PDAF_SEC at >=16 KB.
- * No change to the algorithm, the proof, or the hardware.  Remaining phases
- * still use the MOD16 lookup table; applying the same arithmetic form to
- * Phase 2 / pdaf_mode1 is available headroom (not the bottleneck, not done).
+ * WHAT THIS FILE IS
+ * -----------------
+ * This is the canonical software reference for the Enqpy(tm) cipher --
+ * the proof-complete profile on which the Rev 3.0 formal results are proved
+ * CLOSED on both axes:
+ *
+ *   Key axis:     H(EK, QK | T^inf) = log2(4) = 2 bits exactly (Theorem 2).
+ *   Message axis: |S(CT,OR)| >= 2^128 for HIGH (n=64), with the posterior
+ *                 UNIFORM over the FULL consistent set, so
+ *                 H(PT|CT,OR) = Hinf(PT|CT,OR) >= 128 bits (Theorem 3, CLOSED).
+ *
+ * Enqpy is the Canonical Configuration: nonce-only OffsetKey derivation
+ * (Key Role Separation), Case-1 W generation, a normative 2,048-byte (HIGH)
+ * plaintext window, and synchronized key update. Generating W by Case 1 is
+ * exactly what makes the (EK,QK) -> W map a Z16-module homomorphism, which is
+ * what closes the message-axis min-entropy theorem (Theorem 3).
+ *
+ * CONSTRUCTION (FCD Rev 3.0)
+ * --------------------------
+ * Phase 1 (OR_EXP/eff_or), Phase 2 (nonce-only VKP/OKP; VKC/OKC), the PDAF
+ * primitive, and the NIL-Comm primitives derive the per-session keys:
+ *
+ *   - Phase 3 (W generation) is Case 1:
+ *         W[c*n + p] = (OKC[p] + VKC[(p + c) mod n]) mod 16
+ *     yielding n^2 nibbles = 2,048 bytes per window at HIGH.
+ *   - w_byte_max = n^2 / 2 = 2,048 (HIGH), the normative window bound (R6).
+ *   - Phase 5 performs the synchronized key update.
+ *   - Credential rotation (NIL-Comm) REQUIRES Method 2 (external entropy);
+ *     Method 1 is prohibited (R6), because its deterministic chain collapses
+ *     the equivocation coset 4->1 (see FCD Rev 3.0 7.4 / proof Lemma B4 +
+ *     Remark). The OWC/Mode-0 primitives are retained; only the policy gate
+ *     applies.
+ *
+ * The PUBLIC API (PDAF, PDAF_SEC, ENQPY_NIL_COMM_UPDATE, OWC, enqpy_init) is
+ * the object linked by the AEAD benchmark harness (aead_bench.c).
  *
  * LICENSE
  * -------
@@ -24,151 +48,74 @@
  * of the License at http://www.apache.org/licenses/LICENSE-2.0 or in the
  * LICENSE file in this repository.  Unless required by applicable law or
  * agreed to in writing, software distributed under the License is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied.  See the License for the specific language governing
- * permissions and limitations under the License.  See also the NOTICE file.
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.  See the
+ * License and the NOTICE file for governing terms.
  *
  * The CIPHER itself is patent-safe for everyone under the Open-Infrastructure
- * Patent Non-Assertion Covenant (COVENANT; https://enqpy.com/covenant): anyone
- * may write an independent implementation and deploy it at any scale, including
+ * Patent Non-Assertion Covenant (https://enqpy.com/covenant): anyone may write
+ * an independent implementation and deploy it at any scale, including
  * commercially, with no fee and no separate agreement required for that use.
- * The Covenant is the broader, controlling patent promise; the Apache License's
- * Section 3 patent grant is a narrower, code-scoped license that rides along
- * with this code, and nothing in the Apache License limits or terminates the
- * Covenant.  Optional commercial offerings (Foundation certification and marks,
- * NQP high-performance implementations, support/indemnity, and an optional
- * signed patent license) are available at https://enqpy.com/use.html but are
- * not a condition of using the cipher.  See LICENSE, NOTICE, and COVENANT for
- * the authoritative terms.
  *
- * WHAT THIS FILE IS
- * -----------------
- * This is the canonical software reference for the Enqpy(tm) stream cipher,
- * implementing the IDEAL ENQPY CONFIGURATION -- the single formally proved-
- * secure implementation delivering H(EK, QK | T^inf) = log2(4) = 2 bits
- * unconditionally (Shannon Ideal System property).
- *
- * IDEAL CONFIGURATION -- KEY ROLE SEPARATION
- * -------------------------------------------
- * In this implementation EK and QK appear ONLY as ValueKey parameters
- * in their respective PDAF Mode 1 calls.  The OffsetKey parameters
- * (VKP, OKP) are derived from the public nonce eff_or alone:
- *
- *   VKP = PDAF1(eff_or, eff_or)[:n]     (nonce self-expansion)
- *   OKP = (VKP + DS_SEP) mod 16          (domain-separated from VKP)
- *   VKC = PDAF1(EK, VKP)                 (EK as ValueKey only)
- *   OKC = PDAF1(QK, OKP)                 (QK as ValueKey only)
- *
- * This arrangement preserves the [+8] global shift invariant through both
- * derivation paths, producing the ciphertext-equivalent coset
- * {EK, EK+8*1} x {QK, QK+8*1} for all nonces and all messages.
- *
- * Benchmarked throughput is equivalent to HMIX-based derivation across all
- * message sizes; the Phase 2 overhead (~130 ns/msg) is negligible against
- * Phase 3 W-generation (the dominant cost).
- *
- * ENQPYADS(tm) VARIANT CONFIGURATIONS
- * ------------------------------------
- * Deployments with specific security/performance/implementation requirements
- * (defense-in-depth key mixing, FPGA optimization, IoT constraints, etc.)
- * may use EnqpyADS(tm) variant configurations specified separately.  Those
- * variants may use HMIX-based or other pointer derivation arrangements and
- * carry the per-session PDAF Mode 1 preimage equivocation (Theorem 1) but
- * not the formal global Shannon Ideal System guarantee.
- *
- * OPTIMISATION ANNOTATIONS
- * ------------------------
- * [OPT-1]  Precomputed tile arrays -- avoids modulo in the inner loop.
- * [OPT-2]  Interleaved VKC/OKC derivation -- both engines share one tile pass.
- * [OPT-3]  Unrolled 3-nibble CS derivation.
- * [OPT-4]  W generation mirrors the v5 hardware pipeline: the three cases are
- *          produced as three INDEPENDENT streams (as the u_exp_a/b/c
- *          pdaf_par_n2 instances do in HW), not interleaved through a
- *          per-nibble switch.  MOD16 is computed arithmetically as (a+b)&0xF
- *          -- the 4-bit adder the hardware uses -- removing the inner-loop
- *          table load and enabling vectorisation of Case 1.
- * [OPT-5]  Branch-free byte-aligned packing: every 2 positions = 6 nibbles =
- *          exactly 3 bytes, so no running-parity branch is needed.
- * [OPT-6]  Interleaved Phase 5 key update.
- * [OPT-7i] Phase 2 Ideal: VKP nonce self-expansion shares tile with OR_EXP
- *          computation; OKP is n simple adds -- no separate tile pass needed.
- * [OPT-8]  restrict-qualified pointers -- enables SIMD vectorisation.
- * [OPT-9]  Byte-level XOR loop -- auto-vectorises to SIMD.
- *
- * ALGORITHM OVERVIEW
- * ------------------
- * Five phases per message:
- *
+ * ALGORITHM OVERVIEW (Enqpy)
+ * --------------------------------
  *  Phase 1  OR_EXP and eff_or
  *           Expand the 64-bit OR counter to n nibbles via PDAF Mode 1
- *           self-expansion, then mix with the stored OR register to produce
- *           eff_or.  The same self-expansion output is reused as VKP (below).
+ *           self-expansion, then mix with the stored OR register -> eff_or.
  *
- *  Phase 2  VKP, OKP, VKC, OKC  [IDEAL CONFIGURATION]
- *           VKP = PDAF1(eff_or, eff_or)[:n]  -- nonce only, public.
+ *  Phase 2  VKP, OKP, VKC, OKC  [CANONICAL CONFIGURATION -- nonce-only pointers]
+ *           VKP = PDAF1(eff_or, eff_or)[:n]   -- nonce only, public.
  *           OKP[i] = (VKP[i] + DS_SEP) mod 16 -- domain-separated, public.
- *           VKC = PDAF1(EK, VKP)  -- EK as ValueKey only.
- *           OKC = PDAF1(QK, OKP)  -- QK as ValueKey only.
- *           EK and QK do not appear in VKP or OKP derivation.
+ *           VKC = PDAF1(EK, VKP)              -- EK as ValueKey only.
+ *           OKC = PDAF1(QK, OKP)              -- QK as ValueKey only.
  *
- *  Phase 2B Case Selector (CS)
- *           Three nibbles of PDAF Mode 1 from VKC/OKC select the
- *           permutation of Cases 1, 2, 3 for W generation [OPT-3].
+ *  Phase 3  W keystream generation -- CASE 1
+ *           W[c*n + p] = (OKC[p] + VKC[(p+c) mod n]) mod 16, n^2 nibbles,
+ *           packed 2 nibbles/byte = 2,048 bytes per window at HIGH.
  *
- *  Phase 3  W keystream generation
- *           Three cases produce n^2 nibbles each from VKC/OKC as three
- *           independent streams, then interleaved 3k/3k+1/3k+2 and packed
- *           byte-aligned [OPT-4][OPT-5].
+ *  Phase 4  XOR  -- W XOR plaintext/ciphertext.
  *
- *  Phase 4  XOR
- *           W XOR plaintext/ciphertext, auto-vectorised to SIMD [OPT-9].
- *
- *  Phase 5  Key update
+ *  Phase 5  Key update (synchronized)
  *           VKNext = PDAF1(OKC, VKP, Mode 1)
  *           OKNext = PDAF1(VKC, OKP, Mode 1)
- *           Phase 5 is compatible with the Ideal Configuration: the
- *           [+8] invariant propagates through these PDAF1 calls because
- *           VKP and OKP are nonce-derived and unchanged by EK/QK shifts.
+ *           VKP/OKP are nonce-derived, so the [+8] coset invariant propagates
+ *           across the 2,048-byte window boundary.
  *
  * SECURITY PROFILES (key size)
  * ----------------------------
  *   LOW   n=32 nibbles (128-bit)
  *   MED   n=48 nibbles (192-bit)
- *   HIGH  n=64 nibbles (256-bit)  -- default; recommended
+ *   HIGH  n=64 nibbles (256-bit)  -- default; the canonical proof profile.
  *
- * TEST VECTORS (Rev 2.0 -- Ideal Configuration)
- * -----------------------------------------------
- *   PDAF primitive (n=10, 30-nibble output) -- unchanged from Rev 1.0:
+ * OFFICIAL TEST VECTORS (Rev 3.0 -- Enqpy)
+ * ---------------------------------------------
+ *   PDAF primitive (n=10, 30-nibble output):
  *     VK = FB382C001A   OK = CC69100AB4
  *     Mode 0 -> B7913C0ACE7FEBD00B53F4851014AF
  *     Mode 1 -> 7DD02C010CDF74C01B5BF8D811B92B
  *
- *   PDAF_SEC Ideal Configuration (n=64, 8-byte zero plaintext):
+ *   PDAF_SEC Enqpy (n=64, 8-byte zero plaintext), canonical keys:
  *     EK = cb1e1203c479f30c1c356f12362fe43b47e8b5906c992013468395489a17d957
  *     QK = 0e2eab25a9f78620abb6726cf81a012776511b3988431d427da911bdc2130680
  *     OR = 3667a507e1109ee32cd50718fa511065900eb422ac187ac5cd47ef5b18d86e0c
  *     OR_CTR = 0x0000000000000001
- *     W[0..7] = 24 C4 3F 3E 94 9B BC 35
- *     CT[0..7] = 24 C4 3F 3E 94 9B BC 35   (plaintext is zeros)
- *
- *   NOTE: Rev 1.0 TV3 (W = F4 38 41 E4 C2 B0 A0 6B) was for the HMIX-based
- *   standard configuration.  The Ideal Configuration produces different VKP/OKP
- *   (nonce-only derivation) and therefore different VKC/OKC and different W.
- *   Coset invariant verified: W(EK+8,QK) == W(EK,QK) == W(EK,QK+8) == W(EK+8,QK+8).
+ *     Enqpy W[0..7]  = 24 34 B5 88 45 C6 FD E8   (CT = W, plaintext zeros)
+ *     Enqpy W[0..15] = 24 34 B5 88 45 C6 FD E8 A3 38 55 C3 6B 7D A1 96
+ *     Window-boundary byte [2046..2047] = 54 28   (last 2 bytes of the
+ *                                                  2,048-byte Case-1 window)
+ *   Coset invariant verified (all generated by this reference):
+ *     W(EK+8,QK) == W(EK,QK) == W(EK,QK+8) == W(EK+8,QK+8).
  *
  * BUILD
  * -----
- *   # Standard build (library only):
- *   cc -O2 -std=c11 -c Enqpy_reference.c -o Enqpy_reference.o
- *
+ *   # Library only:
+ *   cc -O2 -std=c11 -c enqpy_reference.c -o enqpy_reference.o
  *   # With self-test:
- *   cc -O3 -std=c11 -DENQPY_SELFTEST Enqpy_reference.c -o enqpy_test
- *
+ *   cc -O3 -std=c11 -DENQPY_SELFTEST enqpy_reference.c -o enqpy_test
  *   # With benchmark:
- *   cc -O3 -std=c11 -DENQPY_BENCHMARK Enqpy_reference.c -o enqpy_bench
- *
- *   # Both:
- *   cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK Enqpy_reference.c -o enqpy_all
+ *   cc -O3 -std=c11 -DENQPY_BENCHMARK enqpy_reference.c -o enqpy_bench
+ *   # AEAD benchmark (link with aead_bench.c):
+ *   cc -O3 -march=native -std=c11 -c enqpy_reference.c -o enqpy_ref.o
+ *   cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L aead_bench.c enqpy_ref.o -o aead_bench
  * ============================================================================= */
 
 #include <stdint.h>
@@ -190,8 +137,9 @@
 #define DS_SEP        0xFu   /* OKP domain separator: OKP[i] = (VKP[i] + 0xF) mod 16 */
 #define ORC_NIBS      16     /* 64-bit OR_CTR -> 16 nibbles */
 
-#define ENQPY_W_NIBS    (3 * ENQPY_MAX_N * ENQPY_MAX_N)   /* 12288 */
-#define ENQPY_W_BYTES   (ENQPY_W_NIBS / 2)                /*  6144 */
+/* Enqpy: Case-1 only.  W is n^2 nibbles = n^2/2 bytes per window. */
+#define ENQPY_W_NIBS    (ENQPY_MAX_N * ENQPY_MAX_N)   /* 4096 */
+#define ENQPY_W_BYTES   (ENQPY_W_NIBS / 2)            /* 2048 */
 
 /* ============================================================================
  * SECTION 2 -- MOD16 LOOKUP TABLE
@@ -208,26 +156,18 @@ void enqpy_init(uint64_t persisted_or_ctr)
 }
 
 /* ============================================================================
- * SECTION 3 -- CASE SELECTOR PERMUTATION TABLE
- * ============================================================================ */
-
-static const uint8_t CS_PERM[6][3] = {
-    {1,2,3}, {1,3,2}, {2,1,3}, {2,3,1}, {3,1,2}, {3,2,1}
-};
-
-/* ============================================================================
- * SECTION 4 -- OWC (One-Way Compression)
- * Used exclusively in the Nil-Communication Key Update path.
+ * SECTION 3 -- OWC (One-Way Compression)
+ * Used exclusively in the Nil-Communication Key Update path.  The Enqpy uses
+ * it only under the Nil-Communication Method 2 path.
  * ============================================================================ */
 
 int OWC(const uint8_t *key_nibs, int nLen, int nSkip, uint8_t *out_nibs)
 {
     if (!key_nibs || !out_nibs || nLen < 2) return -1;
     int out_len = 0;
-    /* Non-overlapping pairs (FCD Rev 1.0 §6): the position pointer advances
-     * by (1 + nSkip) per output nibble, combining positions i and i+nSkip.
-     * If i+nSkip falls beyond the end of the array, fall back to the adjacent
-     * nibble at i+1. Output length is approximately half the input.        */
+    /* Non-overlapping pairs: the position pointer advances by (1 + nSkip) per
+     * output nibble, combining positions i and i+nSkip. If i+nSkip falls beyond
+     * the end of the array, fall back to the adjacent nibble at i+1.          */
     for (int i = 0; i < nLen - 1; i += (1 + nSkip)) {
         int j = i + nSkip;
         if (j >= nLen) j = i + 1;
@@ -237,7 +177,7 @@ int OWC(const uint8_t *key_nibs, int nLen, int nSkip, uint8_t *out_nibs)
 }
 
 /* ============================================================================
- * SECTION 5 -- PDAF CORE
+ * SECTION 4 -- PDAF CORE
  *
  * Mode 1 (primary cipher path):
  *   Both arrays tiled to ENQPY_TILE_LEN.  For each output nibble nN:
@@ -246,8 +186,6 @@ int OWC(const uint8_t *key_nibs, int nLen, int nSkip, uint8_t *out_nibs)
  *
  * Mode 0 (Nil-Comm path only):
  *   out[nN] = MOD16(ok[p % n], vk[(p+c) % n])
- *
- * [OPT-1] Tile arrays built once, indexed with plain integer arithmetic.
  * ============================================================================ */
 
 static void pdaf_mode1(const uint8_t *vk, const uint8_t *ok, int n,
@@ -287,53 +225,16 @@ int PDAF(const uint8_t *vk, const uint8_t *ok, int n,
 }
 
 /* ============================================================================
- * SECTION 6 -- CASE SELECTOR DERIVATION  [OPT-3]
+ * SECTION 5 -- W KEYSTREAM GENERATION  [ENQPY: CASE 1 ONLY]
+ *
+ * W[c*n + p] = (OKC[p] + VKC[(p + c) mod n]) mod 16, for c,p in 0..n-1.
+ * This is a single Z16-linear stream (the Case-1 W engine). n^2 nibbles are packed 2-per-byte, in order, with
+ * no interleaving and no running-parity branch (n is even, so n^2 is even and
+ * every pair (2k, 2k+1) forms one byte exactly).
  * ============================================================================ */
-
-int ENQPY_DERIVE_CS(const uint8_t *vkc, const uint8_t *okc, int n,
-                    uint8_t *cs_out)
-{
-    if (!vkc || !okc || !cs_out || n < 4) return -1;
-    for (int nN = 0; nN < 3; nN++) {
-        int delta  = okc[nN] & 0xF;
-        int idx2   = nN + delta + 1;
-        cs_out[nN] = MOD16[vkc[nN] & 0xF][vkc[idx2 % n] & 0xF];
-    }
-    return 3;
-}
-
-/* ============================================================================
- * SECTION 7 -- W KEYSTREAM GENERATION  [OPT-4][OPT-5]
- * Identical to Rev 1.0.  Phase 3 is unchanged by the Ideal Configuration.
- * ============================================================================ */
-
-/* HW-mirrored W generation: three independent case "engines" (as in the
- * pdaf_par_n2 instances u_exp_a/b/c), arithmetic MOD16 (4-bit add, as the
- * hardware adder), branch-free byte-aligned packing. Byte-identical output. */
-static void enqpy_case_stream(int cas, const uint8_t *vk_t, const uint8_t *ok_t,
-                              int n, uint8_t *outk)
-{
-    for (int c = 0; c < n; c++) {
-        const int cn = c * n;
-        if (cas == 1) {
-            for (int p = 0; p < n; p++)
-                outk[cn + p] = (uint8_t)((ok_t[p] + vk_t[p + c]) & 0xF);
-        } else if (cas == 2) {
-            for (int p = 0; p < n; p++) {
-                int d = ok_t[p];
-                outk[cn + p] = (uint8_t)((vk_t[p + c] + vk_t[p + d + 1 + c]) & 0xF);
-            }
-        } else {
-            for (int p = 0; p < n; p++) {
-                int d = vk_t[p];
-                outk[cn + p] = (uint8_t)((ok_t[p + c] + ok_t[p + d + 1 + c]) & 0xF);
-            }
-        }
-    }
-}
 
 static void generate_w(const uint8_t *vkc, const uint8_t *okc, int n,
-                       const uint8_t case_order[3], uint8_t *w_bytes)
+                          uint8_t *w_bytes)
 {
     uint8_t vk_t[ENQPY_TILE_LEN];
     uint8_t ok_t[ENQPY_TILE_LEN];
@@ -341,49 +242,23 @@ static void generate_w(const uint8_t *vkc, const uint8_t *okc, int n,
         vk_t[i] = vkc[i % n] & 0xF;
         ok_t[i] = okc[i % n] & 0xF;
     }
-    uint8_t wa[ENQPY_MAX_N * ENQPY_MAX_N];
-    uint8_t wb[ENQPY_MAX_N * ENQPY_MAX_N];
-    uint8_t wc[ENQPY_MAX_N * ENQPY_MAX_N];
-    enqpy_case_stream(case_order[0], vk_t, ok_t, n, wa);
-    enqpy_case_stream(case_order[1], vk_t, ok_t, n, wb);
-    enqpy_case_stream(case_order[2], vk_t, ok_t, n, wc);
-    int nn = n * n, bi = 0;
-    for (int k = 0; k < nn; k += 2) {     /* 6 nibbles -> 3 bytes, byte-aligned */
-        uint8_t a0 = wa[k],   b0 = wb[k],   c0 = wc[k];
-        uint8_t a1 = wa[k+1], b1 = wb[k+1], c1 = wc[k+1];
-        w_bytes[bi++] = (uint8_t)((a0 << 4) | b0);
-        w_bytes[bi++] = (uint8_t)((c0 << 4) | a1);
-        w_bytes[bi++] = (uint8_t)((b1 << 4) | c1);
+    uint8_t w[ENQPY_MAX_N * ENQPY_MAX_N];
+    for (int c = 0; c < n; c++) {
+        const int cn = c * n;
+        for (int p = 0; p < n; p++)
+            w[cn + p] = (uint8_t)((ok_t[p] + vk_t[p + c]) & 0xF);  /* MOD16 */
     }
+    int nn = n * n, bi = 0;
+    for (int k = 0; k < nn; k += 2)         /* 2 nibbles -> 1 byte, in order */
+        w_bytes[bi++] = (uint8_t)((w[k] << 4) | w[k + 1]);
 }
 
 /* ============================================================================
- * SECTION 8 -- PDAF_SEC (Main Encrypt / Decrypt)
+ * SECTION 6 -- PDAF_SEC (Main Encrypt / Decrypt)  [ENQPY]
  *
- * IDEAL CONFIGURATION -- PHASE 2 CHANGE vs Rev 1.0
- * -------------------------------------------------
- * Rev 1.0 (HMIX-based, standard config):
- *   VKP[i] = MOD16(QK[i], MOD16(eff_or[i], DS_VK))   -- QK in OffsetKey path
- *   OKP[i] = MOD16(EK[i], MOD16(eff_or[i], DS_OK))   -- EK in OffsetKey path
- *
- * Rev 2.0 (Ideal Configuration):
- *   VKP    = PDAF1(eff_or, eff_or)[:n]                -- nonce only  [OPT-7i]
- *   OKP[i] = MOD16(VKP[i], DS_SEP)                   -- domain-separated
- *
- * EK and QK are then used only as ValueKey parameters in:
- *   VKC = PDAF1(EK, VKP)    OKC = PDAF1(QK, OKP)
- *
- * [OPT-7i]: The Phase 1 OR_EXP self-expansion (PDAF1(orc, orc)) already
- * establishes the nonce-derived structure.  VKP reuses the same self-
- * expansion mechanism on eff_or rather than on orc, keeping Phase 2
- * coherent with Phase 1 design.  The tile arrays for the VKP call
- * (eff_or tiled) are populated in the same pass as the VKC/OKC tile
- * setup, preserving [OPT-2] cache efficiency.
- *
- * Phases 1, 2B, 3, 4, 5 are byte-for-byte identical to Rev 1.0.
- * Phase 5 is fully compatible: VKP and OKP are nonce-derived and do
- * not change when EK/QK shift by +8, so the update preserves the
- * [+8] coset invariant across W-buffer boundaries.
+ * Phases 1 and 2 perform nonce-only pointer derivation / Key Role Separation.
+ * Phase 3 is Case-1 W generation; Phase 5 is the synchronized key update;
+ * the window is n^2/2 = 2,048 bytes at HIGH.
  * ============================================================================ */
 
 int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
@@ -396,7 +271,6 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
 
     /* -----------------------------------------------------------------------
      * PHASE 1 -- OR_EXP and eff_or
-     * Identical to Rev 1.0.
      * ----------------------------------------------------------------------- */
     uint8_t or_ctr_nibs[ENQPY_MAX_N];
     memset(or_ctr_nibs, 0, sizeof(or_ctr_nibs));
@@ -411,42 +285,26 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
         eff_or[i] = MOD16[or_nibs[i] & 0xF][or_exp[i]];
 
     /* -----------------------------------------------------------------------
-     * PHASE 2 -- VKP, OKP, VKC, OKC  [IDEAL CONFIGURATION]  [OPT-7i]
-     *
-     * VKP = PDAF1(eff_or, eff_or)[:n]
-     *   eff_or is used as both ValueKey and OffsetKey (self-referential,
-     *   same structure as Phase 1 OR_EXP self-expansion on or_ctr_nibs).
-     *
-     * OKP[i] = (VKP[i] + DS_SEP) mod 16  -- n simple adds, no tile pass.
-     *
-     * VKC = PDAF1(EK, VKP)  -- EK as ValueKey, VKP as OffsetKey
-     * OKC = PDAF1(QK, OKP)  -- QK as ValueKey, OKP as OffsetKey
-     *
-     * [OPT-2] The four tile arrays (EK/VKP for VKC; QK/OKP for OKC) are
-     * populated in a single tiling pass -- identical structure to Rev 1.0.
+     * PHASE 2 -- VKP, OKP, VKC, OKC  [CANONICAL CONFIGURATION -- nonce-only]
+     *   VKP    = PDAF1(eff_or, eff_or)[:n]
+     *   OKP[i] = (VKP[i] + DS_SEP) mod 16
+     *   VKC    = PDAF1(EK, VKP)    OKC = PDAF1(QK, OKP)
      * ----------------------------------------------------------------------- */
     uint8_t vkp[ENQPY_MAX_N], okp[ENQPY_MAX_N];
-
-    /* VKP: PDAF1 self-expansion of eff_or  [OPT-7i] */
     pdaf_mode1(eff_or, eff_or, n, n, vkp);
-
-    /* OKP: domain-separated from VKP with one pass -- no tile needed */
     for (int i = 0; i < n; i++)
         okp[i] = MOD16[vkp[i]][DS_SEP];
 
-    /* VKC and OKC: interleaved single tile pass  [OPT-2] */
     uint8_t vkc[ENQPY_MAX_N], okc[ENQPY_MAX_N];
     {
         uint8_t vk_t_ek[ENQPY_TILE_LEN], ok_t_vkp[ENQPY_TILE_LEN];
         uint8_t vk_t_qk[ENQPY_TILE_LEN], ok_t_okp[ENQPY_TILE_LEN];
-
         for (int i = 0; i < ENQPY_TILE_LEN; i++) {
             vk_t_ek[i]  = ek[i  % n] & 0xF;
             ok_t_vkp[i] = vkp[i % n] & 0xF;
             vk_t_qk[i]  = qk[i  % n] & 0xF;
             ok_t_okp[i] = okp[i % n] & 0xF;
         }
-
         int p = 0, c = 0;
         for (int nN = 0; nN < n; nN++) {
             int dv  = ok_t_vkp[p];
@@ -458,31 +316,18 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
     }
 
     /* -----------------------------------------------------------------------
-     * PHASE 2B -- Case Selector  [OPT-3]
-     * Identical to Rev 1.0.
-     * ----------------------------------------------------------------------- */
-    uint8_t cs_nibs[3];
-    ENQPY_DERIVE_CS(vkc, okc, n, cs_nibs);
-    uint32_t cs_val = ((uint32_t)cs_nibs[2] << 8) |
-                      ((uint32_t)cs_nibs[1] << 4) |
-                       (uint32_t)cs_nibs[0];
-    const uint8_t *case_order = CS_PERM[cs_val % 6];
-
-    /* -----------------------------------------------------------------------
-     * PHASES 3, 4, 5 -- Streaming loop
-     * Identical to Rev 1.0.  Phase 5 uses VKP/OKP as OffsetKeys in the
-     * update calls; since VKP/OKP are nonce-derived the [+8] coset invariant
-     * is preserved across update boundaries.
+     * PHASES 3, 4, 5 -- Streaming loop (Enqpy: Case-1 W)
+     * Window bound: w_byte_max = n^2/2 (= 2,048 at HIGH).
      * ----------------------------------------------------------------------- */
     uint8_t w_bytes[ENQPY_W_BYTES];
-    int w_byte_max = (n * n * 3) / 2;
+    int w_byte_max = (n * n) / 2;     /* Enqpy window (R6) */
     int text_done  = 0;
 
     while (text_done < nTextLen) {
-        /* Phase 3 */
-        generate_w(vkc, okc, n, case_order, w_bytes);
+        /* Phase 3 -- Case 1 only */
+        generate_w(vkc, okc, n, w_bytes);
 
-        /* Phase 4  [OPT-8][OPT-9] */
+        /* Phase 4 */
         int chunk = nTextLen - text_done;
         if (chunk > w_byte_max) chunk = w_byte_max;
         const uint8_t *in_ptr  = target + text_done;
@@ -493,12 +338,10 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
 
         if (text_done >= nTextLen) break;
 
-        /* Phase 5 -- Key update  [OPT-6]
-         * VKNext = PDAF1(OKC, VKP, Mode 1)
-         * OKNext = PDAF1(VKC, OKP, Mode 1)
-         * VKP and OKP are nonce-derived; they are the same regardless of
-         * which coset element (EK or EK+8) generated VKC/OKC.  The update
-         * therefore preserves the ciphertext-equivalent coset.           */
+        /* Phase 5 -- Key update (synchronized)
+         *   VKNext = PDAF1(OKC, VKP, Mode 1)
+         *   OKNext = PDAF1(VKC, OKP, Mode 1)
+         * VKP/OKP are nonce-derived; the [+8] coset invariant is preserved. */
         uint8_t vk_t_okc[ENQPY_TILE_LEN], ok_t_vkp5[ENQPY_TILE_LEN];
         uint8_t vk_t_vkc[ENQPY_TILE_LEN], ok_t_okp5[ENQPY_TILE_LEN];
         for (int i = 0; i < ENQPY_TILE_LEN; i++) {
@@ -518,12 +361,6 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
         }
         memcpy(vkc, vkn, n);
         memcpy(okc, okn, n);
-
-        ENQPY_DERIVE_CS(vkc, okc, n, cs_nibs);
-        cs_val     = ((uint32_t)cs_nibs[2] << 8) |
-                     ((uint32_t)cs_nibs[1] << 4) |
-                      (uint32_t)cs_nibs[0];
-        case_order = CS_PERM[cs_val % 6];
     }
 
     memset(vkp,    0, sizeof vkp);
@@ -538,9 +375,16 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
 }
 
 /* ============================================================================
- * SECTION 9 -- NIL-COMMUNICATION KEY UPDATE
- * Identical to Rev 1.0.  The Nil-Comm path (Mode 0 + OWC) does not involve
- * VKP/OKP pointer derivation and is unaffected by the Ideal Configuration.
+ * SECTION 7 -- NIL-COMMUNICATION KEY UPDATE
+ *
+ * ENQPY POLICY (Rev 3.0, R6 / proof Lemma B4 + Remark):
+ *   Method 2 (external entropy) is REQUIRED for Enqpy credential
+ *   rotation. Method 1 (deterministic chain) is PROHIBITED here because it
+ *   collapses the four-element equivocation coset to a single new pair, so the
+ *   post-rotation current-epoch key is determined in the T^inf known-plaintext
+ *   limit. Method 2's external entropy re-injects key uncertainty at each
+ *   rotation. This reference enforces the policy by rejecting method != 2.
+ *   The OWC + Mode-0 seed derivation is part of the Nil-Communication path.
  * ============================================================================ */
 
 int ENQPY_NIL_COMM_UPDATE(const uint8_t *ek, const uint8_t *qk, int n,
@@ -549,7 +393,8 @@ int ENQPY_NIL_COMM_UPDATE(const uint8_t *ek, const uint8_t *qk, int n,
 {
     if (!ek || !qk || !ek_new || !qk_new) return -1;
     if (n < 32 || n > ENQPY_MAX_N)          return -1;
-    if (method == 2 && !e_ext)             return -1;
+    /* Enqpy: Method 2 is mandatory; Method 1 is prohibited (R6). */
+    if (method != 2 || !e_ext)             return -1;
 
     uint8_t pdaf_m0[ENQPY_MAX_N];
     pdaf_mode0(ek, qk, n, n, pdaf_m0);
@@ -559,13 +404,8 @@ int ENQPY_NIL_COMM_UPDATE(const uint8_t *ek, const uint8_t *qk, int n,
     if (seed_len < 1) return -1;
 
     uint8_t e_combined[ENQPY_MAX_N];
-    if (method == 2) {
-        for (int i = 0; i < n; i++)
-            e_combined[i] = MOD16[e_seed_raw[i % seed_len]][e_ext[i] & 0xF];
-    } else {
-        for (int i = 0; i < n; i++)
-            e_combined[i] = e_seed_raw[i % seed_len];
-    }
+    for (int i = 0; i < n; i++)
+        e_combined[i] = MOD16[e_seed_raw[i % seed_len]][e_ext[i] & 0xF];
 
     {
         uint8_t vk_t_ek[ENQPY_TILE_LEN], ok_t_ec[ENQPY_TILE_LEN];
@@ -591,16 +431,41 @@ int ENQPY_NIL_COMM_UPDATE(const uint8_t *ek, const uint8_t *qk, int n,
 }
 
 /* ============================================================================
- * SECTION 10 -- SELF-TEST HARNESS
+ * SECTION 8 -- SELF-TEST HARNESS  (Enqpy KATs)
  * ============================================================================ */
 #ifdef ENQPY_SELFTEST
+
+static const uint8_t TV_EK[64] = {
+    0xC,0xB,0x1,0xE, 0x1,0x2,0x0,0x3, 0xC,0x4,0x7,0x9,
+    0xF,0x3,0x0,0xC, 0x1,0xC,0x3,0x5, 0x6,0xF,0x1,0x2,
+    0x3,0x6,0x2,0xF, 0xE,0x4,0x3,0xB, 0x4,0x7,0xE,0x8,
+    0xB,0x5,0x9,0x0, 0x6,0xC,0x9,0x9, 0x2,0x0,0x1,0x3,
+    0x4,0x6,0x8,0x3, 0x9,0x5,0x4,0x8, 0x9,0xA,0x1,0x7,
+    0xD,0x9,0x5,0x7
+};
+static const uint8_t TV_QK[64] = {
+    0x0,0xE,0x2,0xE, 0xA,0xB,0x2,0x5, 0xA,0x9,0xF,0x7,
+    0x8,0x6,0x2,0x0, 0xA,0xB,0xB,0x6, 0x7,0x2,0x6,0xC,
+    0xF,0x8,0x1,0xA, 0x0,0x1,0x2,0x7, 0x7,0x6,0x5,0x1,
+    0x1,0xB,0x3,0x9, 0x8,0x8,0x4,0x3, 0x1,0xD,0x4,0x2,
+    0x7,0xD,0xA,0x9, 0x1,0x1,0xB,0xD, 0xC,0x2,0x1,0x3,
+    0x0,0x6,0x8,0x0
+};
+static const uint8_t TV_OR[64] = {
+    0x3,0x6,0x6,0x7, 0xA,0x5,0x0,0x7, 0xE,0x1,0x1,0x0,
+    0x9,0xE,0xE,0x3, 0x2,0xC,0xD,0x5, 0x0,0x7,0x1,0x8,
+    0xF,0xA,0x5,0x1, 0x1,0x0,0x6,0x5, 0x9,0x0,0x0,0xE,
+    0xB,0x4,0x2,0x2, 0xA,0xC,0x1,0x8, 0x7,0xA,0xC,0x5,
+    0xC,0xD,0x4,0x7, 0xE,0xF,0x5,0xB, 0x1,0x8,0xD,0x8,
+    0x6,0xE,0x0,0xC
+};
 
 static int selftest(void)
 {
     int pass = 0, fail = 0;
     enqpy_init(0);
 
-    /* TV1: PDAF Mode 0 (n=10, 30-nibble) -- unchanged from Rev 1.0 */
+    /* TV1: PDAF Mode 0 (n=10, 30-nibble) -- shared primitive vector */
     {
         uint8_t vk[64]={0xF,0xB,0x3,0x8,0x2,0xC,0x0,0x0,0x1,0xA};
         uint8_t ok[64]={0xC,0xC,0x6,0x9,0x1,0x0,0x0,0xA,0xB,0x4};
@@ -617,7 +482,7 @@ static int selftest(void)
         }
     }
 
-    /* TV2: PDAF Mode 1 (n=10, 30-nibble) -- unchanged from Rev 1.0 */
+    /* TV2: PDAF Mode 1 (n=10, 30-nibble) -- shared primitive vector */
     {
         uint8_t vk[64]={0xF,0xB,0x3,0x8,0x2,0xC,0x0,0x0,0x1,0xA};
         uint8_t ok[64]={0xC,0xC,0x6,0x9,0x1,0x0,0x0,0xA,0xB,0x4};
@@ -634,40 +499,13 @@ static int selftest(void)
         }
     }
 
-    /* TV3: PDAF_SEC Ideal Configuration -- W[0..7] = 24 C4 3F 3E 94 9B BC 35
-     * (Rev 1.0 TV3 was W = F4 38 41 E4 C2 B0 A0 6B for HMIX-based config.)
-     * Keys and OR identical to Rev 1.0 TV3; only Phase 2 differs.           */
+    /* TV3: PDAF_SEC Enqpy -- W[0..7] = 24 34 B5 88 45 C6 FD E8 */
     {
-        uint8_t ek[64] = {
-            0xC,0xB,0x1,0xE, 0x1,0x2,0x0,0x3, 0xC,0x4,0x7,0x9,
-            0xF,0x3,0x0,0xC, 0x1,0xC,0x3,0x5, 0x6,0xF,0x1,0x2,
-            0x3,0x6,0x2,0xF, 0xE,0x4,0x3,0xB, 0x4,0x7,0xE,0x8,
-            0xB,0x5,0x9,0x0, 0x6,0xC,0x9,0x9, 0x2,0x0,0x1,0x3,
-            0x4,0x6,0x8,0x3, 0x9,0x5,0x4,0x8, 0x9,0xA,0x1,0x7,
-            0xD,0x9,0x5,0x7
-        };
-        uint8_t qk[64] = {
-            0x0,0xE,0x2,0xE, 0xA,0xB,0x2,0x5, 0xA,0x9,0xF,0x7,
-            0x8,0x6,0x2,0x0, 0xA,0xB,0xB,0x6, 0x7,0x2,0x6,0xC,
-            0xF,0x8,0x1,0xA, 0x0,0x1,0x2,0x7, 0x7,0x6,0x5,0x1,
-            0x1,0xB,0x3,0x9, 0x8,0x8,0x4,0x3, 0x1,0xD,0x4,0x2,
-            0x7,0xD,0xA,0x9, 0x1,0x1,0xB,0xD, 0xC,0x2,0x1,0x3,
-            0x0,0x6,0x8,0x0
-        };
-        uint8_t or_nibs[64] = {
-            0x3,0x6,0x6,0x7, 0xA,0x5,0x0,0x7, 0xE,0x1,0x1,0x0,
-            0x9,0xE,0xE,0x3, 0x2,0xC,0xD,0x5, 0x0,0x7,0x1,0x8,
-            0xF,0xA,0x5,0x1, 0x1,0x0,0x6,0x5, 0x9,0x0,0x0,0xE,
-            0xB,0x4,0x2,0x2, 0xA,0xC,0x1,0x8, 0x7,0xA,0xC,0x5,
-            0xC,0xD,0x4,0x7, 0xE,0xF,0x5,0xB, 0x1,0x8,0xD,0x8,
-            0x6,0xE,0x0,0xC
-        };
-        /* Ideal Configuration W[0..7] = 24 C4 3F 3E 94 9B BC 35 */
-        const uint8_t expected_w[8] = {0x24,0xC4,0x3F,0x3E,0x94,0x9B,0xBC,0x35};
+        const uint8_t expected_w[8] = {0x24,0x34,0xB5,0x88,0x45,0xC6,0xFD,0xE8};
         uint8_t pt[8] = {0};
         uint8_t ct[8], rt[8];
 
-        int r = PDAF_SEC(ek, qk, or_nibs, 0x0000000000000001ULL, 64, pt, 8, ct);
+        int r = PDAF_SEC(TV_EK, TV_QK, TV_OR, 0x0000000000000001ULL, 64, pt, 8, ct);
         if (r != 8) { fail++; printf("TV3 FAIL: PDAF_SEC returned %d\n", r); }
         else {
             for (int i=0;i<8;i++) {
@@ -676,29 +514,84 @@ static int selftest(void)
                                       i,ct[i],expected_w[i]); }
             }
         }
-
         /* Round-trip */
-        PDAF_SEC(ek, qk, or_nibs, 0x0000000000000001ULL, 64, ct, 8, rt);
+        PDAF_SEC(TV_EK, TV_QK, TV_OR, 0x0000000000000001ULL, 64, ct, 8, rt);
         for (int i=0;i<8;i++) {
             if (rt[i]==0x00) pass++;
             else { fail++; printf("TV3 RT FAIL[%d] got=%02X\n",i,rt[i]); }
         }
+    }
 
-        /* TV4: Coset invariant -- W(EK+8,QK) == W(EK,QK) */
-        uint8_t ek8[64], ct8[8];
-        for (int i=0;i<64;i++) ek8[i]=(ek[i]+8)&0xF;
-        PDAF_SEC(ek8, qk, or_nibs, 0x0000000000000001ULL, 64, pt, 8, ct8);
-        int coset_ok = (memcmp(ct, ct8, 8) == 0);
-        if (coset_ok) pass++;
+    /* TV4: Coset invariant -- W(EK+8,QK) == W(EK,QK) (central proof property) */
+    {
+        uint8_t pt[8]={0}, ct[8], ct8[8];
+        PDAF_SEC(TV_EK, TV_QK, TV_OR, 0x0000000000000001ULL, 64, pt, 8, ct);
+        uint8_t ek8[64];
+        for (int i=0;i<64;i++) ek8[i]=(TV_EK[i]+8)&0xF;
+        PDAF_SEC(ek8, TV_QK, TV_OR, 0x0000000000000001ULL, 64, pt, 8, ct8);
+        if (memcmp(ct, ct8, 8) == 0) pass++;
         else { fail++; printf("TV4 FAIL: EK+8 coset not preserved\n"); }
 
         /* TV5: QK+8 coset */
         uint8_t qk8[64], ct_q8[8];
-        for (int i=0;i<64;i++) qk8[i]=(qk[i]+8)&0xF;
-        PDAF_SEC(ek, qk8, or_nibs, 0x0000000000000001ULL, 64, pt, 8, ct_q8);
-        int coset_qk = (memcmp(ct, ct_q8, 8) == 0);
-        if (coset_qk) pass++;
+        for (int i=0;i<64;i++) qk8[i]=(TV_QK[i]+8)&0xF;
+        PDAF_SEC(TV_EK, qk8, TV_OR, 0x0000000000000001ULL, 64, pt, 8, ct_q8);
+        if (memcmp(ct, ct_q8, 8) == 0) pass++;
         else { fail++; printf("TV5 FAIL: QK+8 coset not preserved\n"); }
+
+        /* TV6: EK+8,QK+8 coset */
+        uint8_t ct_b8[8];
+        PDAF_SEC(ek8, qk8, TV_OR, 0x0000000000000001ULL, 64, pt, 8, ct_b8);
+        if (memcmp(ct, ct_b8, 8) == 0) pass++;
+        else { fail++; printf("TV6 FAIL: EK+8,QK+8 coset not preserved\n"); }
+    }
+
+    /* TV7: Window boundary -- byte [2046..2047] of the 2,048-byte window,
+     * and that the SECOND window (after Phase 5) begins a fresh stream.       */
+    {
+        const uint8_t exp_tail[2] = {0x54, 0x28};
+        uint8_t *pt = (uint8_t*)calloc(2050, 1);
+        uint8_t *ct = (uint8_t*)malloc(2050);
+        if (pt && ct) {
+            PDAF_SEC(TV_EK, TV_QK, TV_OR, 0x0000000000000001ULL, 64, pt, 2050, ct);
+            if (ct[2046]==exp_tail[0] && ct[2047]==exp_tail[1]) pass++;
+            else { fail++; printf("TV7 FAIL: window tail [2046,2047] got=%02X %02X exp=%02X %02X\n",
+                                  ct[2046],ct[2047],exp_tail[0],exp_tail[1]); }
+            /* Byte 2048 is the first byte of the post-Phase-5 window; just
+             * confirm round-trip integrity across the boundary.              */
+            uint8_t *rt = (uint8_t*)malloc(2050);
+            if (rt) {
+                PDAF_SEC(TV_EK, TV_QK, TV_OR, 0x0000000000000001ULL, 64, ct, 2050, rt);
+                int rt_ok = 1;
+                for (int i=0;i<2050;i++) if (rt[i]!=0) { rt_ok=0; break; }
+                if (rt_ok) pass++;
+                else { fail++; printf("TV7 FAIL: 2050-byte round-trip mismatch\n"); }
+                free(rt);
+            }
+        }
+        free(pt); free(ct);
+    }
+
+    /* TV8: NIL-Comm Method 2 required; Method 1 rejected (rotation policy) */
+    {
+        uint8_t ek_new[64], qk_new[64];
+        uint8_t e_ext[64];
+        for (int i=0;i<64;i++) e_ext[i]=(uint8_t)((i*11+3)&0xF);
+        /* Method 1 must be rejected. */
+        int r1 = ENQPY_NIL_COMM_UPDATE(TV_EK, TV_QK, 64, NULL, 1, ek_new, qk_new);
+        if (r1 == -1) pass++;
+        else { fail++; printf("TV8 FAIL: Method 1 not rejected (got %d)\n", r1); }
+        /* Method 2 must succeed and preserve the coset. */
+        int r2 = ENQPY_NIL_COMM_UPDATE(TV_EK, TV_QK, 64, e_ext, 2, ek_new, qk_new);
+        if (r2 == 0) pass++;
+        else { fail++; printf("TV8 FAIL: Method 2 failed (got %d)\n", r2); }
+
+        uint8_t ek8[64], qk8[64], ek_new8[64], qk_new8[64];
+        for (int i=0;i<64;i++){ek8[i]=(TV_EK[i]+8)&0xF; qk8[i]=(TV_QK[i]+8)&0xF;}
+        ENQPY_NIL_COMM_UPDATE(ek8, qk8, 64, e_ext, 2, ek_new8, qk_new8);
+        /* Coset members map to the same new pair (Lemma B4 4->1 collapse). */
+        if (memcmp(ek_new, ek_new8, 64)==0 && memcmp(qk_new, qk_new8, 64)==0) pass++;
+        else { fail++; printf("TV8 FAIL: NIL Method 2 coset collapse not observed\n"); }
     }
 
     printf("Self-test: %d PASS  %d FAIL\n", pass, fail);
@@ -708,10 +601,7 @@ static int selftest(void)
 #endif /* ENQPY_SELFTEST */
 
 /* ============================================================================
- * SECTION 11 -- BENCHMARK HARNESS
- * Identical to Rev 1.0 except:
- *   - Phase 2 isolation benchmark reflects Ideal Config overhead
- *   - TV3 expected W updated
+ * SECTION 9 -- BENCHMARK HARNESS  (Enqpy)
  * ============================================================================ */
 #ifdef ENQPY_BENCHMARK
 
@@ -731,35 +621,15 @@ static void use_buf(const uint8_t *buf, int len)
     for (int i = 0; i < len; i++) sink8 = buf[i];
 }
 
-static void bench_pdaf(void)
-{
-    printf("\n--- PDAF Mode 1 throughput (nDigits = n) ---\n");
-    printf("%-8s  %-10s  %-12s  %-12s\n", "n","iters","ns/call","Mnib/s");
-    const int ns[] = {32, 48, 64, 0};
-    for (int ni = 0; ns[ni]; ni++) {
-        int n = ns[ni];
-        uint8_t vk[64]={0}, ok[64]={0}, out[64]={0};
-        for (int i=0;i<n;i++){vk[i]=(uint8_t)(i*7+1)&0xF;ok[i]=(uint8_t)(i*13+5)&0xF;}
-        for (int w=0;w<BENCH_WARMUP;w++) pdaf_mode1(vk,ok,n,n,out);
-        double t0=now_ns();
-        for (int it=0;it<BENCH_ITERS;it++){pdaf_mode1(vk,ok,n,n,out);use_buf(out,n);}
-        double el=now_ns()-t0;
-        printf("n=%-6d  %-10d  %-12.1f  %-12.2f\n",
-               n, BENCH_ITERS, el/BENCH_ITERS,
-               (double)n*BENCH_ITERS/(el/1e9)/1e6);
-    }
-}
-
 static void bench_w_gen(void)
 {
-    printf("\n--- Phase 3 W generation (n=64, 6144 bytes/call) ---\n");
+    printf("\n--- Phase 3 W generation (n=64, %d bytes/call, Case-1) ---\n", ENQPY_W_BYTES);
     printf("%-12s  %-12s  %-14s\n","iters","ns/call","MB/s");
     uint8_t vkc[64]={0},okc[64]={0},wb[ENQPY_W_BYTES];
-    const uint8_t co[3]={1,2,3};
     for(int i=0;i<64;i++){vkc[i]=(uint8_t)(i*3+2)&0xF;okc[i]=(uint8_t)(i*7+11)&0xF;}
-    for(int w=0;w<BENCH_WARMUP;w++) generate_w(vkc,okc,64,co,wb);
+    for(int w=0;w<BENCH_WARMUP;w++) generate_w(vkc,okc,64,wb);
     double t0=now_ns();
-    for(int it=0;it<BENCH_ITERS;it++){generate_w(vkc,okc,64,co,wb);use_buf(wb,ENQPY_W_BYTES);}
+    for(int it=0;it<BENCH_ITERS;it++){generate_w(vkc,okc,64,wb);use_buf(wb,ENQPY_W_BYTES);}
     double el=now_ns()-t0;
     printf("%-12d  %-12.1f  %-14.2f\n",
            BENCH_ITERS, el/BENCH_ITERS,
@@ -768,32 +638,26 @@ static void bench_w_gen(void)
 
 static void bench_pdaf_sec(void)
 {
-    printf("\n--- PDAF_SEC Ideal Configuration throughput (n=64) ---\n");
+    printf("\n--- PDAF_SEC Enqpy throughput (n=64) ---\n");
     printf("%-14s  %-10s  %-12s  %-12s\n","msg_size","iters","ns/call","MB/s");
 
-    uint8_t ek[64]={
-        0xC,0xB,0x1,0xE,0x1,0x2,0x0,0x3,0xC,0x4,0x7,0x9,
-        0xF,0x3,0x0,0xC,0x1,0xC,0x3,0x5,0x6,0xF,0x1,0x2,
-        0x3,0x6,0x2,0xF,0xE,0x4,0x3,0xB,0x4,0x7,0xE,0x8,
-        0xB,0x5,0x9,0x0,0x6,0xC,0x9,0x9,0x2,0x0,0x1,0x3,
-        0x4,0x6,0x8,0x3,0x9,0x5,0x4,0x8,0x9,0xA,0x1,0x7,
-        0xD,0x9,0x5,0x7
+    static const uint8_t ek[64]={
+        0xC,0xB,0x1,0xE,0x1,0x2,0x0,0x3,0xC,0x4,0x7,0x9,0xF,0x3,0x0,0xC,
+        0x1,0xC,0x3,0x5,0x6,0xF,0x1,0x2,0x3,0x6,0x2,0xF,0xE,0x4,0x3,0xB,
+        0x4,0x7,0xE,0x8,0xB,0x5,0x9,0x0,0x6,0xC,0x9,0x9,0x2,0x0,0x1,0x3,
+        0x4,0x6,0x8,0x3,0x9,0x5,0x4,0x8,0x9,0xA,0x1,0x7,0xD,0x9,0x5,0x7
     };
-    uint8_t qk[64]={
-        0x0,0xE,0x2,0xE,0xA,0xB,0x2,0x5,0xA,0x9,0xF,0x7,
-        0x8,0x6,0x2,0x0,0xA,0xB,0xB,0x6,0x7,0x2,0x6,0xC,
-        0xF,0x8,0x1,0xA,0x0,0x1,0x2,0x7,0x7,0x6,0x5,0x1,
-        0x1,0xB,0x3,0x9,0x8,0x8,0x4,0x3,0x1,0xD,0x4,0x2,
-        0x7,0xD,0xA,0x9,0x1,0x1,0xB,0xD,0xC,0x2,0x1,0x3,
-        0x0,0x6,0x8,0x0
+    static const uint8_t qk[64]={
+        0x0,0xE,0x2,0xE,0xA,0xB,0x2,0x5,0xA,0x9,0xF,0x7,0x8,0x6,0x2,0x0,
+        0xA,0xB,0xB,0x6,0x7,0x2,0x6,0xC,0xF,0x8,0x1,0xA,0x0,0x1,0x2,0x7,
+        0x7,0x6,0x5,0x1,0x1,0xB,0x3,0x9,0x8,0x8,0x4,0x3,0x1,0xD,0x4,0x2,
+        0x7,0xD,0xA,0x9,0x1,0x1,0xB,0xD,0xC,0x2,0x1,0x3,0x0,0x6,0x8,0x0
     };
-    uint8_t or_nibs[64]={
-        0x3,0x6,0x6,0x7,0xA,0x5,0x0,0x7,0xE,0x1,0x1,0x0,
-        0x9,0xE,0xE,0x3,0x2,0xC,0xD,0x5,0x0,0x7,0x1,0x8,
-        0xF,0xA,0x5,0x1,0x1,0x0,0x6,0x5,0x9,0x0,0x0,0xE,
-        0xB,0x4,0x2,0x2,0xA,0xC,0x1,0x8,0x7,0xA,0xC,0x5,
-        0xC,0xD,0x4,0x7,0xE,0xF,0x5,0xB,0x1,0x8,0xD,0x8,
-        0x6,0xE,0x0,0xC
+    static const uint8_t or_nibs[64]={
+        0x3,0x6,0x6,0x7,0xA,0x5,0x0,0x7,0xE,0x1,0x1,0x0,0x9,0xE,0xE,0x3,
+        0x2,0xC,0xD,0x5,0x0,0x7,0x1,0x8,0xF,0xA,0x5,0x1,0x1,0x0,0x6,0x5,
+        0x9,0x0,0x0,0xE,0xB,0x4,0x2,0x2,0xA,0xC,0x1,0x8,0x7,0xA,0xC,0x5,
+        0xC,0xD,0x4,0x7,0xE,0xF,0x5,0xB,0x1,0x8,0xD,0x8,0x6,0xE,0x0,0xC
     };
 
     const int msg_sizes[]={1024,16*1024,1024*1024,0};
@@ -820,35 +684,19 @@ static void bench_pdaf_sec(void)
     }
 }
 
-static void bench_nil_comm(void)
-{
-    printf("\n--- Nil-Comm Key Update latency (n=64, Method 1) ---\n");
-    printf("%-10s  %-12s\n","iters","ns/call");
-    uint8_t ek[64]={0},qk[64]={0},ek_new[64],qk_new[64];
-    for(int i=0;i<64;i++){ek[i]=(uint8_t)(i*5+1)&0xF;qk[i]=(uint8_t)(i*9+3)&0xF;}
-    for(int w=0;w<BENCH_WARMUP;w++)
-        ENQPY_NIL_COMM_UPDATE(ek,qk,64,NULL,1,ek_new,qk_new);
-    double t0=now_ns();
-    for(int it=0;it<BENCH_ITERS;it++){
-        ENQPY_NIL_COMM_UPDATE(ek,qk,64,NULL,1,ek_new,qk_new);
-        use_buf(ek_new,1);
-    }
-    printf("%-10d  %-12.1f\n",BENCH_ITERS,(now_ns()-t0)/BENCH_ITERS);
-}
-
 #endif /* ENQPY_BENCHMARK */
 
 /* ============================================================================
- * SECTION 12 -- main()
+ * SECTION 10 -- main()
  * ============================================================================ */
 #if defined(ENQPY_SELFTEST) || defined(ENQPY_BENCHMARK)
 
 int main(void)
 {
-    printf("Enqpy(tm) Stream Cipher -- Reference Implementation Rev 2.0\n");
-    printf("Ideal Enqpy(tm) Configuration (nonce-only OffsetKey derivation)\n");
+    printf("Enqpy(tm) Stream Cipher -- Reference  Rev 3.0\n");
+    printf("Canonical Configuration, Case-1 W generation (proof-complete profile)\n");
     printf("Copyright (c) 2026 NQP LLC -- Apache License 2.0\n");
-    printf("Platform: n=%d, tile_len=%d, W_bytes=%d\n\n",
+    printf("Platform: n=%d, tile_len=%d, W_bytes=%d (window)\n\n",
            ENQPY_MAX_N, ENQPY_TILE_LEN, ENQPY_W_BYTES);
 
     enqpy_init(0);
@@ -860,10 +708,8 @@ int main(void)
 #endif
 
 #ifdef ENQPY_BENCHMARK
-    bench_pdaf();
     bench_w_gen();
     bench_pdaf_sec();
-    bench_nil_comm();
     printf("\nBenchmark complete.\n");
 #endif
 

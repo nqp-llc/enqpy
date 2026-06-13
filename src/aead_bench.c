@@ -3,21 +3,21 @@
 /* Apples-to-apples authenticated-encryption benchmark, portable scalar C.
  * Part of the Enqpy(TM) reference repository; licensed under the Apache
  * License, Version 2.0 -- see the LICENSE and NOTICE files.
- * Matches the Rev 2.0 report methodology: 59,189-byte message, 10 warmup
+ * Matches the Rev 3.0 report methodology: 59,189-byte message, 10 warmup
  * round-robin passes, 20 timed round-robin iterations, best-of-20 + average,
  * clock_gettime around the cipher call only. Every primitive is verified
  * against its official test vector BEFORE timing; if any KAT fails we abort.
  *
  * Ciphers (all include their authentication, as deployed):
- *   - Enqpy(TM) HIGH (n=64), Base Cipher + Poly1305   (one keystream expansion supplies the
+ *   - Enqpy(TM) HIGH (n=64) + Poly1305               (one keystream expansion supplies the
  *                                          one-time MAC key AND the ciphertext)
  *   - ChaCha20-Poly1305                  (RFC 8439)
  *   - AES-256-GCM                        (portable T-table AES + bitwise GHASH)
  *   - AES-256-CTR                        (no auth -- noted)
  *
- * Build (links the Base Cipher reference, enqpy_reference_base_c1.c):
- *   cc -O3 -march=native -std=c11 -c enqpy_reference_base_c1.c -o enqpy_base.o
- *   cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L aead_bench.c enqpy_base.o -o aead_bench
+ * Build (links the Enqpy reference, enqpy_reference.c):
+ *   cc -O3 -march=native -std=c11 -c enqpy_reference.c -o enqpy_reference.o
+ *   cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L aead_bench.c enqpy_reference.o -o aead_bench
  */
 #include <stdint.h>
 #include <stdio.h>
@@ -25,7 +25,8 @@
 #include <string.h>
 #include <time.h>
 
-extern int PDAF_SEC(const uint8_t*,const uint8_t*,const uint8_t*,uint64_t,int,const uint8_t*,int,uint8_t*);
+extern int  PDAF_SEC(const uint8_t*,const uint8_t*,const uint8_t*,uint64_t,int,const uint8_t*,int,uint8_t*);
+extern void enqpy_init(uint64_t);   /* fills the MOD16 table; MUST run before any PDAF_SEC call */
 
 static double now_ns(void){struct timespec ts;clock_gettime(CLOCK_MONOTONIC,&ts);return (double)ts.tv_sec*1e9+(double)ts.tv_nsec;}
 static volatile uint8_t g_sink;
@@ -289,12 +290,20 @@ static int kat_aes256_gcm(void){ /* NIST: K=0^256, IV=0^96, PT=0^128 -> CT=cea7.
     return hexeq(ct,"cea7403d4d606b6e074ec5d3baf39d18")&&hexeq(tag,"d0d1c8a799996bf0265b98b5d48ab919");
 }
 
+/* Enqpy primitive KAT: EK/QK/ORN are the official Rev 3.0 test-vector keys;
+   encrypting 8 zero bytes at or_ctr=1 yields the canonical W[0..7]. */
+static int kat_enqpy(void){
+    uint8_t zero[8]={0},out[8];
+    PDAF_SEC(EK,QK,ORN,1ULL,64,zero,8,out);
+    return hexeq(out,"2434b58845c6fde8");
+}
+
 int main(void){
-    aes_init_tables();enqpy_init_keys();
-    int k1=kat_poly1305(),k2=kat_chacha20poly1305(),k3=kat_aes256_block(),k4=kat_aes256_gcm();
-    printf("KATs:  Poly1305 %s | ChaCha20-Poly1305 %s | AES-256 block %s | AES-256-GCM %s\n",
-        k1?"PASS":"FAIL",k2?"PASS":"FAIL",k3?"PASS":"FAIL",k4?"PASS":"FAIL");
-    if(!(k1&&k2&&k3&&k4)){fprintf(stderr,"A KAT failed -- not benchmarking (numbers would be meaningless).\n");return 1;}
+    aes_init_tables();enqpy_init(0);enqpy_init_keys();   /* enqpy_init(0) fills MOD16 (else keystream is zero) */
+    int k1=kat_poly1305(),k2=kat_chacha20poly1305(),k3=kat_aes256_block(),k4=kat_aes256_gcm(),k5=kat_enqpy();
+    printf("KATs:  Poly1305 %s | ChaCha20-Poly1305 %s | AES-256 block %s | AES-256-GCM %s | Enqpy %s\n",
+        k1?"PASS":"FAIL",k2?"PASS":"FAIL",k3?"PASS":"FAIL",k4?"PASS":"FAIL",k5?"PASS":"FAIL");
+    if(!(k1&&k2&&k3&&k4&&k5)){fprintf(stderr,"A KAT failed -- not benchmarking (numbers would be meaningless).\n");return 1;}
 
     const size_t L=59189;
     uint8_t *pt=malloc(L),*ct=malloc(L),*sin=malloc(L+32),*sout=malloc(L+32);
