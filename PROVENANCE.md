@@ -116,7 +116,7 @@ identifiers below. They also let you confirm you have an unaltered version.
 - **Content hashes of the canonical files (SHA-256):**
   - FCD (`FCD.md`): `fa38e48021a95ed4a0e04f572834105c242ad219f3f2042ee8e62ff6ffdc55c9`
   - Reference source (`enqpy_reference.c`): `a4564872015d4f026a95df7d5a337cbb49a66b26168b273b0f5c5cb4ff862d4b`
-  - Proof paper PDF (`enqpy_full_Rev3_0.pdf`): `48f661f93c535346c2ec5825bdf17da5c9032904153b55e624c6119e4c837683`
+  - Proof paper PDF (`enqpy_full_Rev3_0.pdf`): `38caf654494176cf9f508852782df81b7ec7e2019211fa9ee12b9d7b2c95cae0`
 
 **Historical record (for context, not required for verification):**
 The proof closed in March 2026 and was released publicly on **June 1, 2026**, by
