@@ -48,28 +48,30 @@ different permissions, so here is the precise truth.
   owner of the patents: anyone may implement, port, and deploy the cipher, at any
   scale, including commercially, with no fee and no permission. You can always
   build your own working copy from the description in this collection.
-- **The proof, the Formal Cryptographic Description (FCD), the test vectors, and
-  the plain-language guide — free to copy and re-host, forever.** These are
-  released under the Creative Commons Attribution 4.0 license (the test vectors
-  under CC0). You may copy, mirror, translate, re-publish, and archive them
-  anywhere, keeping the attribution line. **These are the documents that matter
-  for survival: with the description and the vectors, anyone can rebuild the
-  cipher from scratch and confirm it is correct.**
-- **The original reference *source code* is under a separate evaluation license.**
-  You may clone, build, run, and study it — which is all you need to *verify* it
-  (see §3) — but redistributing that specific source is restricted. This does not
-  limit the cipher's survival at all: the covenant lets anyone write and deploy
-  their own implementation, and the freely-copyable description and vectors above
-  are the blueprint for doing exactly that.
+- **The proof, the Formal Cryptographic Description (FCD), and the plain-language
+  guide — free to copy and re-host, forever.** These are released under the
+  Creative Commons Attribution 4.0 license. You may copy, mirror, translate,
+  re-publish, and archive them anywhere, keeping the attribution line. The **test
+  vectors** are licensed under the Apache License 2.0 (with the reference code)
+  and may likewise be copied and embedded freely, keeping the notice. **These are
+  the materials that matter for survival: with the description and the vectors,
+  anyone can rebuild the cipher from scratch and confirm it is correct.**
+- **The reference *source code* is open source under the Apache License 2.0.**
+  You may use, build, run, study, modify, and redistribute it under the
+  Apache-2.0 terms — including commercially. The covenant additionally lets
+  anyone write and deploy their own independent implementation, and the
+  freely-copyable description and vectors are the blueprint for doing exactly
+  that.
 
 So if you are deciding whether you may **preserve and re-share the proof, the
 description, and the vectors**, and **rebuild and run the cipher itself** — the
 answer is **yes**, without asking anyone. That is exactly what was intended.
 
-> The freedoms above depend on the documents carrying the CC BY 4.0 / CC0 grant
-> (`LICENSE-DOCS.md`) and the cipher carrying the covenant (`COVENANT.md`). Both
-> should be present in this collection. If a copy you hold is missing them,
-> the canonical, licensed copies are at the identifiers in §4.
+> The freedoms above depend on the documents carrying the CC BY 4.0 grant
+> (`LICENSE-DOCS.md`), the code and test vectors carrying the Apache-2.0 license
+> (`LICENSE`), and the cipher carrying the covenant (`COVENANT.md`). These should
+> be present in this collection. If a copy you hold is missing them, the
+> canonical, licensed copies are at the identifiers in §4.
 
 ---
 
@@ -81,7 +83,7 @@ independent ways:
 
 **A. Run the code against the published test vectors.**
 The reference implementation ships with a self-check. Built and run, it should
-report **78 of 78 checks passing** against the published known-answer test
+report **84 of 84 checks passing** against the published known-answer test
 vectors included with it. If it does, the implementation you have is the genuine
 one, bit for bit. (The original build step was a script named `build.sh`, or
 compiling the reference C file and running its self-test. Any competent
@@ -107,11 +109,14 @@ failure could erase it. If you found only one copy, others should exist at the
 identifiers below. They also let you confirm you have an unaltered version.
 
 - **Origin site (may no longer exist):** enqpy.com
-- **Source-code archive (Software Heritage), permanent ID:** ⟨FILL: SWHID⟩
-- **Citable deposit with permanent DOI (Zenodo/OSF):** ⟨FILL: DOI⟩
-- **General archive (Internet Archive) item:** ⟨FILL: archive.org URL⟩
-- **Code repository / mirrors:** github.com/nqp-llc/enqpy ⟨FILL: + GitLab/Codeberg mirrors⟩
-- **Content hashes of the canonical files:** ⟨FILL: SHA-256 of the proof PDF, the FCD, and the reference source⟩
+- **Source-code archive (Software Heritage), permanent ID:** `swh:1:dir:353ffa73a2becabf1edc137e81f8992d0ae67339`
+- **Citable deposit with permanent DOI (Zenodo):** 10.5281/zenodo.20517938 (DOI: https://doi.org/10.5281/zenodo.20517938 · record: https://zenodo.org/records/20517938)
+- **General archive (Internet Archive) item — "Enqpy Public Record Bundle v1.0" (launch-day bundle, 2026-06-01):** https://archive.org/details/httpswww.enqpy.com
+- **Code repository:** github.com/nqp-llc/enqpy
+- **Content hashes of the canonical files (SHA-256):**
+  - FCD (`FCD.md`): `fa38e48021a95ed4a0e04f572834105c242ad219f3f2042ee8e62ff6ffdc55c9`
+  - Reference source (`enqpy_reference.c`): `a4564872015d4f026a95df7d5a337cbb49a66b26168b273b0f5c5cb4ff862d4b`
+  - Proof paper PDF (`enqpy_full_Rev3_0.pdf`): `48f661f93c535346c2ec5825bdf17da5c9032904153b55e624c6119e4c837683`
 
 **Historical record (for context, not required for verification):**
 The proof closed in March 2026 and was released publicly on **June 1, 2026**, by

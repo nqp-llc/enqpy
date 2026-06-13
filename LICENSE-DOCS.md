@@ -1,8 +1,8 @@
 # Enqpy™ Documentation & Specification License
 
-This file licenses the **written and data artifacts** of the Enqpy™ project — the
-formal proof, the Formal Cryptographic Description (FCD), the published test
-vectors, and the plain-language guides. It exists because these documents are the
+This file licenses the **written artifacts** of the Enqpy™ project — the
+formal proof, the Formal Cryptographic Description (FCD), and the
+plain-language guides. It exists because these documents are the
 public scientific record and the blueprint for rebuilding the cipher, and they
 must be freely copyable and re-hostable so the work survives independent of any
 single host, company, or person.
@@ -12,8 +12,8 @@ It is **separate** from, and does not modify, the project's other two instrument
 - **Patents → `COVENANT.md`** (the Open-Infrastructure Patent Non-Assertion
   Covenant), which frees the cipher *invention* for anyone to implement and
   deploy.
-- **Reference source code → `LICENSE`** (the NQP LLC Public License for Enqpy™,
-  Rev 2.0), an evaluation license governing NQP's reference *source code*.
+- **Reference source code → `LICENSE`** (the Apache License, Version 2.0), the
+  open-source license governing NQP's reference *source code*.
 
 > Not legal advice. This is a license grant prepared by the rights holder; have
 > counsel confirm scope before relying on it commercially. NQP LLC is the
@@ -23,15 +23,15 @@ It is **separate** from, and does not modify, the project's other two instrument
 
 ## 1. Covered works
 
-The following written and data artifacts of the Enqpy™ project (the "Documents"):
+The following written artifacts of the Enqpy™ project (the "Documents"):
 
-- The formal proof paper — ⟨FILL: confirm path, e.g., `papers/enqpy-paper.pdf` and its LaTeX source⟩
-- The Formal Cryptographic Description (FCD) — ⟨FILL: confirm path/filename⟩
-- The plain-language proof guide and other explanatory documents — ⟨FILL: e.g., `papers/enqpy-plain-language-guide.pdf`⟩
-- The published known-answer **test vectors / data** — ⟨FILL: confirm path⟩
+- The formal proof paper — *Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System for a Finite-Key Cipher* (Rev 3.0), and its LaTeX source. Canonical link: https://enqpy.com/technical.html
+- The Formal Cryptographic Description (FCD) — `FCD.md`
+- The plain-language proof guide and any other explanatory documents
 
-This license does **not** cover the reference *source code* (see `LICENSE`), the
-patents (see `COVENANT.md`), or the trademarks (reserved; see §4).
+This license does **not** cover the reference *source code* or the published
+test vectors (both under `LICENSE`, the Apache License 2.0), the patents (see
+`COVENANT.md`), or the trademarks (reserved; see §3).
 
 ---
 
@@ -55,50 +55,35 @@ copied verbatim from https://creativecommons.org/licenses/by/4.0/legalcode
 
 ---
 
-## 3. Grant — test vectors / known-answer data: CC0 1.0 (public domain)
-
-The published test vectors and known-answer data are dedicated to the public
-domain under **CC0 1.0 Universal**, so any implementation may bundle and
-redistribute them for conformance testing with no attribution friction.
-
-> `SPDX-License-Identifier: CC0-1.0`
-
-Official text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
-(include as `LICENSE-CC0-1.0.txt`).
-
-*(Alternative, if you prefer attribution on the vectors too: license them CC BY
-4.0 under §2 instead. CC0 is recommended for data so conformance suites can embed
-them freely.)*
-
----
-
-## 4. What this license does NOT cover
+## 3. What this license does NOT cover
 
 - **The cipher invention / patents** — governed by `COVENANT.md`. (You may always
   implement and deploy the cipher, at any scale including commercially, free,
-  under the covenant — and the CC-licensed FCD and vectors above are how you do
-  it.)
-- **NQP's reference source code** — governed by `LICENSE` (NQP LLC Public License,
-  Rev 2.0). You may clone, build, run, and study it; redistribution of that
-  specific source is restricted there.
-- **The trademarks** — Enqpy™, EnqpyADS™, Enqpy™-Certified, and Security,
-  Settled.™ are reserved to the Enqpy™ Foundation Inc.; nothing here licenses
-  them. Refer to the marks factually; do not imply endorsement or certification.
+  under the covenant — and the CC-licensed FCD and the published test vectors are
+  how you do it.)
+- **NQP's reference source code and the published test vectors** — governed by
+  `LICENSE` (the Apache License, Version 2.0). You may use, copy, modify, and
+  redistribute them under the Apache-2.0 terms, including commercially; the
+  vectors may be embedded in conformance suites, keeping the notice.
+- **The trademarks** — Enqpy™ and Enqpy™-Certified are reserved to the Enqpy™
+  Foundation Inc.; nothing here licenses them. Refer to the marks factually; do
+  not imply endorsement or certification.
 
 ---
 
-## 5. Why these documents are freed
+## 4. Why these documents are freed
 
-The proof lets anyone *verify* the result; the FCD and the test vectors let anyone
-*rebuild a conforming, patent-safe implementation from scratch*. Freeing them
-under CC ensures the cipher can be reconstructed and the science re-hosted by
-anyone, forever — even if this repository, NQP LLC, and the Foundation all cease
-to exist. It does not touch the reference-code license or the commercial model,
+The proof lets anyone *verify* the result; the FCD lets anyone *rebuild a
+conforming, patent-safe implementation from scratch*, with the test vectors (under
+the Apache-2.0 `LICENSE`) as the conformance data. Freeing the proof, FCD, and
+guides under CC ensures the science can be re-hosted and the cipher reconstructed
+by anyone, forever — even if this repository, NQP LLC, and the Foundation all
+cease to exist. It does not touch the reference-code license or the commercial model,
 which rest on certification, proprietary high-performance implementations, and
 services — not on locking up the public specification.
 
 ---
 
-*© 2026 NQP LLC. The proof, FCD, and guides are licensed CC BY 4.0; the test
-vectors are dedicated to the public domain under CC0. Read together with
-`COVENANT.md` (patents) and `LICENSE` (reference code).*
+*© 2026 NQP LLC. The proof, FCD, and guides are licensed CC BY 4.0; the reference
+source code and test vectors are under the Apache License 2.0 (see `LICENSE`).
+Read together with `COVENANT.md` (patents).*
