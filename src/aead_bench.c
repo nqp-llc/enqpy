@@ -341,15 +341,15 @@ int main(void){
     timed=1;for(int pass=0;pass<20;pass++){for(int a=0;a<NALG;a++)RUN(a);}          /* timed */
 
     printf("\nLevel playing field: %zu-byte message, portable scalar C (-O3 -march=native), no hardware crypto.\n",L);
-    printf("Best-of-20, round-robin, 10 warmup passes.  This machine: Xeon @ 2.80GHz, single core.\n\n");
-    printf("%-32s  %-10s  %-10s  %-14s  %s\n","algorithm (auth included)","best MB/s","avg MB/s","ns/call best","vs Enqpy");
+    printf("Best-of-20, round-robin, 10 warmup passes.  Absolute MB/s vary by core and load; the within-run ratio is the claim.\n\n");
+    printf("%-32s  %-10s  %-10s  %s\n","algorithm (auth included)","best MB/s","avg MB/s","vs Enqpy");
     double enqpy_best_mbps=(double)L/best[ENQPY]*1e3;
     for(int a=0;a<NALG;a++){
         double bm=(double)L/best[a]*1e3,am=(double)L/(sum[a]/20.0)*1e3;
         char rel[32];if(a==ENQPY)snprintf(rel,sizeof rel,"-");else snprintf(rel,sizeof rel,"%.2fx slower",enqpy_best_mbps/bm);
-        printf("%-32s  %-10.1f  %-10.1f  %-14.0f  %s\n",names[a],bm,am,best[a]/20.0/20.0+best[a],rel); /* ns/call best */
+        printf("%-32s  %-10.1f  %-10.1f  %s\n",names[a],bm,am,rel);
     }
-    /* corrected ns/call print */
+    /* ns/call best (precise) */
     printf("\n(ns/call best, precise)\n");for(int a=0;a<NALG;a++)printf("  %-32s %.0f ns\n",names[a],best[a]);
     free(pt);free(ct);free(sin);free(sout);(void)g_sink;
     return 0;
