@@ -3,7 +3,8 @@
 /* Apples-to-apples authenticated-encryption benchmark, portable scalar C.
  * Part of the Enqpy(TM) reference repository; licensed under the Apache
  * License, Version 2.0 -- see the LICENSE and NOTICE files.
- * Matches the Rev 3.0 report methodology: 59,189-byte message, 10 warmup
+ * Matches the Performance Benchmark Report (Public Summary) methodology:
+ * 59,189-byte message, 10 warmup
  * round-robin passes, 20 timed round-robin iterations, best-of-20 + average,
  * clock_gettime around the cipher call only. Every primitive is verified
  * against its official test vector BEFORE timing; if any KAT fails we abort.
@@ -290,8 +291,9 @@ static int kat_aes256_gcm(void){ /* NIST: K=0^256, IV=0^96, PT=0^128 -> CT=cea7.
     return hexeq(ct,"cea7403d4d606b6e074ec5d3baf39d18")&&hexeq(tag,"d0d1c8a799996bf0265b98b5d48ab919");
 }
 
-/* Enqpy primitive KAT: EK/QK/ORN are the official Rev 3.0 test-vector keys;
-   encrypting 8 zero bytes at or_ctr=1 yields the canonical W[0..7]. */
+/* Enqpy primitive KAT: EK/QK/ORN are the official Enqpy test-vector keys
+   (unchanged from Rev 3.0); encrypting 8 zero bytes at or_ctr=1 yields the
+   canonical W[0..7]. */
 static int kat_enqpy(void){
     uint8_t zero[8]={0},out[8];
     PDAF_SEC(EK,QK,ORN,1ULL,64,zero,8,out);

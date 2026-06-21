@@ -2,19 +2,33 @@
 /* Copyright 2026 NQP LLC (Paul McGough) */
 #define _POSIX_C_SOURCE 200809L
 /* =============================================================================
- * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 3.0
+ * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 4.0
  * Copyright (c) 2026 NQP LLC (Paul McGough).
  *
  * WHAT THIS FILE IS
  * -----------------
- * This is the canonical software reference for the Enqpy(tm) cipher --
- * the proof-complete profile on which the Rev 3.0 formal results are proved
- * CLOSED on both axes:
+ * This is the canonical software reference for the Enqpy(tm) cipher CORE --
+ * the profile for which the Rev 4.0 formal results are proved in the
+ * CIPHERTEXT-ONLY, single-key-epoch model:
  *
- *   Key axis:     H(EK, QK | T^inf) = log2(4) = 2 bits exactly (Theorem 2).
+ *   Key axis:     H(EK, QK | T^inf) = log2(4) = 2 bits exactly in the
+ *                 ciphertext-only view (Theorem 2).
  *   Message axis: |S(CT,OR)| >= 2^128 for HIGH (n=64), with the posterior
  *                 UNIFORM over the FULL consistent set, so
- *                 H(PT|CT,OR) = Hinf(PT|CT,OR) >= 128 bits (Theorem 3, CLOSED).
+ *                 H(PT|CT,OR) = Hinf(PT|CT,OR) >= 128 bits (Theorem 3),
+ *                 under ciphertext-only observation.
+ *
+ * KNOWN-PLAINTEXT BOUNDARY and DEPLOYMENT (Rev 4.0):
+ *   The results above are CIPHERTEXT-ONLY and per-key-epoch. Under known
+ *   plaintext at the Enqpy layer with one continuing key state, exposure
+ *   accumulates: ~2 fully-known 2,048-byte windows under distinct nonces
+ *   transfer across fresh nonces (cross-OR decryption). See FCD Rev 4.0
+ *   8.5 / proof 16. The deployable profile is Enqpy-HKU: the core run under
+ *   fresh external-entropy key-epoch rotation (the NIL-Comm Method 2 primitive
+ *   below) with encrypt-then-MAC, rotating before a second fully-known window
+ *   (FCD 8.10 / proof 17). This file implements the CORE and the Method 2
+ *   rotation primitive; full HKU epoch-management and its KATs are a separate
+ *   Rev 4.0 code update.
  *
  * Enqpy is the Canonical Configuration: nonce-only OffsetKey derivation
  * (Key Role Separation), Case-1 W generation, a normative 2,048-byte (HIGH)
@@ -22,7 +36,7 @@
  * exactly what makes the (EK,QK) -> W map a Z16-module homomorphism, which is
  * what closes the message-axis min-entropy theorem (Theorem 3).
  *
- * CONSTRUCTION (FCD Rev 3.0)
+ * CONSTRUCTION (FCD Rev 4.0)
  * --------------------------
  * Phase 1 (OR_EXP/eff_or), Phase 2 (nonce-only VKP/OKP; VKC/OKC), the PDAF
  * primitive, and the NIL-Comm primitives derive the per-session keys:
@@ -34,8 +48,10 @@
  *   - Phase 5 performs the synchronized key update.
  *   - Credential rotation (NIL-Comm) REQUIRES Method 2 (external entropy);
  *     Method 1 is prohibited (R6), because its deterministic chain collapses
- *     the equivocation coset 4->1 (see FCD Rev 3.0 7.4 / proof Lemma B4 +
- *     Remark). The OWC/Mode-0 primitives are retained; only the policy gate
+ *     the equivocation coset 4->1 and is simulable, so it does not reset the
+ *     known-plaintext accumulation of FCD Rev 4.0 8.5 (see FCD 7.4; the
+ *     formal sufficiency of the Method 2 reset is the fresh-HKU reset lemma,
+ *     proof 17). The OWC/Mode-0 primitives are retained; only the policy gate
  *     applies.
  *
  * The PUBLIC API (PDAF, PDAF_SEC, ENQPY_NIL_COMM_UPDATE, OWC, enqpy_init) is
@@ -86,7 +102,7 @@
  *   MED   n=48 nibbles (192-bit)
  *   HIGH  n=64 nibbles (256-bit)  -- default; the canonical proof profile.
  *
- * OFFICIAL TEST VECTORS (Rev 3.0 -- Enqpy)
+ * OFFICIAL TEST VECTORS (Rev 4.0 -- Enqpy core; unchanged from Rev 3.0)
  * ---------------------------------------------
  *   PDAF primitive (n=10, 30-nibble output):
  *     VK = FB382C001A   OK = CC69100AB4
@@ -377,13 +393,16 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
 /* ============================================================================
  * SECTION 7 -- NIL-COMMUNICATION KEY UPDATE
  *
- * ENQPY POLICY (Rev 3.0, R6 / proof Lemma B4 + Remark):
+ * ENQPY POLICY (Rev 4.0, R6 / FCD 8.5 boundary, proof 17):
  *   Method 2 (external entropy) is REQUIRED for Enqpy credential
  *   rotation. Method 1 (deterministic chain) is PROHIBITED here because it
- *   collapses the four-element equivocation coset to a single new pair, so the
- *   post-rotation current-epoch key is determined in the T^inf known-plaintext
- *   limit. Method 2's external entropy re-injects key uncertainty at each
- *   rotation. This reference enforces the policy by rejecting method != 2.
+ *   collapses the four-element equivocation coset to a single new pair and is
+ *   simulable, so it does not reset the known-plaintext accumulation: in the
+ *   known-plaintext limit the post-rotation current-epoch key is determined.
+ *   Method 2's external entropy re-injects key uncertainty at each rotation
+ *   and is the Enqpy-HKU reset primitive (its formal sufficiency against the
+ *   coset/linearity structure is the fresh-HKU reset lemma, proof 17).
+ *   This reference enforces the policy by rejecting method != 2.
  *   The OWC + Mode-0 seed derivation is part of the Nil-Communication path.
  * ============================================================================ */
 
@@ -693,8 +712,8 @@ static void bench_pdaf_sec(void)
 
 int main(void)
 {
-    printf("Enqpy(tm) Stream Cipher -- Reference  Rev 3.0\n");
-    printf("Canonical Configuration, Case-1 W generation (proof-complete profile)\n");
+    printf("Enqpy(tm) Stream Cipher -- Reference  Rev 4.0\n");
+    printf("Canonical Configuration core, Case-1 W generation (ciphertext-only proof profile)\n");
     printf("Copyright (c) 2026 NQP LLC -- Apache License 2.0\n");
     printf("Platform: n=%d, tile_len=%d, W_bytes=%d (window)\n\n",
            ENQPY_MAX_N, ENQPY_TILE_LEN, ENQPY_W_BYTES);
