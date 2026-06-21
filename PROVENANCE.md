@@ -16,12 +16,16 @@ Please do. That is the entire purpose of this file.
 
 Most secret-writing methods are only *hard* to break: given enough time, enough
 intercepted messages, or a powerful enough future machine, the secret can come
-out. Enqpy is different. It was given a formal mathematical **proof** that the
-information needed to read a message is **not present in the scrambled output at
-all** — so no amount of time, data, or computing power (including quantum
-computers) can recover it. This is a property the mathematician Claude Shannon
+out. Enqpy is different in a specific, proved way. It was given a formal
+mathematical **proof** that, **from the scrambled output alone**, the
+information needed to read a message is **not present** — so no amount of time,
+data, or computing power (including quantum computers) can recover it *from the
+ciphertext by itself*. This is the property the mathematician Claude Shannon
 defined in 1949 and believed could not be achieved with a practical, reusable
-key. It was achieved, and proved, in 2026.
+key; the ciphertext-only form of it was achieved, and proved, in 2026. It is a
+result about the scrambled output on its own — using it safely still depends on
+the key-management discipline described in §5 (rotating the key with fresh
+outside randomness, and adding a separate tamper-check).
 
 The collection should contain three things. If you have all three, you have the
 whole work:
@@ -113,10 +117,12 @@ identifiers below. They also let you confirm you have an unaltered version.
 - **Citable deposit with permanent DOI (Zenodo):** 10.5281/zenodo.20517938 (DOI: https://doi.org/10.5281/zenodo.20517938 · record: https://zenodo.org/records/20517938)
 - **General archive (Internet Archive) item — "Enqpy Public Record Bundle v1.0" (launch-day bundle, 2026-06-01):** https://archive.org/details/httpswww.enqpy.com
 - **Code repository:** github.com/nqp-llc/enqpy
-- **Content hashes of the canonical files (SHA-256):**
-  - FCD (`FCD.md`): `fa38e48021a95ed4a0e04f572834105c242ad219f3f2042ee8e62ff6ffdc55c9`
-  - Reference source (`enqpy_reference.c`): `a4564872015d4f026a95df7d5a337cbb49a66b26168b273b0f5c5cb4ff862d4b`
-  - Proof paper PDF (`enqpy_full_Rev3_0.pdf`): `38caf654494176cf9f508852782df81b7ec7e2019211fa9ee12b9d7b2c95cae0`
+- **Content hashes of the canonical files (SHA-256):** *(Rev 4.0 — REGENERATE
+  all three from the final published Rev 4.0 files before depositing; the values
+  below are pre-Rev-4.0 and no longer match.)*
+  - FCD (`FCD.md`): `⟨REGENERATE for Rev 4.0⟩` (was: `fa38e48021a95ed4a0e04f572834105c242ad219f3f2042ee8e62ff6ffdc55c9`)
+  - Reference source (`enqpy_reference.c`): `⟨REGENERATE for Rev 4.0⟩` (was: `a4564872015d4f026a95df7d5a337cbb49a66b26168b273b0f5c5cb4ff862d4b`)
+  - Proof paper PDF (`enqpy_full_Rev4_0.pdf`): `⟨REGENERATE for Rev 4.0⟩` (was, for `enqpy_full_Rev3_0.pdf`: `38caf654494176cf9f508852782df81b7ec7e2019211fa9ee12b9d7b2c95cae0`)
 
 **Historical record (for context, not required for verification):**
 The proof closed in March 2026 and was released publicly on **June 1, 2026**, by
@@ -139,6 +145,14 @@ Honesty was part of the design, and it should outlive everything else here.
   **not**, by itself, guarantee a message hasn't been *altered*. In real use it
   is paired with a separate "authentication" step for that. A copy without that
   step still keeps secrets; it just doesn't detect tampering on its own.
+- The proved "information isn't there" property is about the **scrambled output
+  on its own**. If an attacker also learns some of the *original* text that went
+  with intercepted outputs, and the **same key keeps being reused**, that
+  knowledge can build up and eventually unlock other messages under that key.
+  The intended discipline prevents this: rotate the key with fresh outside
+  randomness (the cipher's "external-entropy" key update) before that build-up
+  can happen. The proof and the FCD state the exact threshold and the rotation
+  rule.
 - It is **not** magic and **not** "unbreakable" as a slogan. It is a specific,
   proved mathematical property, achieved under a specified discipline for how the
   key and inputs are managed. Read the proof and the FCD for the exact conditions.

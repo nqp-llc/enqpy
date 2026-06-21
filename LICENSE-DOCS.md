@@ -25,7 +25,7 @@ It is **separate** from, and does not modify, the project's other two instrument
 
 The following written artifacts of the Enqpy™ project (the "Documents"):
 
-- The formal proof paper — *Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System for a Finite-Key Cipher* (Rev 3.0), and its LaTeX source. Canonical link: https://enqpy.com/technical.html
+- The formal proof paper — *Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation and a Fresh-Key-Epoch Deployment Profile* (Rev 4.0), and its LaTeX source. Canonical link: https://enqpy.com/technical.html
 - The Formal Cryptographic Description (FCD) — `FCD.md`
 - The plain-language proof guide and any other explanatory documents
 
@@ -46,8 +46,8 @@ You may **copy, redistribute, mirror, translate, adapt, excerpt, and archive**
 these Documents in any medium or format, for any purpose, including commercially,
 **forever** — provided you keep the attribution notice:
 
-> *Enqpy™ — the Shannon Ideal System proof and Formal Cryptographic Description.
-> © 2026 Paul McGough / NQP LLC. Licensed CC BY 4.0. Origin: enqpy.com.*
+> *Enqpy™ — the ciphertext-only equivocation proof and Formal Cryptographic
+> Description. © 2026 Paul McGough / NQP LLC. Licensed CC BY 4.0. Origin: enqpy.com.*
 
 Include the official license text in the repository as `LICENSE-CC-BY-4.0.txt`,
 copied verbatim from https://creativecommons.org/licenses/by/4.0/legalcode

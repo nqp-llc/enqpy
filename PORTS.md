@@ -8,7 +8,7 @@ The higher levels are separate: **Conformant Implementation** is Foundation-revi
 
 | Project name | Language / Runtime | Author / Maintainer | Repository | Profiles | Vectors version | Level | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Enqpy C reference | C | NQP LLC | github.com/nqp-llc/enqpy | LOW / MED / HIGH | 3.0 | reference | ✅ |
+| Enqpy C reference | C | NQP LLC | github.com/nqp-llc/enqpy | LOW / MED / HIGH | 4.0 | reference | ✅ |
 | — | — | — | — | — | — | — | — |
 
 *No community ports yet — yours could be the first. See [`PORTING.md`](PORTING.md).*

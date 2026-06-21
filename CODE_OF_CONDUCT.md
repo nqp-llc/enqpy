@@ -11,7 +11,8 @@ Effective: June 1, 2026
 The Enqpy™ GitHub repository hosts the reference implementation of the
 Enqpy™ stream cipher, supporting documentation, test vectors, and related
 materials. The reference implementation accompanies the formal proof paper
-that establishes the cipher's Shannon Ideal System property. The
+that establishes the cipher's non-vanishing ciphertext-only key-equivocation
+property (motivated by Shannon's Ideal-System target). The
 implementation is the canonical, authoritative realization of the proved
 algorithm.
 

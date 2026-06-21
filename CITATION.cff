@@ -14,15 +14,15 @@ type: software
 title: "Enqpy™ Stream Cipher — Reference Implementation"
 abstract: >
   The canonical software reference implementation of the Enqpy™ stream
-  cipher — the first finite-key stream cipher formally proved to
-  satisfy Shannon's Ideal System criterion. Released alongside the
-  formal proof paper.
+  cipher — a finite-key stream cipher with a formal proof of a non-vanishing
+  ciphertext-only, single-key-epoch key equivocation, motivated by Shannon's
+  Ideal-System target. Released alongside the formal proof paper.
 authors:
   - family-names: McGough
     given-names: Paul
     affiliation: "NQP LLC"
     email: "RPM@enqpy.com"
-version: "Rev 3.0"
+version: "Rev 4.0"
 date-released: "2026-06-01"
 license: Apache-2.0
 url: "https://enqpy.com"
@@ -31,18 +31,17 @@ license-url: "https://github.com/nqp-llc/enqpy/blob/main/LICENSE"
 keywords:
   - cryptography
   - stream cipher
-  - Shannon Ideal System
+  - ciphertext-only equivocation
   - information-theoretic security
   - finite-key cipher
-  - post-quantum
-  - quantum-invariant
-  - absolute secrecy
+  - key equivocation
+  - Shannon Ideal-System target
   - Enqpy
 preferred-citation:
   type: report
   title: >-
-    Enqpy™ Stream Cipher: Constructive Proof of Shannon's Ideal System
-    for a Finite-Key Cipher
+    Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation
+    and a Fresh-Key-Epoch Deployment Profile
   authors:
     - family-names: McGough
       given-names: Paul
@@ -53,7 +52,7 @@ preferred-citation:
     address: "Commonwealth of Virginia, United States"
   year: 2026
   month: 6
-  number: "Rev 3.0"
+  number: "Rev 4.0"
   url: "https://enqpy.com/technical.html"
   notes: >
     Canonical citation and current paper link:

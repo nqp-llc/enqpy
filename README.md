@@ -2,13 +2,14 @@
 
 [![build](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml/badge.svg)](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml)
 
-> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher formally proved
-> to satisfy Shannon's Ideal System criterion. This repository is the canonical
+> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher with a formal
+> proof of a non-vanishing ciphertext-only, single-key-epoch key equivocation,
+> motivated by Shannon's Ideal-System target. This repository is the canonical
 > software reference implementation, released alongside the formal proof paper.
 
-**Paper:** *Enqpy™ Stream Cipher: Constructive Proof of Shannon's
-Ideal System for a Finite-Key Cipher.* The canonical citation and the current
-paper link are maintained on the website — see
+**Paper:** *Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation
+and a Fresh-Key-Epoch Deployment Profile (Rev 4.0).* The canonical citation and
+the current paper link are maintained on the website — see
 [enqpy.com/technical.html](https://enqpy.com/technical.html).
 
 **Project site:** [enqpy.com](https://enqpy.com)
@@ -24,11 +25,14 @@ This repository ships a single canonical C reference implementation,
 **`src/enqpy_reference.c`** — Enqpy in its **Canonical Configuration**
 (nonce-only OffsetKey derivation / Key Role Separation, Case-1 `W` generation,
 a normative 2,048-byte HIGH window, and synchronized key update). It is the
-profile on which the Rev 3.0 results are proved **closed on both axes** — key
-axis H(EK,QK | T^∞) = log₂(4) = 2 bits exactly (Theorem 2) and message axis
-H(PT | CT,OR) = H∞ ≥ 128 bits with a uniform posterior (Theorem 3). Generating
-`W` by Case 1 is exactly what makes the (EK,QK) → W map a ℤ₁₆-module
-homomorphism, which closes the message-axis min-entropy theorem.
+profile for which the Rev 4.0 results are proved in the **ciphertext-only,
+single-key-epoch** model — key axis H(EK,QK | T^∞) = log₂(4) = 2 bits exactly
+in the ciphertext-only view (Theorem 2) and message axis H(PT | CT,OR) = H∞ ≥
+128 bits with a uniform posterior under ciphertext-only observation (Theorem 3).
+Generating `W` by Case 1 is exactly what makes the (EK,QK) → W map a ℤ₁₆-module
+homomorphism, which closes the message-axis min-entropy theorem. Under known
+plaintext the boundary of FCD §8.5 applies, addressed in deployment by
+Enqpy-HKU (FCD §8.10); see "Paper" below.
 
 | File | Phase 3 `W` generation | Window (HIGH) | Self-test |
 |---|---|---|---|
@@ -55,8 +59,8 @@ cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK \
 Expected output begins with:
 
 ```
-Enqpy(tm) Stream Cipher -- Reference  Rev 3.0
-Canonical Configuration, Case-1 W generation (proof-complete profile)
+Enqpy(tm) Stream Cipher -- Reference  Rev 4.0
+Canonical Configuration core, Case-1 W generation (ciphertext-only proof profile)
 Copyright (c) 2026 NQP LLC -- Apache License 2.0
 Platform: n=64, tile_len=144, W_bytes=2048 (window)
 
@@ -142,15 +146,16 @@ This repository contains:
 - **`src/enqpy_reference.c`** — the C11 reference for Enqpy (Case-1 `W`
   generation, the Canonical Configuration). Single file, no external
   dependencies, portable from 8-bit microcontrollers to 64-bit servers. The
-  canonical reference for the proved Rev 3.0 results.
+  canonical reference for the proved Rev 4.0 ciphertext-only results.
 - **[`FCD.md`](./FCD.md)** — the Formal Cryptographic Description: the
   prose-and-mathematics specification of the cipher (OWC, PDAF, PDAF_SEC, the
   five phases, key management, security analysis, and the §13 test vectors the
   self-tests check against). The authoritative statement of *what* the cipher
   does; the C reference shows *how* one implementation does it.
 - **84 embedded self-test assertions** covering PDAF Mode 0/1, PDAF_SEC output
-  and round-trip, the `[+8]` coset invariants that drive the Shannon Ideal
-  System result, and the window-boundary and NIL key-update vectors.
+  and round-trip, the `[+8]` coset invariants that drive the ciphertext-only
+  2-bit key-equivocation result, and the window-boundary and NIL key-update
+  vectors.
 - **Built-in benchmark harness** reproducing the performance numbers reported
   in the paper.
 - **`src/aead_bench.c`** — a separate cross-cipher AEAD benchmark
@@ -160,12 +165,13 @@ This repository contains:
 
 ## What this is *not*
 
-- **Not production-ready** without the additional operational mechanisms
-  described in §16 of the paper: integrity (a MAC over ciphertext and
-  `eff_or`), nonce uniqueness infrastructure, secure key storage, constant-time
-  implementation of the MOD16 table lookups, and secure erase of key
-  material after use. See the implementation comments in `src/enqpy_reference.c`
-  for specifics.
+- **Not production-ready** without the additional operational mechanisms of
+  the Rev 4.0 deployment profile (Enqpy-HKU, FCD §8.10 / paper §17): fresh
+  external-entropy key-epoch rotation before the known-plaintext boundary of
+  FCD §8.5 / paper §16, encrypt-then-MAC over `eff_or` ‖ ciphertext ‖ metadata,
+  plus nonce-uniqueness infrastructure, secure key storage, constant-time
+  MOD16 table lookups, and secure erase of key material after use. See the
+  implementation comments in `src/enqpy_reference.c` for specifics.
 
 ---
 
@@ -207,10 +213,11 @@ The reference supports three mandatory key-length profiles per the FCD:
 | MEDIUM | 48 nibbles (192 bits) | 2,304 nibbles | Enterprise |
 | **HIGH** | **64 nibbles (256 bits)** | **4,096 nibbles** | **Government, defense (default)** |
 
-The paper's numerical bounds are all stated for the HIGH profile (n=64):
-plaintext equivocation H(PT | CT, OR) ≥ 128 bits (uniform posterior over
-≥ 2^128 consistent plaintexts; closed), key equivocation = 2 bits
-exact under the Canonical Configuration.
+The paper's numerical bounds are all stated for the HIGH profile (n=64), under
+ciphertext-only observation: plaintext equivocation H(PT | CT, OR) ≥ 128 bits
+(uniform posterior over ≥ 2^128 consistent plaintexts; closed), key equivocation
+= 2 bits exact under the Canonical Configuration. The known-plaintext boundary
+(FCD §8.5) and the Enqpy-HKU deployment profile (FCD §8.10) are separate.
 
 ---
 
@@ -310,22 +317,29 @@ levels.
 
 See [enqpy.com/technical.html](https://enqpy.com/technical.html) for the
 canonical citation and the current paper link.
-The paper establishes, unconditionally and with no computational hardness
-assumption, that Enqpy™ is the first finite-key cipher formally proved to
-satisfy Shannon's Ideal System definition.
+The paper establishes, with no computational-hardness assumption, a non-vanishing
+**ciphertext-only**, single-key-epoch key equivocation for Enqpy™ in its
+Canonical Configuration, motivated by Shannon's Ideal-System target; it then
+states the known-plaintext boundary and a deployment profile that addresses it.
 
 Principal results:
 
-- **Theorem 1 (§5)** — PDAF Mode 1 inversion lower bound: |P(O*)| ≥ 16ⁿ.
-- **Theorem 2 (§6)** — Shannon Ideal System property:
-  H(EK, QK | T^∞) = log₂(4) = 2 bits exact for the Canonical Configuration;
-  T_{>t} ⊥ (EK, QK) | T_{≤t}.
-- **Corollary 2 (§7)** — All bounds invariant under quantum computation
-  (no computational hardness assumption invoked in the proof).
-- **Theorem 3 (§12)** — Enqpy plaintext equivocation (closed):
-  H(PT | CT, OR) = H∞ ≥ 128 bits for HIGH profile, with the posterior uniform
-  over the full consistent set; at least 2^128 consistent plaintexts for any
-  ciphertext.
+- **Theorem 1** — PDAF Mode 1 preimage lower bound: |P(O*)| ≥ 2 (worst case) /
+  ≥ 16 (non-degenerate) per compatible OffsetKey.
+- **Theorem 2** — Non-vanishing ciphertext-only key equivocation:
+  H(EK, QK | T^∞) = log₂(4) = 2 bits exact for the Canonical Configuration in
+  the ciphertext-only view; T_{>t} ⊥ (EK, QK) | T_{≤t}.
+- **Theorem 3** — Ciphertext-only plaintext equivocation (closed):
+  H(PT | CT, OR) = H∞ ≥ 128 bits for HIGH profile, posterior uniform over the
+  full consistent set; at least 2^128 consistent plaintexts for any ciphertext.
+- **Known-plaintext boundary (§16)** — under one continuing key state, ~2
+  fully-known 2,048-byte windows transfer across fresh nonces (cross-OR
+  decryption); only external-entropy key-epoch rotation resets it.
+- **Theorem 4 (§17)** — Enqpy-HKU known-plaintext non-accumulation across key
+  epochs, conditional on the fresh-HKU reset lemma (a stated open obligation).
+- **Corollary 2** — Quantum-era posture: the ciphertext-only bounds rest on no
+  computational-hardness assumption and, within the ciphertext-only model, are
+  not eroded by quantum computation.
 
 A companion technical note, [*Adversarial Outcome Equivalence — proved under
 the DSMV*](https://enqpy.com/papers/enqpy-dsmv.pdf), proves that Enqpy™ and
@@ -385,11 +399,12 @@ citation export. BibTeX form:
 ```bibtex
 @techreport{mcgough2026enqpy,
   author      = {Paul McGough},
-  title       = {{E}nqpy\texttrademark{} Stream Cipher: Constructive Proof of
-                 Shannon's Ideal System for a Finite-Key Cipher},
+  title       = {{E}nqpy\texttrademark{} Core and Enqpy-HKU: Finite-Key
+                 Ciphertext-Only Equivocation and a Fresh-Key-Epoch
+                 Deployment Profile},
   institution = {NQP LLC},
   year        = {2026},
-  number      = {Rev 3.0},
+  number      = {Rev 4.0},
   note        = {Canonical citation and paper link: https://enqpy.com/technical.html}
 }
 ```
@@ -400,7 +415,7 @@ citation export. BibTeX form:
 
 | Artifact | Status |
 |---|---|
-| C reference implementation | ✅ Rev 3.0 — Enqpy (Canonical Configuration, Case-1) |
+| C reference implementation | ✅ Rev 4.0 — Enqpy (Canonical Configuration core, Case-1) |
 | Formal Cryptographic Description | ✅ `FCD.md` |
 | Test vectors | ✅ 84/84 PASS |
 | Benchmark harness | ✅ Included |

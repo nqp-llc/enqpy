@@ -38,7 +38,10 @@ Enqpy(TM)-Compatible, and Enqpy(TM)-Certified designations.
 DEPLOYMENT NOTE
 Evaluation or use of a cryptographic reference implementation does not
 replace independent cryptanalytic review, formal verification, or
-deployment-specific security engineering. Production deployment requires
-the additional operational mechanisms specified in Section 16 of the
-paper (integrity, nonce uniqueness infrastructure, secure key storage,
-constant-time MOD16 table lookups, secure erase of key material).
+deployment-specific security engineering. The formal results are stated
+for the ciphertext-only, single-key-epoch model; under known plaintext the
+boundary of Section 16 of the paper applies. Production deployment therefore
+requires the Rev 4.0 Enqpy-HKU profile (Section 17 of the paper / FCD 8.10):
+fresh external-entropy key-epoch rotation before that boundary, encrypt-then-MAC
+authentication, nonce-uniqueness infrastructure, secure key storage,
+constant-time MOD16 table lookups, and secure erase of key material.
