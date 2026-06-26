@@ -124,11 +124,11 @@ C Reference releases.
 
 ## 1.5 The formal proof paper
 
-**The Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation
-and a Fresh-Key-Epoch Deployment Profile** (the "**Paper**") is the formal
+**Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Record Cipher, with Exact Known-Plaintext Bounds** (the "**Paper**") is the formal
 mathematical reference. The Paper establishes the non-vanishing ciphertext-only
-key-equivocation property (motivated by Shannon's Ideal-System target), states
-the known-plaintext boundary, and defines the Enqpy-HKU deployment profile; it
+plaintext-equivocation property (motivated by Shannon's Ideal-System target), the
+supporting key-axis floor, the known-plaintext boundary, and the
+independent-record-credential deployment profile; it
 is the foundation on which conformance is built but is not itself a test
 instrument. Implementations are not "conformant to the Paper" — they are
 conformant to the C Reference and FCD, which together implement what the Paper
@@ -305,7 +305,7 @@ at Rev 0.1:
 | Rule | Detail |
 |---|---|
 | **Source of truth** | `github.com/nqp-llc/enqpy` — the Test Vectors committed to the repository at the time of an implementation's claimed Reference-Compatibility |
-| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v4.0 corresponds to C Reference Rev 4.0; the canonical KATs are unchanged from Rev 3.0) |
+| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v5.0 ship with C Reference Rev 5.0; the canonical KATs are unchanged since Rev 3.0) |
 | **Backward compatibility** | New Test Vectors may be added; existing Test Vectors will not be changed except to correct demonstrated errors |
 | **Validation** | An implementation must pass the Test Vectors version current at the time of its claim |
 | **Extension** | Rev 1.0 will add Test Vector coverage for boundary conditions, error states, and cryptographic edge cases identified during the first months of community implementation work |

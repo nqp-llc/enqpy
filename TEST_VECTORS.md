@@ -1,6 +1,6 @@
 # Enqpy™ Canonical Test Vectors
 
-These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships a single canonical C reference, `enqpy_reference.c` (Enqpy, Case-1 `W` generation — `-DENQPY_SELFTEST` runs **84/84**). It is the conformance target for the Rev 4.0 ciphertext-only core claims; the canonical KATs are unchanged from Rev 3.0.
+These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships a single canonical C reference, `enqpy_reference.c` (Enqpy, Case-1 `W` generation — `-DENQPY_SELFTEST` runs **84/84**). It is the conformance target for the Rev 5.0 ciphertext-only core claims; the canonical KATs are unchanged since Rev 3.0.
 
 Passing these vectors is the *technical* bar. It puts a port at the **Reference-Compatible** level (self-attested) and is the prerequisite for the Foundation's higher levels — but it is not certification, and it does not by itself grant any right to the Enqpy™ marks. See "Conformance levels" below.
 

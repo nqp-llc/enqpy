@@ -25,7 +25,7 @@ It is **separate** from, and does not modify, the project's other two instrument
 
 The following written artifacts of the Enqpy™ project (the "Documents"):
 
-- The formal proof paper — *Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation and a Fresh-Key-Epoch Deployment Profile* (Rev 4.0), and its LaTeX source. Canonical link: https://enqpy.com/technical.html
+- The formal proof paper — *Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Record Cipher, with Exact Known-Plaintext Bounds* (Rev 5.0), and its LaTeX source. Canonical link: https://enqpy.com/technical.html
 - The Formal Cryptographic Description (FCD) — `FCD.md`
 - The plain-language proof guide and any other explanatory documents
 

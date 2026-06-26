@@ -15,14 +15,16 @@ title: "Enqpy™ Stream Cipher — Reference Implementation"
 abstract: >
   The canonical software reference implementation of the Enqpy™ stream
   cipher — a finite-key stream cipher with a formal proof of a non-vanishing
-  ciphertext-only, single-key-epoch key equivocation, motivated by Shannon's
-  Ideal-System target. Released alongside the formal proof paper.
+  ciphertext-only plaintext equivocation (at least 2^128 consistent plaintexts
+  per ciphertext at HIGH), supported by a ciphertext-only key-equivocation floor
+  of at least 2 bits, motivated by Shannon's Ideal-System target. Released
+  alongside the formal proof paper.
 authors:
   - family-names: McGough
     given-names: Paul
     affiliation: "NQP LLC"
     email: "RPM@enqpy.com"
-version: "Rev 4.0"
+version: "Rev 5.0"
 date-released: "2026-06-01"
 license: Apache-2.0
 url: "https://enqpy.com"
@@ -34,14 +36,16 @@ keywords:
   - ciphertext-only equivocation
   - information-theoretic security
   - finite-key cipher
+  - plaintext equivocation
   - key equivocation
+  - record cipher
+  - known-plaintext bounds
   - Shannon Ideal-System target
   - Enqpy
 preferred-citation:
   type: report
   title: >-
-    Enqpy™ Core and Enqpy-HKU: Finite-Key Ciphertext-Only Equivocation
-    and a Fresh-Key-Epoch Deployment Profile
+    Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Record Cipher, with Exact Known-Plaintext Bounds
   authors:
     - family-names: McGough
       given-names: Paul
@@ -52,7 +56,7 @@ preferred-citation:
     address: "Commonwealth of Virginia, United States"
   year: 2026
   month: 6
-  number: "Rev 4.0"
+  number: "Rev 5.0"
   url: "https://enqpy.com/technical.html"
   notes: >
     Canonical citation and current paper link:
