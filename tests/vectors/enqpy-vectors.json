@@ -1,9 +1,9 @@
 {
-  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 3.0 reference implementation (84/84 self-test PASS). Hex is UPPERCASE with no separators. Enqpy has no associated-data field. A port is Reference-Compatible (CONFORMANCE.md §2.1) when it reproduces every output below exactly.",
+  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 5.0 reference implementation (84/84 self-test PASS); KATs unchanged since Rev 3.0. Hex is UPPERCASE with no separators. Enqpy has no associated-data field. A port is Reference-Compatible (CONFORMANCE.md §2.1) when it reproduces every output below exactly.",
   "cipher": "Enqpy",
-  "vectors_version": "3.0",
-  "reference": "Enqpy reference implementation Rev 3.0 (Canonical Configuration); 84/84 self-test",
-  "spec": "FCD Rev 3.0 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
+  "vectors_version": "5.0",
+  "reference": "Enqpy reference implementation Rev 5.0 (Canonical Configuration); 84/84 self-test; KATs unchanged since Rev 3.0",
+  "spec": "FCD Rev 5.0 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
   "assertions": {
     "_comment": "Counts the 84 self-test assertions (PDAF + PDAF_SEC + window boundary + NIL key-update). The OWC vector below is a supplementary FCD §13.1 vector; OWC is not exercised by the self-test.",
     "total": 84,
@@ -51,7 +51,7 @@
     },
     {
       "group": "pdaf_mode1",
-      "description": "PDAF Mode 1 (Key Offset Add). The primary key-derivation primitive and the single cryptographic barrier protecting EK/QK. n=10, 30-nibble output.",
+      "description": "PDAF Mode 1 (Key Offset Add). The primary key-derivation primitive: a many-to-one MOD16 mixing map. Recovering session keys leaves >= 2 (worst case) / >= 16 (non-degenerate) candidate master keys per compatible OffsetKey, not a unique solution. n=10, 30-nibble output.",
       "tests": [
         {
           "id": "pdaf1-0001",
