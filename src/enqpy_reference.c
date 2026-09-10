@@ -2,36 +2,85 @@
 /* Copyright 2026 NQP LLC (Paul McGough) */
 #define _POSIX_C_SOURCE 200809L
 /* =============================================================================
- * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 5.0
+ * Enqpy(tm) Stream Cipher -- C Reference Implementation  Rev 5.1
  * Copyright (c) 2026 NQP LLC (Paul McGough).
  *
  * WHAT THIS FILE IS
  * -----------------
  * This is the canonical software reference for the Enqpy(tm) cipher CORE --
- * the profile for which the Rev 5.0 formal results are proved in the
+ * the profile for which the Rev 5.1 formal results are proved in the
  * CIPHERTEXT-ONLY, single-key-epoch model:
  *
- *   Message axis (PRIMARY): |S(CT,OR)| >= 2^128 for HIGH (n=64), with the
- *                 posterior UNIFORM over the FULL consistent set, so
- *                 H(PT|CT,OR) = Hinf(PT|CT,OR) >= 128 bits (Theorem 3),
- *                 under ciphertext-only observation.
- *   Key axis:     H(EK, QK | T^inf) >= log2(4) = 2 bits -- a ciphertext-only
+ *   Message axis (PRIMARY): |S(CT,OR)| >= 2^128 for HIGH (n=64). This SUPPORT
+ *                 bound is unconditional and does not depend on any
+ *                 source-language assumption. Under a uniform key prior over
+ *                 the FULL product key space the posterior is exactly UNIFORM
+ *                 over that consistent set, and under a uniform plaintext
+ *                 prior H(PT|CT,OR) = Hinf(PT|CT,OR) >= 128 bits (Theorem 3),
+ *                 under ciphertext-only observation. Do not state the uniform
+ *                 posterior or the min-entropy equality without those priors:
+ *                 for redundant plaintext a finite unicity distance exists.
+ *   Key axis:     H(EK, QK | T^CO) >= log2(4) = 2 bits -- a ciphertext-only
  *                 key-equivocation FLOOR; the exact four-key value holds only
- *                 under effective-keystream (known-plaintext-strength)
- *                 observation, not ciphertext-only (Theorem 2).
+ *                 under the effective-keystream transcript T^eff
+ *                 (known-plaintext-strength observation), not under T^CO
+ *                 (Theorem 2). T^CO and T^eff are distinct throughout Rev 5.1
+ *                 and are never interchanged. The key-axis result is a
+ *                 SUPPORTING result: decryption is constant over the [+8]
+ *                 coset, so this floor confers no confidentiality on the
+ *                 message. The confidentiality claim is the message axis.
  *
- * KNOWN-PLAINTEXT BOUNDARY and DEPLOYMENT (Rev 5.0):
+ * KNOWN-PLAINTEXT BOUNDARY and DEPLOYMENT (Rev 5.1):
  *   The results above are CIPHERTEXT-ONLY and per-key-epoch. Under known
  *   plaintext at the Enqpy layer with one continuing key state, exposure
- *   accumulates: within a record, ~2 fully-known 2,048-byte internal windows
- *   collapse the record key and determine the rest of the record (cross-OR
- *   decryption). See FCD Rev 5.0 8.5 / proof 16. The deployment profile is
- *   INDEPENDENT RECORD CREDENTIALS (FCD 8.10): each record is encrypted under
- *   its own fresh, independent key material (or computationally independent
- *   per-record material from a host ratchet/KDF/CSPRNG), with encrypt-then-MAC.
- *   This file implements the CORE and the NIL-Comm Method 2 rotation primitive,
- *   which in V5.0 is the continuing-key-state rotation mechanism (out of scope
- *   for the record-credential deployment profile).
+ *   accumulates: within a window, enough known plaintext determines the rest
+ *   of that window, and the published reference instance demonstrates that
+ *   two fully-known 2,048-byte internal windows under a continuing key state
+ *   CAN suffice to collapse the record key and enable cross-OR decryption.
+ *   The general threshold for arbitrary nonce pairs is not characterized --
+ *   do not state or imply an average. See FCD Rev 5.1 8.5 / proof 16.
+ *
+ *   DEPLOYMENT (FCD 8.10, proof Corollary 3): one distinct, NON-REUSED
+ *   credential per record, with encrypt-then-MAC. Two key-supply profiles are
+ *   conforming and differ only in the strength of the guarantee:
+ *     - information-theoretic: per-record keys independently sampled from
+ *       fresh external entropy;
+ *     - computational: per-record keys derived by a host ratchet, KDF or
+ *       CSPRNG, provided the derivation is SECRET and each record receives
+ *       domain-separated, non-reused material.
+ *   What is prohibited in both is key material lacking secret per-record
+ *   separation -- a public deterministic chain, a public counter schedule, or
+ *   a PRG expansion of a seed the adversary can reconstruct -- since any of
+ *   these moves the accumulation from the keystream layer to the key layer.
+ *   'Independent' is reserved for the statistical claim of the first profile;
+ *   it is not a synonym for 'separately supplied'.
+ *
+ *   This file implements the CORE and the NIL-Comm Method 2 rotation
+ *   primitive, which is the continuing-key-state rotation mechanism (out of
+ *   scope for the record-credential deployment profile).
+ *
+ * KEY DOMAIN (Rev 5.1 -- READ BEFORE "FIXING" ANYTHING HERE):
+ *   EK and QK MUST be sampled independently and UNIFORMLY over the full
+ *   canonical key spaces. There is NO EK != QK restriction, and there is
+ *   deliberately no equality check in this file.
+ *
+ *   Implementations MUST NOT reject or resample any particular sampled key
+ *   VALUE -- not EK == QK, not all-zero, not all-same-value, not any pattern
+ *   an eyeball dislikes. Entropy is a property of the source and its
+ *   distribution, not of an individual sampled string. Rejection sampling
+ *   removes the diagonal from the key domain, which makes that domain a
+ *   proper subset that is not a submodule; the First Isomorphism Theorem then
+ *   no longer delivers constant fibres, and the exact posterior-uniformity of
+ *   Theorem 3(ii) and the universality of the four-key [+8] coset of
+ *   Theorem 2 are proved over the full module only. Adding an equality check
+ *   would therefore break the theorems this file exists to implement.
+ *
+ *   Rev 5.0 of the FCD said PDAF_SEC SHOULD return -1 on byte-identical keys.
+ *   That requirement is WITHDRAWN in Rev 5.1. This reference never
+ *   implemented it; do not add it. Under independent uniform sampling
+ *   EK == QK occurs with probability 16^-n = 2^-256 at HIGH, and if it does
+ *   occur the cipher operates normally -- the only loss is the intended
+ *   two-key architectural separation.
  *
  * Enqpy is the Canonical Configuration: nonce-only OffsetKey derivation
  * (Key Role Separation), Case-1 W generation, a normative 2,048-byte (HIGH)
@@ -39,7 +88,7 @@
  * exactly what makes the (EK,QK) -> W map a Z16-module homomorphism, which is
  * what closes the message-axis min-entropy theorem (Theorem 3).
  *
- * CONSTRUCTION (FCD Rev 5.0)
+ * CONSTRUCTION (FCD Rev 5.1)
  * --------------------------
  * Phase 1 (OR_EXP/eff_or), Phase 2 (nonce-only VKP/OKP; VKC/OKC), the PDAF
  * primitive, and the NIL-Comm primitives derive the per-session keys:
@@ -50,13 +99,20 @@
  *   - w_byte_max = n^2 / 2 = 2,048 (HIGH), the normative window bound (R6).
  *   - Phase 5 performs the synchronized key update.
  *   - Credential rotation (NIL-Comm) REQUIRES Method 2 (external entropy);
- *     Method 1 is prohibited (R6), because its deterministic chain collapses
- *     the equivocation coset 4->1 and is simulable, so it does not reset the
- *     known-plaintext accumulation of FCD Rev 5.0 8.5 (see FCD 7.4). NIL-Comm
- *     Method 2 is the continuing-key-state rotation mechanism; the V5.0
- *     deployment profile instead uses independent record credentials and does
- *     not rely on a continuing-key-state reset. The OWC/Mode-0 primitives are
- *     retained; only the policy gate applies.
+ *     Method 1 is prohibited (R6). The load-bearing reason is that its
+ *     deterministic chain is SIMULABLE: an adversary who has recovered the
+ *     current key state computes the next one, so the rotation supplies no
+ *     secret per-record separation and does not reset the known-plaintext
+ *     accumulation of FCD Rev 5.1 8.5 (see FCD 7.4). This is exactly the
+ *     "public deterministic chain" prohibited by proof Corollary 3.
+ *     (Note: mapping the four-element [+8] coset to a single new pair is NOT
+ *     what distinguishes the two methods -- TV8 verifies Method 2 does the
+ *     same. And decryption is constant over the coset, so coset collapse is
+ *     not itself a confidentiality loss. Simulability is the whole reason.) NIL-Comm Method 2 is
+ *     the continuing-key-state rotation mechanism; the Rev 5.1 deployment
+ *     profile instead uses per-record credentials and does not rely on a
+ *     continuing-key-state reset. The OWC/Mode-0 primitives are retained;
+ *     only the policy gate applies.
  *
  * The PUBLIC API (PDAF, PDAF_SEC, ENQPY_NIL_COMM_UPDATE, OWC, enqpy_init) is
  * the object linked by the AEAD benchmark harness (aead_bench.c).
@@ -106,7 +162,8 @@
  *   MED   n=48 nibbles (192-bit)
  *   HIGH  n=64 nibbles (256-bit)  -- default; the canonical proof profile.
  *
- * OFFICIAL TEST VECTORS (Rev 5.0 -- Enqpy core; KATs unchanged since Rev 3.0)
+ * OFFICIAL TEST VECTORS (Rev 5.1 -- Enqpy core; KATs unchanged since Rev 3.0;
+ * Rev 5.1 is a documentation revision only and changes no cipher behaviour)
  * ---------------------------------------------
  *   PDAF primitive (n=10, 30-nibble output):
  *     VK = FB382C001A   OK = CC69100AB4
@@ -397,16 +454,24 @@ int PDAF_SEC(const uint8_t *ek, const uint8_t *qk,
 /* ============================================================================
  * SECTION 7 -- NIL-COMMUNICATION KEY UPDATE
  *
- * ENQPY POLICY (Rev 5.0, R6 / FCD 8.5 boundary):
- *   Method 2 (external entropy) is REQUIRED for Enqpy credential
- *   rotation. Method 1 (deterministic chain) is PROHIBITED here because it
- *   collapses the four-element equivocation coset to a single new pair and is
- *   simulable, so it does not reset the known-plaintext accumulation: in the
- *   known-plaintext limit the post-rotation current-epoch key is determined.
+ * ENQPY POLICY (Rev 5.1, R6 / FCD 8.5 boundary):
+ *   Method 2 (external entropy) is REQUIRED for Enqpy credential rotation.
+ *   Method 1 (deterministic chain) is PROHIBITED here because it is
+ *   SIMULABLE: the chain is a public function of the current key state, so an
+ *   adversary who has recovered that state computes the next one and the
+ *   rotation resets nothing. In the known-plaintext limit the post-rotation
+ *   current-epoch key is determined. This is the "public deterministic chain"
+ *   that proof Corollary 3 prohibits -- the requirement is SECRET per-record
+ *   separation of key material, which Method 1 does not provide.
+ *   (Coset behaviour is NOT the discriminator: TV8 verifies that Method 2
+ *   also maps the four-element [+8] coset to a single new pair. And since
+ *   decryption is constant over the coset, collapsing it costs no
+ *   confidentiality on the message either way. Simulability is the whole
+ *   reason for the prohibition.)
  *   Method 2's external entropy re-injects key uncertainty at each rotation
- *   and is the continuing-key-state rotation mechanism. The V5.0 deployment
- *   profile instead uses independent record credentials (FCD 8.10) and does
- *   not rely on a continuing-key-state reset.
+ *   and is the continuing-key-state rotation mechanism. The Rev 5.1
+ *   deployment profile instead uses per-record credentials (FCD 8.10) and
+ *   does not rely on a continuing-key-state reset.
  *   This reference enforces the policy by rejecting method != 2.
  *   The OWC + Mode-0 seed derivation is part of the Nil-Communication path.
  * ============================================================================ */
@@ -717,7 +782,7 @@ static void bench_pdaf_sec(void)
 
 int main(void)
 {
-    printf("Enqpy(tm) Stream Cipher -- Reference  Rev 5.0\n");
+    printf("Enqpy(tm) Stream Cipher -- Reference  Rev 5.1\n");
     printf("Canonical Configuration core, Case-1 W generation (ciphertext-only proof profile)\n");
     printf("Copyright (c) 2026 NQP LLC -- Apache License 2.0\n");
     printf("Platform: n=%d, tile_len=%d, W_bytes=%d (window)\n\n",
