@@ -1,17 +1,26 @@
 name: build
 
-# Builds the Enqpy(TM) C reference (Rev 5.0 -- the Canonical Configuration,
+# Builds the Enqpy(TM) C reference (Rev 5.1 -- the Canonical Configuration,
 # Case-1 W generation) on clean machines and asserts that the published
 # self-test reports 84 PASS / 0 FAIL. This is the verify-don't-believe claim
 # made checkable: GitHub builds the artifact from a fresh checkout, on hardware
 # no one controls, on every push -- and the badge goes red if it ever fails to
 # compile OR the pass count drifts from 84.
 #
-# The job additionally builds the cross-cipher AEAD benchmark and asserts its
-# known-answer tests pass (including Enqpy, keyed with the official test
-# vectors, unchanged since Rev 3.0), and validates the canonical test-vector
-# file against the
-# published Enqpy keystream.
+# Beyond the self-test, the workflow asserts the three things the corpus claims
+# and a reader would otherwise have to take on trust:
+#
+#   1. the reference agrees with itself          -- 84/84 self-test
+#   2. the reference agrees with the PUBLISHED   -- vectors_check.c, 34 assertions
+#      vectors (all three profiles, the Rev 5.1     over every value in
+#      key domain, window boundary, OR_EXP,         enqpy-vectors.json
+#      NIL policy)
+# The HDL references (VHDL and Verilog) are NOT in this repository and are not
+# covered by the covenant or the Apache-2.0 grant, so cross-language interop is
+# verified in NQP's private build, not here.
+#
+# Rev 5.1 note: Rev 5.1 changed no cipher behaviour. The Rev 3.0 KATs still
+# reproduce byte-for-byte; vectors v5.1 ADDED cases and edited none in place.
 
 on:
   push:
@@ -24,6 +33,12 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  # Deliberate tripwire. Bumping the published vectors is a real event and should
+  # require a conscious one-line change here, not a silent drift. If this ever
+  # disagrees with the file, decide which is wrong before editing either.
+  EXPECTED_VECTORS_VERSION: "5.1"
 
 jobs:
   selftest:
@@ -69,9 +84,8 @@ jobs:
         run: |
           # The cross-cipher AEAD harness KAT-verifies every cipher (including
           # Enqpy, using the official test-vector keys, unchanged since Rev 3.0)
-          # before timing,
-          # and exits non-zero if any KAT fails. Benchmark numbers themselves
-          # are machine-dependent and are not asserted here.
+          # before timing, and exits non-zero if any KAT fails. Benchmark numbers
+          # themselves are machine-dependent and are not asserted here.
           cc -O3 -march=native -std=c11 -D_POSIX_C_SOURCE=200809L \
               src/aead_bench.c src/enqpy_reference.c -o aead_bench
           if ! ./aead_bench > aead_output.txt 2>&1; then
@@ -90,20 +104,45 @@ jobs:
           fi
           echo "PASS: AEAD known-answer tests passed on ${{ matrix.os }}"
 
-      - name: Validate canonical test vectors
+      - name: Validate the canonical test-vector file
         run: |
-          # The published vectors are the machine-readable source of truth.
-          # Assert the file is valid JSON, is at vectors_version 5.0, and carries
-          # the canonical Enqpy zero-plaintext keystream (CT = W[0..7]). The
-          # self-test above independently confirms the reference emits the same CT.
+          # Structural checks only -- the CONTENT is verified in the next step by
+          # rebuilding every published value from the reference.
           VEC=tests/vectors/enqpy-vectors.json
           python3 -m json.tool "$VEC" > /dev/null \
             || { echo "::error::$VEC is not valid JSON"; exit 1; }
-          grep -Eq '"vectors_version":[[:space:]]*"5.0"' "$VEC" \
-            || { echo "::error::vectors_version is not '5.0'"; exit 1; }
-          grep -Eq '"ct":[[:space:]]*"2434B58845C6FDE8"' "$VEC" \
-            || { echo "::error::canonical pdaf_sec CT (2434B58845C6FDE8) not found"; exit 1; }
-          echo "PASS: enqpy-vectors.json is valid, v5.0, canonical CT matches"
+          FOUND=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['vectors_version'])" "$VEC")
+          if [ "$FOUND" != "$EXPECTED_VECTORS_VERSION" ]; then
+            echo "::error::vectors_version is '$FOUND' but this workflow expects '$EXPECTED_VECTORS_VERSION'. If the bump is intended, update EXPECTED_VECTORS_VERSION in .github/workflows/ci.yml in the same commit."
+            exit 1
+          fi
+          echo "PASS: $VEC is valid JSON at vectors_version $FOUND"
+
+      - name: Verify every published vector against the reference
+        run: |
+          # vectors_check.c links the reference and asserts every value published
+          # in enqpy-vectors.json: all three profiles (LOW n=32, MEDIUM n=48,
+          # HIGH n=64), the Rev 5.1 key domain (EK == QK must be ACCEPTED), the
+          # [+8] cosets, empty plaintext, the window boundary, the Phase-1 OR_EXP
+          # expansion, and the NIL key-update policy. It also asserts the three
+          # profiles produce DIFFERENT ciphertext, which is what stops an
+          # implementation that ignores n from passing.
+          cc -O2 -std=c11 -Wall -Wextra -I src vectors_check.c -o vectors_check
+          if ! ./vectors_check > vectors_output.txt 2>&1; then
+            echo "::group::vector verification output"
+            cat vectors_output.txt
+            echo "::endgroup::"
+            echo "::error::a published vector did not reproduce from the reference"
+            exit 1
+          fi
+          echo "::group::vector verification output"
+          cat vectors_output.txt
+          echo "::endgroup::"
+          if grep -q 'FAIL' vectors_output.txt; then
+            echo "::error::vectors_check reported a FAIL line"
+            exit 1
+          fi
+          echo "PASS: every published vector reproduces exactly on ${{ matrix.os }}"
 
       - name: Upload logs
         if: always()
@@ -113,4 +152,5 @@ jobs:
           path: |
             selftest_output.txt
             aead_output.txt
+            vectors_output.txt
           if-no-files-found: ignore
