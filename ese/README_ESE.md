@@ -80,19 +80,48 @@ with a standard MAC (encrypt-then-MAC) exactly as the base cipher does.
 
 ## Files
 
+### In this repository (Apache-2.0)
+
 | file | role |
 |---|---|
 | `enqpy_ese_reference.c` | canonical C reference (this layer; `S` + masks), self-test + parameter guard |
-| `enqpy_reference_pkg.vhd` | shared VHDL package used by the ESE modules |
-| `enqpy_ese_hardening.vhd` | silicon reference (same `S`) |
-| `enqpy_ese_tb.vhd` | VHDL testbench: round-trip + bijection |
-| `enqpy_ese_xcheck_tb.vhd` | SW↔HW interop anchor: VHDL must reproduce the C ciphertext |
 
-Every file named in this document is in the repository. Earlier revisions listed a
-speed-comparison harness (`aead_bench_ese.c`) carrying Feistel and Fisher-Yates
-`S` variants; it was never published, and the reference to it is withdrawn rather
-than left as a broken pointer. The base-cipher benchmark harness is
-`aead_bench.c`, which does not exercise ESE.
+The base-cipher benchmark harness is `aead_bench.c`, which does not exercise ESE.
+
+### Not in this repository
+
+NQP's HDL references — the VHDL behavioural model, the synthesisable Verilog
+datapath, their testbenches and the place-and-route harness — are **not published
+here**, are **not** covered by the Open-Infrastructure Patent Non-Assertion
+Covenant, and are **not** under the Apache-2.0 grant. They are available under NDA
+or a signed agreement.
+
+This is not a gap in the covenant, and it is worth being precise about why. The
+covenant frees the cipher **invention**: anyone may implement Enqpy and ESE in
+HDL, at any scale including commercially, with no fee and no permission, and the
+FCD plus the published vectors are the blueprint for doing exactly that. What is
+withheld is NQP's *particular RTL* — an implementation, not the invention. The
+same split already governs the base cipher, where the covenant frees the cipher
+and Apache-2.0 governs NQP's reference source.
+
+Earlier revisions of this document listed a speed-comparison harness
+(`aead_bench_ese.c`) carrying Feistel and Fisher-Yates `S` variants. That file
+does not exist; the reference is withdrawn rather than left as a broken pointer.
+
+## Cross-language interop anchor
+
+The C reference, NQP's VHDL model and NQP's Verilog datapath are all held to one
+number. For the shared vector set (`NB=64, LOGN=6, PASSES=3`, `P=7i+1`,
+`W1=11i+3`, `W2=13i+5`, `KSW=k^(k>>1)^(k>>2)`) every implementation produces:
+
+```
+CT[0..7] = 09 72 27 58 41 72 37 B0
+```
+
+Re-verified for Rev 5.1 under GHDL 4.1.0 and Icarus Verilog 12.0. Only the C side
+is reproducible from this repository; the HDL side is verified in NQP's private
+build and is demonstrable under NDA. Your own HDL implementation should reproduce
+the same value — that is the point of publishing it here.
 
 `W1`/`W2`/`KSW` are supplied as inputs here (matching the VHDL module interface). In
 deployment they are separately derived Enqpy keystreams from `enqpy_reference.c`'s
@@ -108,36 +137,45 @@ check the return value. The precondition is:
 | --- | --- |
 | `NB == (1 << LOGN)` | the butterfly network is defined over exactly `2^LOGN` bytes |
 | `NB <= 2048` (`ESE_MAX_NB`) | fixed internal buffers |
-| `PASSES >= 1` | at least one pass |
+| `PASSES >= 2` | Benes-class permutation coverage — see below |
 | `length(KSW) >= PASSES * LOGN * (NB / 2)` | one switch bit per pair, per stage |
 
-The first row is the one that matters, and it is worth stating plainly because it
-is a **silent** failure mode. If `NB != (1 << LOGN)` the network still produces a
-bijection and still round-trips, so a naive self-check passes — but the stages
-never mix across the top block boundary and `S` degenerates into a permutation
-confined to sub-blocks. Measured at `NB = 64`: with `LOGN = 6` the permutation
-crosses the midpoint and reaches a maximum displacement of 59; with `LOGN = 5` it
-**never** crosses the midpoint and reaches only 27. A port that got this wrong
-would pass round-trip and bijection tests while shipping a materially weaker `S`.
-`ese_params_valid()` exists to make that impossible, and the self-test exercises
-it against four bad profiles.
+Two of these are **silent** failure modes — the network still produces a bijection
+and still round-trips, so a naive self-check passes while `S` is materially weaker.
+Both are therefore checked rather than assumed, in the C (`ese_params_valid()`) and
+by an elaboration-time assertion in the VHDL.
+
+**`NB != (1 << LOGN)`.** The stages never mix across the top block boundary and `S`
+degenerates into a permutation confined to sub-blocks. Measured at `NB = 64`: with
+`LOGN = 6` the permutation crosses the midpoint and reaches a maximum displacement
+of 59; with `LOGN = 5` it **never** crosses the midpoint and reaches only 27.
+
+**`PASSES < 2`.** A single butterfly pass is not rearrangeably nonblocking — it can
+only reach a subset of the permutation group. Measured exhaustively at `NB = 8`,
+`LOGN = 3`, enumerating every switch setting: **one pass reaches 4,096 of the
+40,320 permutations (10.2%); two passes reach all 40,320 (100%).** Displacement
+statistics do *not* reveal this — one pass looks fine by that measure — which is
+precisely why the bound is stated as a requirement rather than left to inspection.
+The canonical profile uses `PASSES = 3`.
 
 Use `ese_ksw_len(NB, LOGN, PASSES)` to size the switch-bit buffer; at the
 production HIGH profile (`NB=2048, LOGN=11, PASSES=3`) it is 33,792 bytes.
 
 ## Build & verify
 
+What you can run from this repository:
+
 ```sh
-# software reference: round-trip + permutation-validity self-test
+# software reference: round-trip + permutation validity + parameter guard
 cc -O2 -o ese_ref enqpy_ese_reference.c && ./ese_ref
-
-# silicon reference: round-trip + bijection
-ghdl -a --std=08 enqpy_reference_pkg.vhd enqpy_ese_hardening.vhd enqpy_ese_tb.vhd
-ghdl -r --std=08 enqpy_ese_tb
-
-# SW<->HW interop anchor: VHDL ciphertext must equal the C reference
-ghdl -a --std=08 enqpy_ese_xcheck_tb.vhd && ghdl -r --std=08 enqpy_ese_xcheck_tb
 ```
+
+That build is the conformance target. It prints the interop KAT above, so an
+independent HDL implementation can be checked against it without any NQP RTL.
+
+The corresponding HDL builds (GHDL for the VHDL model and its two testbenches,
+Icarus or a vendor tool for the Verilog datapath) run against files that are not
+published here; they were re-verified for Rev 5.1 and are demonstrable under NDA.
 
 ### Interop KAT (the shared golden vector)
 
@@ -153,6 +191,16 @@ The production HIGH window is `NB=2048, LOGN=11, PASSES=3`.
 
 ## License & export
 
-Apache-2.0 (code), consistent with the base repository. As publicly available
+**The C reference (`enqpy_ese_reference.c`) is Apache-2.0**, consistent with the
+base repository, and carries an `SPDX-License-Identifier` header. As publicly
+available encryption source code, file the same EAR §742.15(b) notification for
+it that the base release used before publishing.
+
+**NQP's HDL is not published and is not Apache-2.0.** It is not covered by the
+covenant either — see "Not in this repository" above for why that is a
+distinction about implementations rather than a limit on the invention. Because
+it is not publicly available source code, the §742.15(b) notification route does
+not apply to it; treat any HDL disclosure as a controlled transfer and take
+export advice before sending it, including under NDA. As publicly available
 encryption source code, file the same EAR §742.15(b) notification for this artifact
 that the base release used before publishing.
