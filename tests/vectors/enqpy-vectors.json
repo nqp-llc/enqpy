@@ -1,11 +1,11 @@
 {
-  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 5.0 reference implementation (84/84 self-test PASS); KATs unchanged since Rev 3.0. Hex is UPPERCASE with no separators. Enqpy has no associated-data field. A port is Reference-Compatible (CONFORMANCE.md §2.1) when it reproduces every output below exactly.",
+  "_note": "Canonical Enqpy test vectors. Every value is emitted directly by the Rev 5.1 reference implementation (84/84 self-test PASS). The Rev 3.0 KATs are unchanged and reproduce byte-for-byte; v5.1 ADDS vectors (Rev 5.1 key domain, both-axes coset, empty plaintext, window boundary, full LOW/MEDIUM profile coverage, the Phase-1 OR_EXP self-referential case, and the NIL key-update policy) and edits none in place. Hex is UPPERCASE with no separators. Enqpy has no associated-data field. A port is Reference-Compatible (CONFORMANCE.md 2.1) when it reproduces every output below exactly.",
   "cipher": "Enqpy",
-  "vectors_version": "5.0",
-  "reference": "Enqpy reference implementation Rev 5.0 (Canonical Configuration); 84/84 self-test; KATs unchanged since Rev 3.0",
-  "spec": "FCD Rev 5.0 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
+  "vectors_version": "5.1",
+  "reference": "Enqpy reference implementation Rev 5.1 (Canonical Configuration); 84/84 self-test; the Rev 3.0 KATs are unchanged",
+  "spec": "FCD Rev 5.1 §13; proof companion [12]. Canonical paper link: https://enqpy.com/technical.html",
   "assertions": {
-    "_comment": "Counts the 84 self-test assertions (PDAF + PDAF_SEC + window boundary + NIL key-update). The OWC vector below is a supplementary FCD §13.1 vector; OWC is not exercised by the self-test.",
+    "_comment": "Counts the 84 assertions of the C self-test (PDAF + PDAF_SEC + window boundary + NIL key-update). The OWC vector below is a supplementary FCD 13.1 vector; OWC is not exercised by the self-test. As of v5.1 the published groups cover the key-domain, coset, empty-plaintext and window-boundary cases mechanically.",
     "total": 84,
     "pdaf_mode0": 30,
     "pdaf_mode1": 30,
@@ -65,7 +65,7 @@
     },
     {
       "group": "pdaf_sec",
-      "description": "Full encrypt/decrypt, Canonical Configuration, HIGH profile (n=64). CT length == PT length. For zero plaintext, CT == keystream W. Decryption round-trips to PT; the [+8] coset on either master key yields identical CT (Theorem 2 equivocation basis).",
+      "description": "Full encrypt/decrypt, Canonical Configuration, all three profiles (n=32 LOW, n=48 MEDIUM, n=64 HIGH). CT length == PT length. For zero plaintext, CT == keystream W. Decryption round-trips to PT; the [+8] coset on either master key, or both, yields identical CT (Theorem 2 equivocation basis). Key domain (Rev 5.1): ek and qk are sampled independently and uniformly with NO ek != qk restriction; an implementation that rejects or resamples equal keys is non-conformant. Profile keys: the HIGH vectors use the canonical values in full; the LOW and MEDIUM vectors use the LAST n nibbles of those same canonical values (a suffix, not a prefix -- see _profile_derivation). Every profile yields a DIFFERENT ciphertext, so these vectors discriminate: an implementation that ignores n and always runs HIGH fails them.",
       "tests": [
         {
           "id": "sec-0001-zeroPT",
@@ -83,9 +83,253 @@
           },
           "coset_ek_plus_8": "identical",
           "coset_qk_plus_8": "identical",
+          "coset_ek_qk_plus_8": "identical",
+          "coset_ct": "2434B58845C6FDE8",
+          "result": "valid"
+        },
+        {
+          "id": "sec-0002-ekEqualsQk",
+          "_purpose": "Rev 5.1 key domain. EK == QK is a permitted sample and MUST be accepted. An implementation that rejects or resamples equal keys is NON-CONFORMANT: rejection sampling punctures the key domain over which Theorems 2 and 3 are proved. Rev 5.0 of the FCD asked for a -1 return here; that requirement is withdrawn.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "or": "3667A507E1109EE32CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 64,
+          "pt": "0000000000000000",
+          "ct": "B8DCA43E483718B3",
+          "expect_return": "byte count (8), never -1",
+          "roundtrip": {
+            "input": "B8DCA43E483718B3",
+            "output": "0000000000000000",
+            "result": "PT recovered"
+          },
+          "result": "valid"
+        },
+        {
+          "id": "sec-0003-emptyPT",
+          "_purpose": "Zero-length plaintext is legal. Output length equals input length, so the ciphertext is empty and the call returns 0, not -1.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "or": "3667A507E1109EE32CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 64,
+          "pt": "",
+          "ct": "",
+          "expect_return": "0",
+          "result": "valid"
+        },
+        {
+          "id": "sec-0004-windowBoundary",
+          "_purpose": "Exercises the 2,048-byte HIGH window and the Phase-5 update that follows it. The full ciphertext is not embedded; check the documented tail bytes, then confirm a 2,050-byte payload round-trips across the boundary.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "or": "3667A507E1109EE32CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 64,
+          "pt": "0x00 repeated 2048 times",
+          "ct_bytes_2046_2047": "5428",
+          "roundtrip": {
+            "pt": "0x00 repeated 2050 times",
+            "result": "PT recovered across the window boundary"
+          },
+          "result": "valid"
+        },
+        {
+          "id": "sec-low-zeroPT",
+          "_purpose": "LOW profile (n=32) keystream isolation. Zero plaintext, so CT == W.",
+          "ek": "47E8B5906C992013468395489A17D957",
+          "qk": "76511B3988431D427DA911BDC2130680",
+          "or": "900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 32,
+          "pt": "0000000000000000",
+          "ct": "880D1D26F1A183AD",
+          "roundtrip": {
+            "input": "880D1D26F1A183AD",
+            "output": "0000000000000000",
+            "result": "PT recovered"
+          },
+          "coset_ek_plus_8": "identical",
+          "coset_qk_plus_8": "identical",
+          "coset_ek_qk_plus_8": "identical",
+          "coset_ct": "880D1D26F1A183AD",
+          "result": "valid"
+        },
+        {
+          "id": "sec-low-ekEqualsQk",
+          "_purpose": "Rev 5.1 key domain at LOW. EK == QK MUST be accepted at every profile.",
+          "ek": "47E8B5906C992013468395489A17D957",
+          "qk": "47E8B5906C992013468395489A17D957",
+          "or": "900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 32,
+          "pt": "0000000000000000",
+          "ct": "A26E1C021AD0230E",
+          "expect_return": "byte count (8), never -1",
+          "roundtrip": {
+            "input": "A26E1C021AD0230E",
+            "output": "0000000000000000",
+            "result": "PT recovered"
+          },
+          "result": "valid"
+        },
+        {
+          "id": "sec-low-windowBoundary",
+          "_purpose": "LOW window is n^2/2 = 512 bytes. Checks the documented tail bytes, then a 514-byte round-trip across the Phase-5 update.",
+          "ek": "47E8B5906C992013468395489A17D957",
+          "qk": "76511B3988431D427DA911BDC2130680",
+          "or": "900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 32,
+          "pt": "0x00 repeated 512 times",
+          "window_bytes": 512,
+          "ct_bytes_510_511": "5FD3",
+          "roundtrip": {
+            "pt": "0x00 repeated 514 times",
+            "result": "PT recovered across the window boundary"
+          },
+          "result": "valid"
+        },
+        {
+          "id": "sec-medium-zeroPT",
+          "_purpose": "MEDIUM profile (n=48) keystream isolation. Zero plaintext, so CT == W.",
+          "ek": "1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "or": "2CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 48,
+          "pt": "0000000000000000",
+          "ct": "AD3855C36B7D4B41",
+          "roundtrip": {
+            "input": "AD3855C36B7D4B41",
+            "output": "0000000000000000",
+            "result": "PT recovered"
+          },
+          "coset_ek_plus_8": "identical",
+          "coset_qk_plus_8": "identical",
+          "coset_ek_qk_plus_8": "identical",
+          "coset_ct": "AD3855C36B7D4B41",
+          "result": "valid"
+        },
+        {
+          "id": "sec-medium-ekEqualsQk",
+          "_purpose": "Rev 5.1 key domain at MEDIUM. EK == QK MUST be accepted at every profile.",
+          "ek": "1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "or": "2CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 48,
+          "pt": "0000000000000000",
+          "ct": "7DF090DDBA60C8CC",
+          "expect_return": "byte count (8), never -1",
+          "roundtrip": {
+            "input": "7DF090DDBA60C8CC",
+            "output": "0000000000000000",
+            "result": "PT recovered"
+          },
+          "result": "valid"
+        },
+        {
+          "id": "sec-medium-windowBoundary",
+          "_purpose": "MEDIUM window is n^2/2 = 1152 bytes. Checks the documented tail bytes, then a 1154-byte round-trip across the Phase-5 update.",
+          "ek": "1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "or": "2CD50718FA511065900EB422AC187AC5CD47EF5B18D86E0C",
+          "or_ctr": 1,
+          "n": 48,
+          "pt": "0x00 repeated 1152 times",
+          "window_bytes": 1152,
+          "ct_bytes_1150_1151": "9664",
+          "roundtrip": {
+            "pt": "0x00 repeated 1154 times",
+            "result": "PT recovered across the window boundary"
+          },
           "result": "valid"
         }
       ]
+    },
+    {
+      "group": "pdaf_mode1_selfref",
+      "description": "PDAF Mode 1 applied to itself (VK = OK) — the Phase-1 OR_EXP expansion of FCD §13.2a. PDAF_SEC computes OR_EXP = PDAF1(or_ctr_nibs, or_ctr_nibs) at the profile n, where or_ctr_nibs is the 64-bit counter as 16 nibbles, most significant first, zero-padded to n. Reachable through the public PDAF() entry point by passing the same array as both ValueKey and OffsetKey. Note that small counters give low-entropy OR_EXP: that is expected and correct — OR_EXP contributes counter state and diffusion, NOT uniqueness. Nonce freshness is probabilistic and comes from the CSPRNG OR component (FCD §7.2).",
+      "tests": [
+        {
+          "id": "pdaf1sr-0001",
+          "_purpose": "or_ctr = 1",
+          "or_ctr": 1,
+          "vk": "0000000000000001000000000000000000000000000000000000000000000000",
+          "ok": "0000000000000001000000000000000000000000000000000000000000000000",
+          "n": 64,
+          "mode": 1,
+          "nDigits": 64,
+          "output": "0000000000000011000000000000000000000000000000000000000000000000"
+        },
+        {
+          "id": "pdaf1sr-0002",
+          "_purpose": "or_ctr = 2",
+          "or_ctr": 2,
+          "vk": "0000000000000002000000000000000000000000000000000000000000000000",
+          "ok": "0000000000000002000000000000000000000000000000000000000000000000",
+          "n": 64,
+          "mode": 1,
+          "nDigits": 64,
+          "output": "0000000000000022000000000000000000000000000000000000000000000000"
+        },
+        {
+          "id": "pdaf1sr-0003",
+          "_purpose": "or_ctr = 0xA5C3 — a non-trivial value showing the propagation behaviour",
+          "or_ctr": 42435,
+          "vk": "000000000000A5C3000000000000000000000000000000000000000000000000",
+          "ok": "000000000000A5C3000000000000000000000000000000000000000000000000",
+          "n": 64,
+          "mode": 1,
+          "nDigits": 64,
+          "output": "00000000000AA5C3000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    {
+      "group": "nil_comm_update",
+      "description": "Nil-Communication credential rotation policy, ENQPY_NIL_COMM_UPDATE. Method 2 (external entropy) is REQUIRED; Method 1 (deterministic chain) is PROHIBITED because it is SIMULABLE — the chain is a public function of the current key state, so an adversary holding that state computes the next one and the rotation resets nothing. A conforming implementation MUST reject Method 1 and MUST reject Method 2 called without external entropy. Note that coset behaviour is not the discriminator: Method 2 also maps the four-element [+8] coset to a single new pair.",
+      "tests": [
+        {
+          "id": "nil-0001-method1Rejected",
+          "_purpose": "Method 1 is prohibited and MUST be rejected.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "n": 64,
+          "method": 1,
+          "e_ext": null,
+          "expect_return": -1,
+          "result": "rejected"
+        },
+        {
+          "id": "nil-0002-method2Accepted",
+          "_purpose": "Method 2 with external entropy succeeds and produces the new credential pair.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "n": 64,
+          "method": 2,
+          "e_ext": "3E94FA50B61C72D83E94FA50B61C72D83E94FA50B61C72D83E94FA50B61C72D8",
+          "_e_ext_formula": "e_ext[i] = (i*11 + 3) mod 16",
+          "expect_return": 0,
+          "ek_new": "072142F4DA9C51C7FA6975F0190D369D0A90BEB4A6A9BD4A131CDF19AFE4F816",
+          "qk_new": "9EC9FDAB010DF627ABA7DA614A1AB2A8F86BAE443A502D627D6FC3BFEA13BE28",
+          "coset_maps_to_single_pair": "yes — (EK+8, QK+8) yields the same ek_new/qk_new",
+          "result": "valid"
+        },
+        {
+          "id": "nil-0003-method2NoEntropy",
+          "_purpose": "Method 2 without external entropy MUST be rejected — the external entropy is the whole point of the method.",
+          "ek": "CB1E1203C479F30C1C356F12362FE43B47E8B5906C992013468395489A17D957",
+          "qk": "0E2EAB25A9F78620ABB6726CF81A012776511B3988431D427DA911BDC2130680",
+          "n": 64,
+          "method": 2,
+          "e_ext": null,
+          "expect_return": -1,
+          "result": "rejected"
+        }
+      ]
     }
-  ]
+  ],
+  "_profile_derivation": "LOW (n=32) and MEDIUM (n=48) key material is the LAST n nibbles of the canonical HIGH ek/qk/or. A suffix is used deliberately. With a PREFIX the first 16 keystream nibbles are identical at every profile -- at c=0 no index exceeds p+15+1 = 31 < n, and with or_ctr=1 the counter expansion agrees over that range -- so a prefix-derived zero-plaintext vector would be reproduced by an implementation that ignored n entirely. The suffix makes the three profiles disagree, which is what a conformance vector has to do."
 }
