@@ -2,7 +2,7 @@
 /* Copyright 2026 NQP LLC (Paul McGough) */
 #define _POSIX_C_SOURCE 200809L
 /* =============================================================================
- * enqpy_ese_reference.c -- Enqpy(tm) ESE KPA-Hardening reference  (Rev 5.0)
+ * enqpy_ese_reference.c -- Enqpy(tm) ESE KPA-Hardening reference  (Rev 5.1)
  *
  * OPTIONAL hardening layer for known-plaintext-sensitive deployments. It wraps
  * the base cipher's ciphertext-only guarantee with a secret, fresh, per-record
@@ -10,10 +10,14 @@
  *
  *      C = S( P (+) W1 ) (+) W2        (+) = mod-16 nibble add
  *
- *   W1, W2 : two INDEPENDENT Enqpy keystreams (PDAF_SEC under separate per-record
- *            credentials -- see enqpy_reference.c). Supplied here as inputs, which
- *            is exactly the interface of the silicon module enqpy_ese_hardening.vhd.
- *   KSW    : switch bits for S, a third independent keystream.
+ *   W1, W2 : two SEPARATELY DERIVED Enqpy keystreams (PDAF_SEC under distinct,
+ *            domain-separated per-record credentials -- see enqpy_reference.c).
+ *            Supplied here as inputs, which is exactly the interface of the silicon
+ *            module enqpy_ese_hardening.vhd. Note that "independent" is reserved in
+ *            the Rev 5.1 corpus for the statistical claim of the information-theoretic
+ *            key-supply profile (FCD 8.10); under the computational profile these
+ *            keystreams are computationally, not statistically, separated.
+ *   KSW    : switch bits for S, from a third separately derived keystream.
  *   S      : the CANONICAL permutation = a keyed butterfly / Benes conditional-
  *            exchange network (PASSES passes x LOGN stages) over the NB-byte window.
  *            Chosen as canonical because it is bit-identical in C and HDL, is built
@@ -31,6 +35,38 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+/* ---- parameter limits and the precondition callers MUST honour --------------
+ * The butterfly network is defined over a window of exactly 2^LOGN bytes. If NB
+ * != (1 << LOGN) the network still produces a bijection and still round-trips --
+ * so BOTH self-checks below pass -- but the stages never mix across the top
+ * block boundary, and S degenerates into a permutation confined to sub-blocks.
+ * Measured at NB=64: LOGN=6 gives max displacement 59 and crosses the midpoint;
+ * LOGN=5 gives max displacement 27 and NEVER crosses it. That is a silent
+ * security weakening, which is exactly why it is checked rather than assumed.
+ *
+ * Callers MUST satisfy all of:
+ *     NB == (1 << LOGN)          window is a power of two matching the network
+ *     NB <= ESE_MAX_NB           fixed internal buffers
+ *     PASSES >= 1
+ *     length(KSW) >= PASSES * LOGN * (NB / 2)      one switch bit per pair/stage
+ * ---------------------------------------------------------------------------*/
+#define ESE_MAX_NB 2048
+
+int ese_params_valid(int NB, int LOGN, int PASSES)
+{
+    if (LOGN < 1 || LOGN > 11)          return 0;
+    if (PASSES < 1)                     return 0;
+    if (NB != (1 << LOGN))              return 0;
+    if (NB > ESE_MAX_NB)                return 0;
+    return 1;
+}
+
+/* Required KSW length in bytes for a given profile (0 if params are invalid). */
+int ese_ksw_len(int NB, int LOGN, int PASSES)
+{
+    return ese_params_valid(NB, LOGN, PASSES) ? PASSES * LOGN * (NB / 2) : 0;
+}
 
 /* ---- mod-16 (nibble) add/sub: byte = two independent nibbles, carry-free ---- */
 static inline uint8_t z16_add(uint8_t a, uint8_t b){
@@ -61,20 +97,31 @@ static void butterfly(uint8_t *s, int NB, int LOGN, int PASSES,
     }
 }
 
-/* ---- ESE encrypt / decrypt (one window) ---- */
-void ese_encrypt(const uint8_t *P, const uint8_t *W1, const uint8_t *W2,
-                 const uint8_t *KSW, int NB, int LOGN, int PASSES, uint8_t *CT){
-    uint8_t buf[2048];
+/* ---- ESE encrypt / decrypt (one window) ----
+ * Return 0 on success, -1 if the profile is invalid (see ese_params_valid).
+ * Rejecting loudly matches enqpy_reference.c, where PDAF_SEC returns -1 rather
+ * than producing output from parameters it cannot honour. */
+int ese_encrypt(const uint8_t *P, const uint8_t *W1, const uint8_t *W2,
+                const uint8_t *KSW, int NB, int LOGN, int PASSES, uint8_t *CT){
+    uint8_t buf[ESE_MAX_NB];
+    if(!ese_params_valid(NB, LOGN, PASSES)) return -1;
+    if(!P || !W1 || !W2 || !KSW || !CT)     return -1;
     for(int i=0;i<NB;i++) buf[i] = z16_add(P[i], W1[i]);   /* a = P + W1     */
     butterfly(buf, NB, LOGN, PASSES, KSW, 1);              /* b = S(a)       */
     for(int i=0;i<NB;i++) CT[i] = z16_add(buf[i], W2[i]);  /* C = b + W2     */
+    memset(buf, 0, sizeof buf);
+    return 0;
 }
-void ese_decrypt(const uint8_t *CT, const uint8_t *W1, const uint8_t *W2,
-                 const uint8_t *KSW, int NB, int LOGN, int PASSES, uint8_t *P){
-    uint8_t buf[2048];
+int ese_decrypt(const uint8_t *CT, const uint8_t *W1, const uint8_t *W2,
+                const uint8_t *KSW, int NB, int LOGN, int PASSES, uint8_t *P){
+    uint8_t buf[ESE_MAX_NB];
+    if(!ese_params_valid(NB, LOGN, PASSES)) return -1;
+    if(!CT || !W1 || !W2 || !KSW || !P)     return -1;
     for(int i=0;i<NB;i++) buf[i] = z16_sub(CT[i], W2[i]);  /* b = C - W2     */
     butterfly(buf, NB, LOGN, PASSES, KSW, 0);              /* a = S^-1(b)    */
     for(int i=0;i<NB;i++) P[i] = z16_sub(buf[i], W1[i]);   /* P = a - W1     */
+    memset(buf, 0, sizeof buf);
+    return 0;
 }
 
 /* ---- deterministic test vectors (replicated bit-for-bit in the VHDL xcheck tb) ---- */
@@ -95,8 +142,11 @@ static int run_profile(const char *name, int NB, int LOGN, int PASSES){
     uint8_t KSW[3*11*1024];
     gen_vectors(NB, LOGN, PASSES, P, W1, W2, KSW);
 
-    ese_encrypt(P, W1, W2, KSW, NB, LOGN, PASSES, CT);
-    ese_decrypt(CT, W1, W2, KSW, NB, LOGN, PASSES, RT);
+    if (ese_encrypt(P, W1, W2, KSW, NB, LOGN, PASSES, CT) != 0 ||
+        ese_decrypt(CT, W1, W2, KSW, NB, LOGN, PASSES, RT) != 0) {
+        printf("  %-22s INVALID PROFILE -- rejected by ese_params_valid\n", name);
+        return 0;
+    }
 
     int rt_ok = (memcmp(P, RT, NB) == 0);
 
@@ -119,11 +169,37 @@ static int run_profile(const char *name, int NB, int LOGN, int PASSES){
 }
 
 int main(void){
-    printf("Enqpy(tm) ESE KPA-Hardening reference (Rev 5.0) -- Apache-2.0\n");
+    printf("Enqpy(tm) ESE KPA-Hardening reference (Rev 5.1) -- Apache-2.0\n");
     printf("C = S(P + W1) + W2 ; S = keyed butterfly network\n");
     int ok = 1;
     ok &= run_profile("xcheck (vs VHDL)", 64,   6, 3);   /* matches enqpy_ese_tb.vhd */
     ok &= run_profile("HIGH window",      2048, 11, 3);  /* production HIGH profile  */
+
+    /* Parameter guard: invalid profiles must be REJECTED, not silently weakened. */
+    {
+        uint8_t d[64] = {0};
+        struct { const char *why; int NB, LOGN, PASSES; } bad[] = {
+            { "NB != 2^LOGN (confines S to sub-blocks)", 64,   5,  3 },
+            { "NB != 2^LOGN (other direction)",          64,   7,  3 },
+            { "NB above ESE_MAX_NB",                     4096, 12, 3 },
+            { "PASSES < 1",                              64,   6,  0 },
+        };
+        int guard = 1;
+        printf("  parameter guard:\n");
+        for (size_t i = 0; i < sizeof bad / sizeof bad[0]; i++) {
+            int e = ese_encrypt(d, d, d, d, bad[i].NB, bad[i].LOGN, bad[i].PASSES, d);
+            int c = ese_decrypt(d, d, d, d, bad[i].NB, bad[i].LOGN, bad[i].PASSES, d);
+            int r = (e == -1 && c == -1);
+            printf("    %-42s %s\n", bad[i].why, r ? "rejected" : "*** ACCEPTED ***");
+            guard &= r;
+        }
+        printf("    %-42s %s\n", "valid profile still accepted",
+               ese_params_valid(2048, 11, 3) ? "yes" : "*** NO ***");
+        printf("    %-42s %d bytes\n", "KSW length required at HIGH",
+               ese_ksw_len(2048, 11, 3));
+        ok &= guard && ese_params_valid(2048, 11, 3);
+    }
+
     printf("%s\n", ok ? "ALL ESE SELF-TESTS PASS" : "SELF-TEST FAILURE");
     return ok ? 0 : 1;
 }
