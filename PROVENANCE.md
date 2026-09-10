@@ -100,8 +100,8 @@ one, bit for bit. (The original build step was a script named `build.sh`, or
 compiling the reference C file and running its self-test. Any competent
 programmer of your era can reproduce this.)
 
-A second, independent check ships alongside: `vectors_check.c` links the
-reference and asserts every value in `enqpy-vectors.json` — all three key
+A second, independent check ships alongside: `tests/vectors/vectors_check.c`
+links the reference and asserts every value in `enqpy-vectors.json` — all three key
 profiles, the key-domain rule, the window boundary, the counter expansion and the
 rotation policy — 34 assertions in one pass. Build it the same way and it should
 report that every published vector reproduces exactly. The self-test proves the

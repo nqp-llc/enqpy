@@ -11,7 +11,7 @@ All hexadecimal in these vectors is **UPPERCASE, no separators**, matching §2 o
 | File | Role |
 | --- | --- |
 | `enqpy-vectors.json` | **Canonical, machine-readable source of truth.** Every conformance check runs against this. |
-| `vectors_check.c` | Reference verifier — links the C reference and asserts every published value (34 assertions). Build: `cc -O2 -std=c11 vectors_check.c -o vectors_check`. |
+| `vectors_check.c` | Reference verifier — sits beside the vectors it checks, links the C reference and asserts every published value (34 assertions). Run `make vectors` from the repository root, or build directly: `cc -O2 -std=c11 -I src tests/vectors/vectors_check.c -o vectors_check`. |
 | `enqpy-vectors.example.json` | A small copy showing the structure, seeded with the real vectors below. |
 
 JSON is canonical because every language parses it with zero dependencies. If you also publish a human-readable `.txt`, **generate it from the JSON** so the two cannot drift; the JSON always wins.
@@ -186,8 +186,9 @@ Published in **v5.1** and mechanically checkable today:
 - [x] NIL key-update policy — Method 1 rejected, Method 2 accepted, Method 2 without external entropy rejected (`nil-0001/2/3`)
 
 **The export is complete.** Every case the self-test exercises is now published as a
-machine-checkable vector, and `vectors_check.c` in the repository root runs all
-34 assertions against the reference in one pass.
+machine-checkable vector, and `tests/vectors/vectors_check.c` runs all 34
+assertions against the reference in one pass — `make vectors`, or `make check` to
+run it together with the 84/84 self-test.
 
 ## Versioning & reporting
 
