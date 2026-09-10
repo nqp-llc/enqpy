@@ -49,16 +49,18 @@ passes × `LOGN` stages, the switch bit of every pair taken from a third indepen
 keystream (`KSW`). Decryption reuses the same switch bits with the stage order
 reversed.
 
-This construction is canonical (over the Feistel and Fisher-Yates variants in
-`aead_bench_ese.c`, which exist only for speed comparison) for three reasons:
+This construction is canonical for three reasons. Feistel and Fisher-Yates
+permutations were evaluated as alternatives during development; neither is
+published here, and neither is a conforming `S`.
 
 1. **Bit-identical in C and HDL.** It is just conditional swaps, so software and
    silicon derive the *same* permutation and interoperate. The Feistel needs
    cycle-walking and Fisher-Yates is sequential — neither maps cleanly to both.
 2. **Self-contained.** It is built only from Enqpy keystream — no foreign
-   primitive. (The ChaCha-keyed Fisher-Yates variant gives a cleaner "uniform
-   random permutation" argument but imports ChaCha, which defeats the point of a
-   cipher whose pitch is "simpler than ChaCha, no S-boxes.")
+   primitive. A ChaCha-keyed Fisher-Yates shuffle would give a cleaner "uniform
+   random permutation" argument, but it imports ChaCha, which defeats the point of
+   a cipher whose pitch is "simpler than ChaCha, no S-boxes." That is why the
+   butterfly was chosen despite the weaker distributional argument.
 3. **Tested.** It is the construction the A3 falsification sweep exercised
    (secret-network equivocation held past known-S, to threshold m=7 at n=4).
 
@@ -80,10 +82,17 @@ with a standard MAC (encrypt-then-MAC) exactly as the base cipher does.
 
 | file | role |
 |---|---|
-| `enqpy_ese_reference.c` | canonical C reference (this layer; `S` + masks), self-test |
-| `enqpy_ese_hardening.vhd` | silicon reference (same `S`); round-trip + bijection TB |
+| `enqpy_ese_reference.c` | canonical C reference (this layer; `S` + masks), self-test + parameter guard |
+| `enqpy_reference_pkg.vhd` | shared VHDL package used by the ESE modules |
+| `enqpy_ese_hardening.vhd` | silicon reference (same `S`) |
+| `enqpy_ese_tb.vhd` | VHDL testbench: round-trip + bijection |
 | `enqpy_ese_xcheck_tb.vhd` | SW↔HW interop anchor: VHDL must reproduce the C ciphertext |
-| `aead_bench_ese.c` | speed harness only (Feistel / Fisher-Yates `S` variants) — not canonical |
+
+Every file named in this document is in the repository. Earlier revisions listed a
+speed-comparison harness (`aead_bench_ese.c`) carrying Feistel and Fisher-Yates
+`S` variants; it was never published, and the reference to it is withdrawn rather
+than left as a broken pointer. The base-cipher benchmark harness is
+`aead_bench.c`, which does not exercise ESE.
 
 `W1`/`W2`/`KSW` are supplied as inputs here (matching the VHDL module interface). In
 deployment they are separately derived Enqpy keystreams from `enqpy_reference.c`'s
