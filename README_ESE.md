@@ -4,8 +4,8 @@
 
 Base Enqpy's record encryption is byte XOR; ESE's two masking steps use mod-16
 addition — the ℤ₁₆ structure the obstruction analysis rests on. ESE composes
-independent Enqpy keystreams around a secret permutation; it does not change base
-Enqpy's operation.
+separately derived Enqpy keystreams around a secret permutation; it does not change
+base Enqpy's operation.
 
 This is the **optional** known-plaintext (KP) hardening layer for Enqpy. It is not
 part of the base cipher and not required for the base cipher's proven guarantee.
@@ -29,8 +29,11 @@ rely on).
 
 The ESE layer adds a second line of defense at the cipher layer:
 
-- `W1`, `W2` — two **independent** Enqpy keystreams (`PDAF_SEC` under separate
-  per-record credentials).
+- `W1`, `W2` — two **separately derived** Enqpy keystreams (`PDAF_SEC` under
+  distinct, domain-separated per-record credentials). *"Independent" is reserved in
+  the Rev 5.1 corpus for the statistical claim of the information-theoretic
+  key-supply profile (FCD §8.10); under the computational profile these keystreams
+  are computationally, not statistically, separated.*
 - `S` — a **secret, per-record-fresh** byte permutation of the window, applied
   between the two masks. The inner mask `W1` plus the secret `S` is what raises the
   KP threshold.
@@ -46,16 +49,18 @@ passes × `LOGN` stages, the switch bit of every pair taken from a third indepen
 keystream (`KSW`). Decryption reuses the same switch bits with the stage order
 reversed.
 
-This construction is canonical (over the Feistel and Fisher-Yates variants in
-`aead_bench_ese.c`, which exist only for speed comparison) for three reasons:
+This construction is canonical for three reasons. Feistel and Fisher-Yates
+permutations were evaluated as alternatives during development; neither is
+published here, and neither is a conforming `S`.
 
 1. **Bit-identical in C and HDL.** It is just conditional swaps, so software and
    silicon derive the *same* permutation and interoperate. The Feistel needs
    cycle-walking and Fisher-Yates is sequential — neither maps cleanly to both.
 2. **Self-contained.** It is built only from Enqpy keystream — no foreign
-   primitive. (The ChaCha-keyed Fisher-Yates variant gives a cleaner "uniform
-   random permutation" argument but imports ChaCha, which defeats the point of a
-   cipher whose pitch is "simpler than ChaCha, no S-boxes.")
+   primitive. A ChaCha-keyed Fisher-Yates shuffle would give a cleaner "uniform
+   random permutation" argument, but it imports ChaCha, which defeats the point of
+   a cipher whose pitch is "simpler than ChaCha, no S-boxes." That is why the
+   butterfly was chosen despite the weaker distributional argument.
 3. **Tested.** It is the construction the A3 falsification sweep exercised
    (secret-network equivocation held past known-S, to threshold m=7 at n=4).
 
@@ -77,14 +82,48 @@ with a standard MAC (encrypt-then-MAC) exactly as the base cipher does.
 
 | file | role |
 |---|---|
-| `enqpy_ese_reference.c` | canonical C reference (this layer; `S` + masks), self-test |
-| `enqpy_ese_hardening.vhd` | silicon reference (same `S`); round-trip + bijection TB |
+| `enqpy_ese_reference.c` | canonical C reference (this layer; `S` + masks), self-test + parameter guard |
+| `enqpy_reference_pkg.vhd` | shared VHDL package used by the ESE modules |
+| `enqpy_ese_hardening.vhd` | silicon reference (same `S`) |
+| `enqpy_ese_tb.vhd` | VHDL testbench: round-trip + bijection |
 | `enqpy_ese_xcheck_tb.vhd` | SW↔HW interop anchor: VHDL must reproduce the C ciphertext |
-| `aead_bench_ese.c` | speed harness only (Feistel / Fisher-Yates `S` variants) — not canonical |
+
+Every file named in this document is in the repository. Earlier revisions listed a
+speed-comparison harness (`aead_bench_ese.c`) carrying Feistel and Fisher-Yates
+`S` variants; it was never published, and the reference to it is withdrawn rather
+than left as a broken pointer. The base-cipher benchmark harness is
+`aead_bench.c`, which does not exercise ESE.
 
 `W1`/`W2`/`KSW` are supplied as inputs here (matching the VHDL module interface). In
-deployment they are independent Enqpy keystreams from `enqpy_reference.c`'s
-`PDAF_SEC` under domain-separated per-record credentials.
+deployment they are separately derived Enqpy keystreams from `enqpy_reference.c`'s
+`PDAF_SEC` under distinct, domain-separated per-record credentials.
+
+## Profile parameters — checked, not assumed
+
+`ese_encrypt` and `ese_decrypt` return **0 on success and −1 on an invalid
+profile**, matching `PDAF_SEC`'s convention in the base reference. Callers MUST
+check the return value. The precondition is:
+
+| Requirement | Why |
+| --- | --- |
+| `NB == (1 << LOGN)` | the butterfly network is defined over exactly `2^LOGN` bytes |
+| `NB <= 2048` (`ESE_MAX_NB`) | fixed internal buffers |
+| `PASSES >= 1` | at least one pass |
+| `length(KSW) >= PASSES * LOGN * (NB / 2)` | one switch bit per pair, per stage |
+
+The first row is the one that matters, and it is worth stating plainly because it
+is a **silent** failure mode. If `NB != (1 << LOGN)` the network still produces a
+bijection and still round-trips, so a naive self-check passes — but the stages
+never mix across the top block boundary and `S` degenerates into a permutation
+confined to sub-blocks. Measured at `NB = 64`: with `LOGN = 6` the permutation
+crosses the midpoint and reaches a maximum displacement of 59; with `LOGN = 5` it
+**never** crosses the midpoint and reaches only 27. A port that got this wrong
+would pass round-trip and bijection tests while shipping a materially weaker `S`.
+`ese_params_valid()` exists to make that impossible, and the self-test exercises
+it against four bad profiles.
+
+Use `ese_ksw_len(NB, LOGN, PASSES)` to size the switch-bit buffer; at the
+production HIGH profile (`NB=2048, LOGN=11, PASSES=3`) it is 33,792 bytes.
 
 ## Build & verify
 
