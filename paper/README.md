@@ -2,14 +2,18 @@
 
 [![build](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml/badge.svg)](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml)
 
-> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher with a formal
-> proof of a non-vanishing ciphertext-only **plaintext** equivocation (at least
-> 2¹²⁸ consistent plaintexts per ciphertext at HIGH), supported by a ≥2-bit
-> ciphertext-only key-equivocation floor, motivated by Shannon's Ideal-System
-> target. This repository is the canonical software reference implementation,
-> released alongside the formal proof paper.
+> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher whose
+> ciphertext-only confidentiality is **proved rather than assumed**: from the
+> ciphertext alone, at least 2¹²⁸ plaintexts remain mathematically consistent at
+> HIGH, and no amount of computing power erases that algebraic fact. It is
+> supported by a ≥2-bit ciphertext-only key-equivocation floor, and motivated by
+> Shannon's Ideal-System target. Enqpy is **symmetric**: it needs a shared secret
+> already in place, and does not do identity, key exchange with strangers, or
+> signatures. The known-plaintext boundary is stated openly in FCD §8.5, not
+> engineered around. This repository is the canonical software reference
+> implementation, released alongside the formal proof paper.
 
-**Paper:** *Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Record Cipher, with Exact Known-Plaintext Bounds (Rev 5.0).* The canonical citation and
+**Paper:** *Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Stream Cipher, with a Characterized Known-Plaintext Boundary (Rev 5.1).* The canonical citation and
 the current paper link are maintained on the website — see
 [enqpy.com/technical.html](https://enqpy.com/technical.html).
 
@@ -26,16 +30,20 @@ This repository ships a single canonical C reference implementation,
 **`src/enqpy_reference.c`** — Enqpy in its **Canonical Configuration**
 (nonce-only OffsetKey derivation / Key Role Separation, Case-1 `W` generation,
 a normative 2,048-byte HIGH window, and synchronized key update). It is the
-profile for which the Rev 5.0 results are proved in the **ciphertext-only,
-single-key-epoch** model — the primary result is message-axis plaintext
-equivocation H(PT | CT,OR) = H∞ ≥ 128 bits with a uniform posterior over ≥ 2¹²⁸
-consistent plaintexts (Theorem 3), supported by a key-axis ciphertext-only
-equivocation floor of ≥ 2 bits (exact four-key tightness only under
-effective-keystream observation; Theorem 2). Generating `W` by Case 1 is exactly
-what makes the (EK,QK) → W map a ℤ₁₆-module homomorphism, which closes the
-message-axis min-entropy theorem. Under known plaintext the boundary of FCD §8.5
-applies, confined in deployment by independent record credentials (FCD §8.10);
-see "Paper" below.
+profile for which the Rev 5.1 results are proved in the **ciphertext-only,
+single-key-epoch** model. The primary result is message-axis: at least 2¹²⁸
+plaintexts remain mathematically consistent with any ciphertext at HIGH — a
+*support* bound that is unconditional and independent of source-language
+assumptions — and under the uniform key and plaintext priors of Theorem 3 the
+posterior is exactly uniform over that set, giving H(PT | CT,OR) = H∞ ≥ 128
+bits. It is supported by a key-axis ciphertext-only equivocation floor of ≥ 2
+bits (exact four-key tightness only under the effective-keystream transcript;
+Theorem 2), which is a supporting result only: decryption is constant over the
+[+8] coset, so that floor confers no confidentiality on the message. Generating
+`W` by Case 1 is exactly what makes the (EK,QK) → W map a ℤ₁₆-module
+homomorphism, which closes the message-axis theorem. Under known plaintext the
+boundary of FCD §8.5 applies, confined in deployment by the per-record
+credential rule (FCD §8.10); see "Paper" below.
 
 | File | Phase 3 `W` generation | Window (HIGH) | Self-test |
 |---|---|---|---|
@@ -62,7 +70,7 @@ cc -O3 -std=c11 -DENQPY_SELFTEST -DENQPY_BENCHMARK \
 Expected output begins with:
 
 ```
-Enqpy(tm) Stream Cipher -- Reference  Rev 5.0
+Enqpy(tm) Stream Cipher -- Reference  Rev 5.1
 Canonical Configuration core, Case-1 W generation (ciphertext-only proof profile)
 Copyright (c) 2026 NQP LLC -- Apache License 2.0
 Platform: n=64, tile_len=144, W_bytes=2048 (window)
@@ -149,7 +157,7 @@ This repository contains:
 - **`src/enqpy_reference.c`** — the C11 reference for Enqpy (Case-1 `W`
   generation, the Canonical Configuration). Single file, no external
   dependencies, portable from 8-bit microcontrollers to 64-bit servers. The
-  canonical reference for the proved Rev 5.0 ciphertext-only results.
+  canonical reference for the proved Rev 5.1 ciphertext-only results.
 - **[`FCD.md`](./FCD.md)** — the Formal Cryptographic Description: the
   prose-and-mathematics specification of the cipher (OWC, PDAF, PDAF_SEC, the
   five phases, key management, security analysis, and the §13 test vectors the
@@ -158,7 +166,10 @@ This repository contains:
 - **84 embedded self-test assertions** covering PDAF Mode 0/1, PDAF_SEC output
   and round-trip, the `[+8]` coset invariants that drive the ciphertext-only
   key-equivocation floor, and the window-boundary and NIL key-update
-  vectors.
+  vectors. Every one of those cases is also published as a machine-checkable
+  vector in [`TEST_VECTORS.md`](./TEST_VECTORS.md) — all three profiles, the
+  Rev 5.1 key domain, the Phase-1 `OR_EXP` expansion and the rotation policy —
+  and `vectors_check.c` asserts all 34 against the reference in one pass.
 - **Built-in benchmark harness** reproducing the performance numbers reported
   in the paper.
 - **`src/aead_bench.c`** — a separate cross-cipher AEAD benchmark
@@ -169,11 +180,13 @@ This repository contains:
 ## What this is *not*
 
 - **Not production-ready** without the additional operational mechanisms of
-  the Rev 5.0 deployment profile (independent record credentials, FCD §8.10): a
-  fresh, independent credential pair (or computationally independent per-record
-  key material) for each record, encrypt-then-MAC over `eff_or` ‖ ciphertext ‖
-  metadata, plus nonce-uniqueness infrastructure, secure key storage,
-  constant-time MOD16 table lookups, and secure erase of key material after use.
+  the Rev 5.1 deployment profile (FCD §8.10): one distinct, non-reused
+  credential per record under either conforming key-supply profile —
+  independently sampled from fresh entropy for the information-theoretic
+  guarantee, or secret domain-separated ratchet/KDF/CSPRNG derivation for the
+  computational one — plus encrypt-then-MAC over `eff_or` ‖ ciphertext ‖
+  metadata, nonce-freshness infrastructure, secure key storage, constant-time
+  MOD16 table lookups, and secure erase of key material after use.
   See the implementation comments in `src/enqpy_reference.c` for specifics.
 
 ---
@@ -192,7 +205,7 @@ The 84 assertions map directly onto claims made in the paper:
 | TV5 — `[+8]` coset invariance on QK axis | 1 | QK+8·**1** produces identical ciphertext (Remark 1, Theorem 2) |
 | TV6 — `[+8]` coset invariance on both axes | 1 | EK+8 **and** QK+8 produce identical ciphertext (the 4→1 coset collapse) |
 | TV7 — Window boundary (2,048-byte window) | 2 | Byte [2046,2047] tail + a 2,050-byte round-trip across the Phase-5 update |
-| TV8 — NIL key-update policy | 3 | Method 1 rejected, Method 2 succeeds, and the coset collapses 4→1 (Lemma B4) |
+| TV8 — NIL key-update policy | 3 | Method 1 rejected (it is simulable — see FCD §7.4), Method 2 succeeds, and the `[+8]` coset maps to a single new pair under Method 2 (Lemma B4) |
 | **Total** | **84** | |
 
 TV4 and TV5 are the empirical confirmation of the `[+8]` global shift invariant
@@ -217,13 +230,19 @@ The reference supports three mandatory key-length profiles per the FCD:
 | MEDIUM | 48 nibbles (192 bits) | 2,304 nibbles | Enterprise |
 | **HIGH** | **64 nibbles (256 bits)** | **4,096 nibbles** | **Government, defense (default)** |
 
-The paper's numerical bounds are all stated for the HIGH profile (n=64), under
-ciphertext-only observation: plaintext equivocation H(PT | CT, OR) ≥ 128 bits
-(uniform posterior over ≥ 2^128 consistent plaintexts; closed) is the primary
-result, supported by a key-equivocation floor of ≥ 2 bits (exact four-key
-tightness only under effective-keystream observation). The known-plaintext
-boundary (FCD §8.5) and the independent-record-credential deployment profile
-(FCD §8.10) are separate.
+Canonical test vectors are published for **all three** profiles as of vectors
+v5.1 — zero-plaintext, `EK = QK`, and window-boundary cases at n = 32, 48 and 64
+— so a port can substantiate whichever profiles it claims.
+
+The paper's numerical bounds are all stated for the **HIGH** profile (n=64),
+under ciphertext-only observation: at least 2^128 mathematically consistent
+plaintexts for any ciphertext, closing to H(PT | CT, OR) = H∞ ≥ 128 bits under
+the stated priors, is the primary result; the ≥ 2-bit key-equivocation floor is
+supporting. HIGH is the theorem-bearing profile and the default for anything
+new. **LOW (n=32) is the one profile where the derivation's worst case is
+reachable, giving a floor of 2^64 by that path** — do not quote the 2^128 figure
+alongside LOW. The known-plaintext boundary (FCD §8.5) and the per-record
+credential rule (FCD §8.10) are separate.
 
 ---
 
@@ -336,15 +355,21 @@ Principal results:
 - **Theorem 2** — Key-axis keystream-equivalence coset (supporting): a
   ciphertext-only key-equivocation floor of ≥ 2 bits for every transcript;
   the exact four-key value H(EK, QK) = log₂(4) = 2 bits holds only under
-  effective-keystream (known-plaintext-strength) observation. T_{>t} ⊥ (EK, QK) | T_{≤t}.
-- **Theorem 3 (primary)** — Ciphertext-only plaintext equivocation (closed):
-  H(PT | CT, OR) = H∞ ≥ 128 bits for HIGH profile, posterior uniform over the
-  full consistent set; at least 2^128 consistent plaintexts for any ciphertext.
-- **Known-plaintext boundary (§16)** — under one continuing key state, ~2
-  fully-known 2,048-byte windows determine the rest of the record (cross-OR
-  decryption); confined in deployment by independent record credentials.
-- **Corollary 2** — Quantum-era posture: the ciphertext-only bounds are
-  algebraic and rest on no public-key hardness assumption.
+  the effective-keystream transcript T^eff. Supporting result only — decryption
+  is constant over the coset, so it confers no confidentiality on the message.
+- **Theorem 3 (primary)** — Ciphertext-only plaintext equivocation: at least
+  2^128 mathematically consistent plaintexts for any ciphertext at HIGH (a
+  support bound, unconditional), with the posterior exactly uniform over that
+  set and H(PT | CT, OR) = H∞ ≥ 128 bits under the stated uniform priors.
+- **Known-plaintext boundary (§16)** — under one continuing key state, enough
+  known plaintext determines the rest of a window, and the published reference
+  instance demonstrates that two fully-known 2,048-byte windows **can** suffice
+  for cross-OR decryption. The general threshold for arbitrary nonce pairs is
+  not characterized. Confined in deployment by the per-record credential rule.
+- **Corollary 2** — Quantum-era posture: quantum computing cannot erase the
+  proved ciphertext-only ambiguity, because the bound is algebraic rather than a
+  hardness assumption. This is not a deployment-grade quantum-security claim;
+  see FCD §3.5 for the quantum search-resistance advisory.
 
 A companion technical note, [*Adversarial Outcome Equivalence — proved under
 the DSMV*](https://enqpy.com/papers/enqpy-dsmv.pdf), proves that Enqpy™ and
@@ -405,10 +430,11 @@ citation export. BibTeX form:
 @techreport{mcgough2026enqpy,
   author      = {Paul McGough},
   title       = {Ciphertext-Only Plaintext Equivocation in a Finite-Key
-                 MOD16 Record Cipher, with Exact Known-Plaintext Bounds},
+                 MOD16 Stream Cipher, with a Characterized Known-Plaintext
+                 Boundary},
   institution = {NQP LLC},
   year        = {2026},
-  number      = {Rev 5.0},
+  number      = {Rev 5.1},
   note        = {Canonical citation and paper link: https://enqpy.com/technical.html}
 }
 ```
@@ -419,7 +445,7 @@ citation export. BibTeX form:
 
 | Artifact | Status |
 |---|---|
-| C reference implementation | ✅ Rev 5.0 — Enqpy (Canonical Configuration core, Case-1) |
+| C reference implementation | ✅ Rev 5.1 — Enqpy (Canonical Configuration core, Case-1) |
 | Formal Cryptographic Description | ✅ `FCD.md` |
 | Test vectors | ✅ 84/84 PASS |
 | Benchmark harness | ✅ Included |
@@ -429,7 +455,7 @@ citation export. BibTeX form:
 | Porting guide & vector format | ✅ `PORTING.md`, `TEST_VECTORS.md` |
 | Community ports registry | ✅ `PORTS.md` — open for submissions |
 | VHDL reference | 🔒 Available via direct licensing |
-| NIST SP 800-22 full test suite | 🟡 Summary in FCD §14; full run available via direct inquiry |
+| NIST SP 800-22 full test suite | 🟡 Summary in FCD §14 — passes with one documented exception (the 100-stream Spectral test fails; Case-1 keystream is deliberately linear and no keystream-indistinguishability claim is made). Full run available via direct inquiry |
 
 ---
 
