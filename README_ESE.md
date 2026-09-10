@@ -1,4 +1,4 @@
-# Enqpy™ ESE — optional KPA-hardening reference (Rev 5.0)
+# Enqpy™ ESE — optional KPA-hardening reference (Rev 5.1)
 
 `C = S(P + W1) + W2`  (+ = per-nibble mod-16 addition over ℤ₁₆)
 
@@ -16,11 +16,16 @@ cipher's ciphertext-only proof.
 ## What it is
 
 The base Enqpy cipher (`enqpy_reference.c`) has a proof about **ciphertext-only**
-plaintext equivocation in the stated model: from ciphertext alone, the message
-keeps at least 128 bits of min-entropy at HIGH, for any quantity of ciphertext,
-and the bound does not rest on public-key hardness assumptions. Known plaintext at
-one key epoch is outside that proof and is handled operationally by per-record
-epoch rotation (`nil_comm`/HKU).
+plaintext equivocation in the stated model: from ciphertext alone at least 2^128
+plaintexts remain mathematically consistent at HIGH for any quantity of
+ciphertext, and under the uniform key and plaintext priors of Theorem 3 that
+support bound closes to at least 128 bits of min-entropy. The support bound is
+unconditional; the min-entropy statement is prior-dependent. Neither rests on
+any computational-hardness assumption. Known plaintext at
+one key epoch is outside that proof and is handled operationally by the
+per-record credential rule of FCD 8.10 (`nil_comm` Method 2 is the
+continuing-key-state rotation mechanism, which the per-record profile does not
+rely on).
 
 The ESE layer adds a second line of defense at the cipher layer:
 

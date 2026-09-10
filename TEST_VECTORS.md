@@ -1,6 +1,6 @@
 # Enqpy™ Canonical Test Vectors
 
-These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships a single canonical C reference, `enqpy_reference.c` (Enqpy, Case-1 `W` generation — `-DENQPY_SELFTEST` runs **84/84**). It is the conformance target for the Rev 5.0 ciphertext-only core claims; the canonical KATs are unchanged since Rev 3.0.
+These vectors **are** the technical conformance test. A port that reproduces every one of them exactly — byte for byte — matches the Enqpy™ reference. The repository ships a single canonical C reference, `enqpy_reference.c` (Enqpy, Case-1 `W` generation — `-DENQPY_SELFTEST` runs **84/84**). It is the conformance target for the Rev 5.1 ciphertext-only core claims. Rev 5.1 changed no cipher behaviour, so the Rev 3.0 KATs are unchanged and reproduce byte-for-byte; vectors **v5.1** adds four cases and edits none in place.
 
 Passing these vectors is the *technical* bar. It puts a port at the **Reference-Compatible** level (self-attested) and is the prerequisite for the Foundation's higher levels — but it is not certification, and it does not by itself grant any right to the Enqpy™ marks. See "Conformance levels" below.
 
@@ -11,6 +11,7 @@ All hexadecimal in these vectors is **UPPERCASE, no separators**, matching §2 o
 | File | Role |
 | --- | --- |
 | `enqpy-vectors.json` | **Canonical, machine-readable source of truth.** Every conformance check runs against this. |
+| `vectors_check.c` | Reference verifier — links the C reference and asserts every published value (34 assertions). Build: `cc -O2 -std=c11 vectors_check.c -o vectors_check`. |
 | `enqpy-vectors.example.json` | A small copy showing the structure, seeded with the real vectors below. |
 
 JSON is canonical because every language parses it with zero dependencies. If you also publish a human-readable `.txt`, **generate it from the JSON** so the two cannot drift; the JSON always wins.
@@ -25,9 +26,9 @@ PDAF_SEC(ek, qk, or_nibs, or_ctr, n, target, nTextLen, out)  ->  bytes written, 
 
 | Field | Meaning |
 | --- | --- |
-| `ek` | Encryption Key — master secret, `n` nibbles. MUST differ from `qk`. |
+| `ek` | Encryption Key — master secret, `n` nibbles. Sampled independently and uniformly; there is **no** `ek ≠ qk` restriction (Rev 5.1). |
 | `qk` | Query Key — companion master secret, `n` nibbles. |
-| `or` | Open Return — per-message public nonce, `n` nibbles (CSPRNG; never reused per (EK,QK)). |
+| `or` | Open Return — per-message public nonce, `n` nibbles. MUST come from a CSPRNG; freshness is probabilistic, not structural (the map OR → VKP is not injective — FCD §7.2). |
 | `or_ctr` | 64-bit Open Return Counter (monotonic). Input as an integer. |
 | `n` | Key length in nibbles: 32 (LOW), 48 (MEDIUM), or 64 (HIGH, default). |
 | `pt` / `ct` | Plaintext / ciphertext bytes. Output length equals input length exactly. |
@@ -73,6 +74,54 @@ CT = 2434B58845C6FDE8   (8 bytes)  == W[0..7]
 ```
 
 It round-trips: applying `PDAF_SEC` to the `CT` with the same parameters returns the zero plaintext. The `[+8]` coset invariants (`EK + 8·1`, `QK + 8·1`, and both together — nibble-wise mod 16) reproduce the identical `CT`, confirming the Key Role Separation wiring. The self-test additionally verifies the 2,048-byte window boundary (TV7) and the NIL key-update policy (TV8); see the README self-test breakdown.
+
+## Profile key material — and why it is a suffix
+
+The HIGH vectors use the canonical `EK` / `QK` / `OR` in full. The **LOW (n=32)**
+and **MEDIUM (n=48)** vectors use the **last** `n` nibbles of those same canonical
+values:
+
+| Profile | n | Key material | Window |
+| --- | ---: | --- | ---: |
+| LOW | 32 | last 32 nibbles of the canonical values | 512 bytes |
+| MEDIUM | 48 | last 48 nibbles | 1,152 bytes |
+| HIGH | 64 | the canonical values in full | 2,048 bytes |
+
+The suffix is deliberate, and the reason is worth knowing if you ever generate
+your own profile vectors. With a **prefix**, all three profiles produce the
+*identical* first sixteen keystream nibbles: at `c = 0` no index exceeds
+`p + 15 + 1 = 31 < n`, and with `or_ctr = 1` the counter expansion agrees over
+that range — so the zero-plaintext ciphertext would depend only on the first 32
+nibbles, which a prefix makes common to all three. A prefix-derived vector would
+therefore be reproduced by an implementation that **ignored `n` entirely**, and
+would not test what it claims to test.
+
+With the suffix the three profiles disagree, and the published `ct` values differ
+accordingly:
+
+| Vector | LOW | MEDIUM | HIGH |
+| --- | --- | --- | --- |
+| zero-plaintext `ct` | `880D1D26F1A183AD` | `AD3855C36B7D4B41` | `2434B58845C6FDE8` |
+| `EK = QK` `ct` | `A26E1C021AD0230E` | `7DF090DDBA60C8CC` | `B8DCA43E483718B3` |
+| window tail | `5F D3` @ [510,511] | `96 64` @ [1150,1151] | `54 28` @ [2046,2047] |
+
+## Two groups worth a note
+
+**`pdaf_mode1_selfref`** publishes the Phase-1 `OR_EXP` expansion of FCD §13.2a:
+`OR_EXP = PDAF1(or_ctr_nibs, or_ctr_nibs)`, the same array as both ValueKey and
+OffsetKey. Small counters give visibly low-entropy output — `or_ctr = 1` expands
+to `…0011`, `or_ctr = 2` to `…0022` — and that is **expected and correct**.
+`OR_EXP` contributes counter state and diffusion, *not* uniqueness. Nonce
+freshness is probabilistic and comes from the CSPRNG `OR` component (FCD §7.2).
+The `or_ctr = 0xA5C3` vector is the one that shows real propagation.
+
+**`nil_comm_update`** publishes the rotation policy. Method 2 (external entropy)
+is required; Method 1 (deterministic chain) must be **rejected**, because a
+public chain is simulable — an adversary holding the current key state computes
+the next one, so the rotation resets nothing. Method 2 called *without* external
+entropy must also be rejected. One thing not to misread: mapping the `[+8]` coset
+to a single new pair is **not** what distinguishes the two methods; Method 2 does
+it too, and the vector records that explicitly. Simulability is the whole reason.
 
 ## How to verify a port
 
@@ -122,15 +171,23 @@ Passing these vectors puts you at **Reference-Compatible** — the entry level a
 
 To make "passes the vectors" mean "passes the reference," export the full self-test set and include the edge cases:
 
-- [ ] OWC, PDAF Mode 0, PDAF Mode 1 primitives (above)
-- [ ] PDAF Mode 1 self-referential (VK = OK), the Phase-1 OR_EXP case (FCD §13.2a)
-- [ ] PDAF_SEC zero plaintext (CT = W) — the isolation vector
-- [ ] PDAF_SEC round-trip (decrypt(encrypt(PT)) == PT)
-- [ ] [+8] coset invariants (EK+8 and QK+8)
-- [ ] empty plaintext (zero-length)
-- [ ] lengths crossing the n² W-cycle boundary, to exercise the Phase-5 update
-- [ ] each profile you support: n = 32, 48, 64
-- [ ] EK = QK rejected (returns −1)
+Published in **v5.1** and mechanically checkable today:
+
+- [x] OWC, PDAF Mode 0, PDAF Mode 1 primitives (above)
+- [x] PDAF_SEC zero plaintext (CT = W) — the isolation vector
+- [x] PDAF_SEC round-trip (decrypt(encrypt(PT)) == PT)
+- [x] `[+8]` coset invariants — EK+8, QK+8, **and both axes together**
+- [x] EK = QK **accepted** and round-trips (`sec-0002-ekEqualsQk`). Rev 5.1 removed the equality prohibition; an implementation that rejects or resamples equal keys is **non-conformant**, and this is the vector that catches it
+- [x] empty plaintext, zero-length (`sec-0003-emptyPT`, returns 0)
+- [x] lengths crossing the n² W-cycle boundary, exercising the Phase-5 update (`sec-0004-windowBoundary`)
+
+- [x] each profile: **n = 32 (LOW), 48 (MEDIUM), 64 (HIGH)** — zero-plaintext, EK=QK, and window-boundary vectors published for all three
+- [x] PDAF Mode 1 self-referential (VK = OK), the Phase-1 OR_EXP case (FCD §13.2a) — `pdaf1sr-0001/2/3`
+- [x] NIL key-update policy — Method 1 rejected, Method 2 accepted, Method 2 without external entropy rejected (`nil-0001/2/3`)
+
+**The export is complete.** Every case the self-test exercises is now published as a
+machine-checkable vector, and `vectors_check.c` in the repository root runs all
+34 assertions against the reference in one pass.
 
 ## Versioning & reporting
 

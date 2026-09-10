@@ -1,5 +1,5 @@
 # ============================================================================
-# Enqpy(tm) Rev 5.0 -- reference core
+# Enqpy(tm) Rev 5.1 -- reference core
 #
 #   make            build + run the core 84/84 KAT self-test
 #   make test       build + run the core's self-test (84 PASS / 0 FAIL)

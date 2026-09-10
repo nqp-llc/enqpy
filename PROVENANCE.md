@@ -14,18 +14,25 @@ Please do. That is the entire purpose of this file.
 
 ## 1. What this is, in plain language
 
-Most secret-writing methods are only *hard* to break: given enough time, enough
-intercepted messages, or a powerful enough future machine, the secret can come
-out. Enqpy is different in a specific, proved way. It was given a formal
-mathematical **proof** that, **from the scrambled output alone**, the
-information needed to read a message is **not present** — so no amount of time,
-data, or computing power (including quantum computers) can recover it *from the
-ciphertext by itself*. This is the property the mathematician Claude Shannon
-defined in 1949 and believed could not be achieved with a practical, reusable
-key; the ciphertext-only form of it was achieved, and proved, in 2026. It is a
-result about the scrambled output on its own — using it safely still depends on
-the key-management discipline described in §5 (encrypting each record under
-fresh, independent key material, and adding a separate tamper-check).
+Most secret-writing methods are only *hard* to break: the secret stays safe
+because nobody is believed to have a fast enough method or a big enough machine.
+That is a belief, and beliefs can be overturned. Enqpy is different in a
+specific, proved way. It was given a formal mathematical **proof** that, **from
+the scrambled output alone**, at least 2^128 different messages remain
+mathematically consistent with what an eavesdropper holds — and that number is
+a counting fact about the mathematics, not a bet on a computation staying hard,
+so no amount of computing power (quantum included) erases it. This is the
+property the mathematician Claude Shannon defined in 1949 and believed could not
+be achieved with a practical, reusable key; the ciphertext-only form of it was
+achieved, and proved, in 2026.
+
+Be careful about what that does and does not say. It does **not** say the
+information "is not in the ciphertext" — a great deal about the message is
+narrowed down by it. It says the ciphertext alone never singles the message out.
+And for ordinary, redundant text there is a finite length beyond which the
+proof's uncertainty conclusion no longer applies. The strong, unconditional part
+is this: the ambiguity is *proved* rather than assumed. Using it safely also
+depends on the key-management discipline described in §5.
 
 The collection should contain three things. If you have all three, you have the
 whole work:
@@ -93,13 +100,22 @@ one, bit for bit. (The original build step was a script named `build.sh`, or
 compiling the reference C file and running its self-test. Any competent
 programmer of your era can reproduce this.)
 
+A second, independent check ships alongside: `vectors_check.c` links the
+reference and asserts every value in `enqpy-vectors.json` — all three key
+profiles, the key-domain rule, the window boundary, the counter expansion and the
+rotation policy — 34 assertions in one pass. Build it the same way and it should
+report that every published vector reproduces exactly. The self-test proves the
+code is consistent with itself; this proves the code is consistent with the
+published data.
+
 **B. Check the mathematics from first principles.**
 The proof stands on its own and depends on no authority, no institution, and no
-unbroken chain of custody. Its central results are: a *message* uncertainty of at least 2¹²⁸
-equally-possible messages for any single scrambled output (the primary result),
-and a *key* uncertainty that never falls below two bits no matter how much
-ciphertext is observed. Anyone with the mathematics can check these directly. The FCD gives the
-exact construction needed to do so.
+unbroken chain of custody. Its central results are: a *message* uncertainty of
+at least 2¹²⁸ mathematically consistent messages for any single scrambled output
+(the primary result — and under the proof's stated uniform priors those are
+equally likely), and a *key* uncertainty that never falls below two bits no
+matter how much ciphertext is observed. Anyone with the mathematics can check
+these directly. The FCD gives the exact construction needed to do so.
 
 If the code passes its vectors **and** the proof checks out, you have the real
 Enqpy — regardless of what this note, or any label, claims.
@@ -112,17 +128,53 @@ This work was deliberately placed in multiple independent archives so no single
 failure could erase it. If you found only one copy, others should exist at the
 identifiers below. They also let you confirm you have an unaltered version.
 
+> **Note on revisions.** The archive identifiers below were minted for the Rev 5.0
+> launch bundle of 1 June 2026. Rev 5.1 is a documentation revision: it changed no
+> cipher behaviour, and the Rev 3.0 known-answer test vectors still reproduce
+> byte-for-byte, so a Rev 5.0 copy remains a genuine and usable copy of the cipher.
+> What Rev 5.1 corrected is what the documents *claim* — several statements were
+> withdrawn as unsupported, and the key-domain rule changed (equal keys are now
+> permitted and must not be rejected). If you hold a Rev 5.0 copy, the code is
+> sound; prefer the Rev 5.1 documents where the two disagree. The hashes below are
+> for Rev 5.1.
+
 - **Origin site (may no longer exist):** enqpy.com
 - **Source-code archive (Software Heritage), permanent ID:** `swh:1:dir:353ffa73a2becabf1edc137e81f8992d0ae67339`
 - **Citable deposit with permanent DOI (Zenodo):** 10.5281/zenodo.20517938 (DOI: https://doi.org/10.5281/zenodo.20517938 · record: https://zenodo.org/records/20517938)
 - **General archive (Internet Archive) item — "Enqpy Public Record Bundle v1.0" (launch-day bundle, 2026-06-01):** https://archive.org/details/httpswww.enqpy.com
 - **Code repository:** github.com/nqp-llc/enqpy
-- **Content hashes of the canonical files (SHA-256):** *(Rev 5.0 — REGENERATE
-  all three from the final published Rev 5.0 files before depositing; the values
-  below are pre-Rev-5.0 and no longer match.)*
-  - FCD (`FCD.md`): `⟨REGENERATE for Rev 5.0⟩` (was: `fa38e48021a95ed4a0e04f572834105c242ad219f3f2042ee8e62ff6ffdc55c9`)
-  - Reference source (`enqpy_reference.c`): `⟨REGENERATE for Rev 5.0⟩` (was: `a4564872015d4f026a95df7d5a337cbb49a66b26168b273b0f5c5cb4ff862d4b`)
-  - Proof paper PDF (`enqpy_full_Rev5_0.pdf`): `⟨REGENERATE for Rev 5.0⟩` (was, for `enqpy_full_Rev3_0.pdf`: `38caf654494176cf9f508852782df81b7ec7e2019211fa9ee12b9d7b2c95cae0`)
+- **Content hashes of the canonical files (SHA-256, Rev 5.1):**
+
+  ```
+  59b89ca11d363d8d4585ce0895bb1b07237994955e1533326afcf8c78471d741  FCD.md
+  b9366a89e86a1acc078c7ae12d31ca399793fbb586697a7ecb01b2ab5203ad60  enqpy_reference.c
+  19b77d773645cfebca97b57dd01f918b33d3c7c15b06aff4e7d8d5a066168039  enqpy_full_Rev5_1.pdf
+  e746a7b67b5c6b3664b348ff32ac1a726657f12e348095402711717e3026ba22  enqpy-vectors.json
+  ```
+
+  A `SHA256SUMS` file carrying exactly these four lines should sit beside the
+  files in every deposit. Verify with `sha256sum -c SHA256SUMS`.
+
+  The test vectors are included in this list deliberately: §2 says the
+  description and the vectors are what let anyone rebuild the cipher and confirm
+  it is correct, so the vectors are a survival artifact and need a hash like the
+  rest.
+
+  **The proof PDF is byte-reproducible.** LaTeX normally stamps a build time into
+  the PDF, which would make its hash differ on every build and useless for
+  verification. The published PDF is therefore built with the timestamp pinned:
+
+  ```
+  SOURCE_DATE_EPOCH=1788998400 FORCE_SOURCE_DATE=1 \
+      latexmk -pdf enqpy_full_Rev5_1.tex
+  ```
+
+  (1788998400 is 2026-09-10T00:00:00Z.) Rebuilding from `enqpy_full_Rev5_1.tex`
+  with those variables set reproduces the hash above exactly. Without them the
+  content is identical but the hash will not match — if you are verifying a copy
+  and only the PDF hash differs, check that first before concluding anything is
+  wrong. `FCD.md`, `enqpy_reference.c` and `enqpy-vectors.json` are plain text and
+  have no such caveat.
 
 **Historical record (for context, not required for verification):**
 The proof closed in March 2026 and was released publicly on **June 1, 2026**, by
@@ -145,14 +197,20 @@ Honesty was part of the design, and it should outlive everything else here.
   **not**, by itself, guarantee a message hasn't been *altered*. In real use it
   is paired with a separate "authentication" step for that. A copy without that
   step still keeps secrets; it just doesn't detect tampering on its own.
-- The proved "information isn't there" property is about the **scrambled output
-  on its own**. If an attacker also learns some of the *original* text that went
-  with intercepted outputs, and the **same key keeps being reused**, that
-  knowledge can build up and eventually unlock other messages under that key.
-  The intended discipline prevents this: encrypt each record under fresh,
-  independent key material, so a build-up inside one record cannot reach
-  another. The proof and the FCD state the exact threshold and the per-record
-  credential rule.
+- The proved property is about the **scrambled output on its own**: the
+  ciphertext never singles the message out. If an attacker also learns enough of
+  the *original* text that went with intercepted outputs, and the **same key
+  keeps being reused**, that knowledge can build up and eventually unlock the
+  rest of that record. The intended discipline prevents spread: encrypt each
+  record under its own distinct, non-reused credential, so a build-up inside one
+  record cannot reach another. The proof and the FCD state the boundary and the
+  per-record credential rule.
+- The proof's uncertainty conclusion assumes the message could have been
+  anything (a uniform prior). Ordinary language is not like that, and for
+  redundant text there is a finite length beyond which the ciphertext no longer
+  leaves the message genuinely undetermined. Every finite-key cipher has this
+  limit. What is unusual here is that the ambiguity is proved rather than
+  assumed.
 - It is **not** magic and **not** "unbreakable" as a slogan. It is a specific,
   proved mathematical property, achieved under a specified discipline for how the
   key and inputs are managed. Read the proof and the FCD for the exact conditions.
@@ -170,8 +228,6 @@ You don't need to ask anyone. Verify it if you wish — run the checks, read the
 math — and then, if you can, **copy the proof, the description, and the vectors
 somewhere new, and rebuild the cipher if it has been lost.** That is how it stays
 alive.
-
-Encrypted today. Unreadable forever.
 
 *Enqpy™ — proved, not assumed. Free to rebuild. Free to copy. Free to keep.*
 

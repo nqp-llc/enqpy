@@ -41,8 +41,7 @@ replace independent cryptanalytic review, formal verification, or
 deployment-specific security engineering. The formal results are stated
 for the ciphertext-only, single-key-epoch model; under known plaintext the
 boundary of the paper / FCD 8.5 applies. Production deployment therefore
-requires the Rev 5.0 deployment profile (FCD 8.10): independent record
-credentials -- a fresh, independent credential pair (or computationally
-independent per-record key material) for each record -- encrypt-then-MAC
+requires the Rev 5.1 deployment profile (FCD 8.10): one distinct, non-reused credential per record under either conforming key-supply profile (independently sampled from fresh entropy for the information-theoretic guarantee, or secret domain-separated ratchet/KDF/CSPRNG derivation for the computational one)
+-- encrypt-then-MAC
 authentication, nonce-uniqueness infrastructure, secure key storage,
 constant-time MOD16 table lookups, and secure erase of key material.

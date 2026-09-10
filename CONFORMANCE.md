@@ -124,7 +124,7 @@ C Reference releases.
 
 ## 1.5 The formal proof paper
 
-**Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Record Cipher, with Exact Known-Plaintext Bounds** (the "**Paper**") is the formal
+**Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Stream Cipher, with a Characterized Known-Plaintext Boundary** (the "**Paper**") is the formal
 mathematical reference. The Paper establishes the non-vanishing ciphertext-only
 plaintext-equivocation property (motivated by Shannon's Ideal-System target), the
 supporting key-axis floor, the known-plaintext boundary, and the
@@ -305,7 +305,7 @@ at Rev 0.1:
 | Rule | Detail |
 |---|---|
 | **Source of truth** | `github.com/nqp-llc/enqpy` — the Test Vectors committed to the repository at the time of an implementation's claimed Reference-Compatibility |
-| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v5.0 ship with C Reference Rev 5.0; the canonical KATs are unchanged since Rev 3.0) |
+| **Versioning** | Test Vectors are versioned alongside C Reference releases (semantic versioning: e.g., Test Vectors v5.1 ship with C Reference Rev 5.1. Rev 5.1 changed no cipher behaviour, so the Rev 3.0 KATs are unchanged and reproduce byte-for-byte; v5.1 ADDS coverage (key domain, both-axes coset, empty plaintext, window boundary) and edits no published value in place) |
 | **Backward compatibility** | New Test Vectors may be added; existing Test Vectors will not be changed except to correct demonstrated errors |
 | **Validation** | An implementation must pass the Test Vectors version current at the time of its claim |
 | **Extension** | Rev 1.0 will add Test Vector coverage for boundary conditions, error states, and cryptographic edge cases identified during the first months of community implementation work |
