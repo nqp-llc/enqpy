@@ -5,7 +5,7 @@
  * enqpy_ese_reference.c -- Enqpy(tm) ESE KPA-Hardening reference  (Rev 5.1)
  *
  * OPTIONAL hardening layer for known-plaintext-sensitive deployments. It wraps
- * the base cipher's ciphertext-only guarantee with a secret, fresh, per-record
+ * the Enqpy(tm) Core's ciphertext-only result with a secret, fresh, per-record
  * keyed permutation:
  *
  *      C = S( P (+) W1 ) (+) W2        (+) = mod-16 nibble add
@@ -25,12 +25,20 @@
  *            validated by the A3 falsification sweep. Decryption reuses the same
  *            switch bits with the stage order reversed.
  *
- * SECURITY SCOPE (read this): the base cipher proof is ciphertext-only. This layer
- * RAISES the known-plaintext threshold (secret-S equivocation held past known-S in
- * the n=4 determinacy sweep); it does NOT restore information-theoretic security
- * under KP. The strong, proven claim remains the base cipher's ciphertext-only
- * plaintext equivocation. This file is the SW counterpart of enqpy_ese_hardening.vhd
- * and produces the shared interop KAT that the VHDL reproduces byte-for-byte.
+ * SECURITY SCOPE (read this): the Enqpy(tm) Core proof is ciphertext-only. At HIGH
+ * every ciphertext/public-nonce observation is consistent with at least 2^128
+ * plaintexts -- a support floor that holds for EVERY plaintext distribution; the
+ * uniform posterior and H = H_inf >= 128 bits hold under the stated uniform key and
+ * plaintext priors. This layer addresses a different question. A threshold increase
+ * is established in the analyzed known-S case (combined rank 4n-4; ~126-266 known
+ * bytes versus the published 64-byte rank-complete Core example); with S secret the
+ * structural obstruction is established, but the quantitative recovery threshold
+ * remains open (secret-S equivocation held past known-S in the n=4 determinacy
+ * sweep). ESE does not alter what is proved about the standalone Core, and whether
+ * the Core theorem is preserved as a property of the composite construction has NOT
+ * been established. This file is the SW counterpart of enqpy_ese_hardening.vhd and
+ * produces the shared interop KAT that the VHDL and Verilog references reproduce
+ * byte-for-byte.
  * ===========================================================================*/
 #include <stdint.h>
 #include <stdio.h>
@@ -48,7 +56,10 @@
  * Callers MUST satisfy all of:
  *     NB == (1 << LOGN)          window is a power of two matching the network
  *     NB <= ESE_MAX_NB           fixed internal buffers
- *     PASSES >= 1
+ *     PASSES >= 2                a single butterfly pass is not rearrangeably
+ *                                nonblocking. Exhaustively at NB=8, LOGN=3: one
+ *                                pass reaches 4096 of the 40320 permutations
+ *                                (10.2%); two passes reach all 40320 (100%).
  *     length(KSW) >= PASSES * LOGN * (NB / 2)      one switch bit per pair/stage
  * ---------------------------------------------------------------------------*/
 #define ESE_MAX_NB 2048
@@ -56,7 +67,7 @@
 int ese_params_valid(int NB, int LOGN, int PASSES)
 {
     if (LOGN < 1 || LOGN > 11)          return 0;
-    if (PASSES < 1)                     return 0;
+    if (PASSES < 2)                     return 0;   /* see note above */
     if (NB != (1 << LOGN))              return 0;
     if (NB > ESE_MAX_NB)                return 0;
     return 1;
@@ -182,7 +193,7 @@ int main(void){
             { "NB != 2^LOGN (confines S to sub-blocks)", 64,   5,  3 },
             { "NB != 2^LOGN (other direction)",          64,   7,  3 },
             { "NB above ESE_MAX_NB",                     4096, 12, 3 },
-            { "PASSES < 1",                              64,   6,  0 },
+            { "PASSES < 2 (not Benes-class: 10% cover)", 64,   6,  1 },
         };
         int guard = 1;
         printf("  parameter guard:\n");
