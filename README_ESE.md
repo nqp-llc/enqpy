@@ -2,26 +2,28 @@
 
 `C = S(P + W1) + W2`  (+ = per-nibble mod-16 addition over ℤ₁₆)
 
-Base Enqpy's record encryption is byte XOR; ESE's two masking steps use mod-16
-addition — the ℤ₁₆ structure the obstruction analysis rests on. ESE composes
-separately derived Enqpy keystreams around a secret permutation; it does not change
-base Enqpy's operation.
+The Enqpy™ Core's record encryption is byte XOR; ESE's two masking steps use
+mod-16 addition — the ℤ₁₆ structure the obstruction analysis rests on. ESE
+composes separately derived Enqpy keystreams around a secret permutation; it does
+not change the Core's operation.
 
-This is the **optional** known-plaintext (KP) hardening layer for Enqpy. It is not
-part of the base cipher and not required for the base cipher's proven guarantee.
+This is the **optional** known-plaintext (KP) hardening layer above the Enqpy™
+Core — the first implemented one. It is not part of the Core and not required
+for the Core's proved result.
 It exists for deployments where a single key epoch also encrypts attacker-known
 plaintext, and you want to raise the bar against that case in addition to the base
 cipher's ciphertext-only proof.
 
 ## What it is
 
-The base Enqpy cipher (`enqpy_reference.c`) has a proof about **ciphertext-only**
-plaintext equivocation in the stated model: from ciphertext alone at least 2^128
-plaintexts remain mathematically consistent at HIGH for any quantity of
-ciphertext, and under the uniform key and plaintext priors of Theorem 3 that
-support bound closes to at least 128 bits of min-entropy. The support bound is
-unconditional; the min-entropy statement is prior-dependent. Neither rests on
-any computational-hardness assumption. Known plaintext at
+The Enqpy™ Core (`enqpy_reference.c`) carries a proved **ciphertext-only**
+plaintext-equivocation result in the stated model: from ciphertext alone at least
+2^128 plaintexts remain mathematically consistent at HIGH, for every plaintext
+distribution and for any quantity of ciphertext, and under the uniform key and
+plaintext priors of Theorem 3 that support bound closes to at least 128 bits of
+min-entropy. The support bound is unconditional; the min-entropy statement is
+prior-dependent. Neither rests on any computational-hardness assumption. The
+proof is at [enqpy.com/verify](https://enqpy.com/verify). Known plaintext at
 one key epoch is outside that proof and is handled operationally by the
 per-record credential rule of FCD 8.10 (`nil_comm` Method 2 is the
 continuing-key-state rotation mechanism, which the per-record profile does not
@@ -66,17 +68,23 @@ published here, and neither is a conforming `S`.
 
 ## Security scope — read this
 
-The ESE **raises** the known-plaintext threshold; it does **not** restore
-information-theoretic security under KP. In the n=4 determinacy sweep, secret-`S`
-equivocation held past the known-`S` point but was not unbounded. The strong,
-proven claim remains the base cipher's **ciphertext-only** plaintext equivocation.
-State it that way: "the base proof is ciphertext-only; this optional layer raises
-the KP bar, tested by falsification to the documented threshold." Do not state
-or imply a KP impossibility result.
+ESE **raises** the known-plaintext threshold. It does **not** establish a
+known-plaintext impossibility result, and it does not extend the Core's
+ciphertext-only theorem to the known-plaintext setting. In the n=4 determinacy
+sweep, secret-`S` equivocation held past the known-`S` point but was not
+unbounded. The proved claim remains the Core's **ciphertext-only** plaintext
+equivocation. State it that way: "the Core proof is ciphertext-only; this
+optional layer raises the KP bar, tested by falsification to the documented
+threshold."
+
+ESE does not alter what is proved about the Core. Whether a Core theorem is
+preserved by the ESE composition is a separate question and has not been
+established — it is one of the first formal questions of the Stack programme,
+not a property to assume here.
 
 `S` must be **secret and fresh per record** — its security as a hardening layer
 depends on the switch-bit keystream being unknown and not reused. Pair the AEAD
-with a standard MAC (encrypt-then-MAC) exactly as the base cipher does.
+with a standard MAC (encrypt-then-MAC) exactly as the Core does.
 
 ## Files
 
@@ -101,7 +109,7 @@ covenant frees the cipher **invention**: anyone may implement Enqpy and ESE in
 HDL, at any scale including commercially, with no fee and no permission, and the
 FCD plus the published vectors are the blueprint for doing exactly that. What is
 withheld is NQP's *particular RTL* — an implementation, not the invention. The
-same split already governs the base cipher, where the covenant frees the cipher
+same split already governs the Core, where the covenant frees the cipher
 and Apache-2.0 governs NQP's reference source.
 
 Earlier revisions of this document listed a speed-comparison harness
@@ -201,6 +209,4 @@ covenant either — see "Not in this repository" above for why that is a
 distinction about implementations rather than a limit on the invention. Because
 it is not publicly available source code, the §742.15(b) notification route does
 not apply to it; treat any HDL disclosure as a controlled transfer and take
-export advice before sending it, including under NDA. As publicly available
-encryption source code, file the same EAR §742.15(b) notification for this artifact
-that the base release used before publishing.
+export advice before sending it, including under NDA.

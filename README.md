@@ -2,20 +2,25 @@
 
 [![build](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml/badge.svg)](https://github.com/nqp-llc/enqpy/actions/workflows/ci.yml)
 
-> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher whose
-> ciphertext-only confidentiality is **proved rather than assumed**: from the
-> ciphertext alone, at least 2¹²⁸ plaintexts remain mathematically consistent at
-> HIGH, and no amount of computing power erases that algebraic fact. It is
-> supported by a ≥2-bit ciphertext-only key-equivocation floor, and motivated by
-> Shannon's Ideal-System target. Enqpy is **symmetric**: it needs a shared secret
-> already in place, and does not do identity, key exchange with strangers, or
-> signatures. The known-plaintext boundary is stated openly in FCD §8.5, not
-> engineered around. This repository is the canonical software reference
-> implementation, released alongside the formal proof paper.
+> **Enqpy™** (pronounced "En-Q-P") is a symmetric stream cipher built around a
+> proved confidentiality invariant. At HIGH, every ciphertext produced by the
+> **Enqpy™ Core** is mathematically consistent with at least 2¹²⁸ plaintexts — a
+> support bound that holds for every plaintext distribution — and no increase in
+> computing power can erase that algebraic floor. It is **proved, not assumed**.
+> This repository is the canonical software reference implementation: clone it,
+> build it, and check it against the published vectors in a few minutes. The
+> proof itself is at [enqpy.com/verify](https://enqpy.com/verify).
+>
+> **Role.** The Core is symmetric and assumes pre-shared secret material;
+> authentication, identity, key establishment and signatures come from the
+> surrounding construction. ESE is the first implemented hardening layer above
+> the Core — see [`README_ESE.md`](./README_ESE.md). The known-plaintext
+> boundary is stated in FCD §8.5 and confined in deployment by the per-record
+> credential rule (FCD §8.10).
 
-**Paper:** *Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Stream Cipher, with a Characterized Known-Plaintext Boundary (Rev 5.1).* The canonical citation and
-the current paper link are maintained on the website — see
-[enqpy.com/technical.html](https://enqpy.com/technical.html).
+**Paper:** *Ciphertext-Only Plaintext Equivocation in a Finite-Key MOD16 Stream Cipher, with a Characterized Known-Plaintext Boundary (Rev 5.1).* The proof, the
+canonical citation, the test results and the review status are all on the
+verification page — see [enqpy.com/verify](https://enqpy.com/verify).
 
 **Project site:** [enqpy.com](https://enqpy.com)
 
@@ -150,6 +155,29 @@ email RPM@enqpy.com with `[Commercial]` in the subject line.
 
 ---
 
+## Core and Stack
+
+Enqpy is organised in layers, and a claim belongs to the layer that carries it.
+
+- **Enqpy™ Core** — the theorem-bearing Canonical Cipher in this repository and
+  in [`FCD.md`](./FCD.md). Theorem 3 is about this layer.
+- **Modes and hardening constructions** — layers addressing properties the Core
+  does not itself claim. ESE (FCD §8.11, [`README_ESE.md`](./README_ESE.md)) is
+  the first implemented one; it is experimental and computational.
+- **The deployment stack** — one fresh, non-reused credential per record,
+  authentication over every record, nonce and key supply, framing (FCD §8.10).
+- **Enqpy™-derived systems** — future constructions combining the Core with
+  additional mechanisms. Unbuilt.
+
+A limitation of the Core is not automatically a limitation of a construction
+built around it, and a property supplied by an outer layer is never attributed
+to the Core. The Core's theorem is inherited by a composition only where
+preservation under that composition has been established. The Enqpy™
+Architecture Note defines this model and the claims currently belonging to each
+layer.
+
+---
+
 ## What this is
 
 This repository contains:
@@ -177,10 +205,11 @@ This repository contains:
   KAT-verified before timing; the apples-to-apples comparison behind the
   Performance page.
 
-## What this is *not*
+## What a conforming deployment requires
 
-- **Not production-ready** without the additional operational mechanisms of
-  the Rev 5.1 deployment profile (FCD §8.10): one distinct, non-reused
+- **The Core is not production-ready on its own.** A conforming deployment adds
+  the operational mechanisms of the
+  Rev 5.1 deployment profile (FCD §8.10): one distinct, non-reused
   credential per record under either conforming key-supply profile —
   independently sampled from fresh entropy for the information-theoretic
   guarantee, or secret domain-separated ratchet/KDF/CSPRNG derivation for the
@@ -340,8 +369,8 @@ levels.
 
 ## Paper
 
-See [enqpy.com/technical.html](https://enqpy.com/technical.html) for the
-canonical citation and the current paper link.
+See [enqpy.com/verify](https://enqpy.com/verify) for the proof, the canonical
+citation, the test results and the review status.
 The paper establishes, with no computational-hardness assumption, a non-vanishing
 **ciphertext-only plaintext equivocation** for Enqpy™ in its Canonical
 Configuration (the primary result), supported by a key-axis equivocation floor,
@@ -422,7 +451,7 @@ languages are welcome and tracked in [`PORTS.md`](./PORTS.md) — see
 ## Citation
 
 The canonical citation and the current paper link are maintained in one
-place — [enqpy.com/technical.html](https://enqpy.com/technical.html). A
+place — [enqpy.com/verify](https://enqpy.com/verify). A
 `CITATION.cff` file in the repository root also enables GitHub's native
 citation export. BibTeX form:
 
@@ -435,7 +464,7 @@ citation export. BibTeX form:
   institution = {NQP LLC},
   year        = {2026},
   number      = {Rev 5.1},
-  note        = {Canonical citation and paper link: https://enqpy.com/technical.html}
+  note        = {Canonical citation and paper link: https://enqpy.com/verify}
 }
 ```
 
@@ -449,7 +478,7 @@ citation export. BibTeX form:
 | Formal Cryptographic Description | ✅ `FCD.md` |
 | Test vectors | ✅ 84/84 PASS |
 | Benchmark harness | ✅ Included |
-| Formal proof paper | ✅ June 1, 2026 (canonical link on enqpy.com/technical.html) |
+| Formal proof paper | ✅ June 1, 2026 (canonical link on enqpy.com/verify) |
 | Repository governance (LICENSE, COC, CONTRIBUTING, SECURITY) | ✅ Effective June 1, 2026 |
 | Conformance specification | ✅ `CONFORMANCE.md` — Rev 0.1 framework (Rev 1.0 Months 4–6) |
 | Porting guide & vector format | ✅ `PORTING.md`, `TEST_VECTORS.md` |
